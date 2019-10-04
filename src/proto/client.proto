@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package proto.client;
+
+// Message sent from client applications to the Universal slaves.
+message ClientRequest {
+  enum Type {
+    READ = 0;
+    WRITE = 1;
+  }
+
+  uint32 request_id = 1;
+  Type request_type = 2;
+  string data = 3;
+}
+
+// Response sent to a client from the Universal slaves.
+message ClientResponse {
+  enum Code {
+    SUCCESS = 0;
+    ERROR = 1;
+  }
+
+  Code error_code = 1;
+}
+
+message ClientMessage {
+  oneof client_message {
+    ClientRequest request = 1;
+  }
+}

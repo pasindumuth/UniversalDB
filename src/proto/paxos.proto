@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package proto.paxos;
+
+// The fields that must be populated in PaxosLogEntry when the EntryType is READ.
+// Thus, when the EntryType is READ, we can convert the PaxosLogEntry to a Read
+// message to make the entry safer to work with.
+message Read {
+  string key = 1;
+  uint64 timestamp = 2;
+}
+
+// The fields that must be populated in PaxosLogEntry when the EntryType is WRITE.
+// Thus, when the EntryType is WRITE, we can convert the PaxosLogEntry to a Write
+// message to make the entry safer to work with.
+message Write {
+  string key = 1;
+  string value = 2;
+  uint64 timestamp = 3;
+}
+
+// The values that appear in the Paxos log.
+message PaxosLogEntry {
+  enum EntryType {
+    READ = 0;
+    WRITE = 1;
+  }
+
+  EntryType type = 1;
+  string key = 2;
+  string value = 3;
+  uint64 timestamp = 4;
+}
+
+message Prepare {
+  // Proposal number (aka "round").
+  uint32 rnd = 1;
+}
+
+message Promise {
+  // Proposal number the Promise is responding to.
+  uint32 rnd = 1;
+  // Proposal number of the last accepted value (not present if there was no
+  // previously accepted value).
+  uint32 vrnd = 2;
+  // The last accepted value (not present if there was no previously
+  // accepted value).
+  PaxosLogEntry vval = 3;
+}
+
+message Accept {
+  // Proposal number of the Accept message.
+  uint32 vrnd = 1;
+  // Value to accept.
+  PaxosLogEntry vval = 2;
+}
+
+message Learn {
+  // Proposal number of the Accepted message.
+  uint32 vrnd = 1;
+  // Value to accept.
+  PaxosLogEntry vval = 2;
+}
+
+// Message containing all data related to Paxos. Recall that we are using MultiPaxos.
+message PaxosMessage {
+  uint32 paxos_index = 1; // The index of the Global Paxos Log the payload of this message is concerned with.
+  oneof paxos_message {
+    Prepare prepare = 2;
+    Promise promise = 3;
+    Accept accept = 4;
+    Learn learn = 5;
+  }
+}
