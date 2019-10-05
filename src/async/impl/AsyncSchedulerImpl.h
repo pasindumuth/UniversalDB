@@ -2,7 +2,6 @@
 #define UNI_ASYNC_ASYNCSCHEDULERIMPL_H
 
 #include <functional>
-#include <memory>
 #include <string>
 
 #include <boost/asio.hpp>
@@ -20,14 +19,14 @@ namespace async {
 class AsyncSchedulerImpl
     : public uni::async::AsyncScheduler {
  public:
-  AsyncSchedulerImpl(std::shared_ptr<boost::asio::io_context> io_context);
+  AsyncSchedulerImpl(boost::asio::io_context& io_context);
 
   void set_callback(std::function<void(uni::net::IncomingMessage)> callback) override;
 
   void schedule_async(uni::net::IncomingMessage message) override;
 
  private:
-  std::shared_ptr<boost::asio::io_context> _io_context;
+  boost::asio::io_context& _io_context;
   std::function<void(uni::net::IncomingMessage)> _callback;
 };
 

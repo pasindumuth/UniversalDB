@@ -11,6 +11,7 @@
 
 #include <async/impl/AsyncSchedulerImpl.h>
 #include <constants/constants.h>
+#include <logging/log.h>
 #include <net/ConnectionsIn.h>
 #include <net/ConnectionsOut.h>
 #include <net/endpoint_id.h>
@@ -36,7 +37,7 @@ class ServerConnectionHandler {
       std::shared_ptr<uni::net::ConnectionsIn> connections_in,
       std::shared_ptr<uni::net::ConnectionsOut> connections_out,
       std::shared_ptr<tcp::acceptor> acceptor,
-      std::shared_ptr<boost::asio::io_context> io_context)
+      boost::asio::io_context& io_context)
       : _constants(constants),
         _connections_in(connections_in),
         _connections_out(connections_out),
@@ -53,16 +54,18 @@ class ServerConnectionHandler {
           // Initiate reverse connection
           boost::asio::ip::address address(socket.remote_endpoint().address()); // Copy the address, since the socket is destroyed later.
           tcp::endpoint endpoint(address, port);
-          auto remote_socket = std::make_shared<tcp::socket>(*_io_context);
+          auto remote_socket = std::make_shared<tcp::socket>(_io_context);
           boost::asio::async_connect(*remote_socket, std::vector<tcp::endpoint>{endpoint},
               [this, remote_socket](const boost::system::error_code& ec, const tcp::endpoint& endpoint) {
                 if (!ec) {
-                  std::cout << "reverse connection to " << remote_socket->remote_endpoint().address().to_string() << " made" << std::endl;
+                  LOG(uni::logging::Level::DEBUG, "Reverse connection to " + remote_socket->remote_endpoint().address().to_string() + " made")
                   _connections_out->add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(*remote_socket)));
+                  LOG(uni::logging::Level::DEBUG, "Did we return from this??")
                 }
               });
         }
 
+        LOG(uni::logging::Level::DEBUG, "forward connection to " + socket.remote_endpoint().address().to_string() + " made")
         _connections_in->add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(socket)));
         async_accept();
       } else {
@@ -76,7 +79,7 @@ class ServerConnectionHandler {
   std::shared_ptr<uni::net::ConnectionsIn> _connections_in;
   std::shared_ptr<uni::net::ConnectionsOut> _connections_out;
   std::shared_ptr<tcp::acceptor> _acceptor;
-  std::shared_ptr<boost::asio::io_context> _io_context;
+  boost::asio::io_context& _io_context;
 };
 
 uni::constants::Constants initialize_constants() {
@@ -98,40 +101,41 @@ int main(int argc, char* argv[]) {
 
   std::string main_serving_hostname(std::get<0>(main_serving_endpoint));
   int main_serving_port = std::stoi(std::get<1>(main_serving_endpoint));
-  std::cout << "Starting main server on: " << main_serving_hostname << ":" << main_serving_port << std::endl;
+  LOG(uni::logging::Level::DEBUG, "Starting main server on: " + main_serving_hostname + ":" + std::to_string(main_serving_port))
 
   std::string client_serving_hostname(std::get<0>(client_serving_endpoint));
   int client_serving_port = std::stoi(std::get<1>(client_serving_endpoint));
-  std::cout << "Starting client server on: " << client_serving_hostname << ":" << client_serving_port << std::endl;
+  LOG(uni::logging::Level::DEBUG, "Starting client server on: " + client_serving_hostname + ":" + std::to_string(client_serving_port))
 
   // Initialize io_context for background thread (for managing the network
   // and dispatching requests to the server thread).
-  auto background_io_context = std::make_shared<boost::asio::io_context>();
-  auto work = boost::asio::make_work_guard(*background_io_context);
-  std::thread network_thread([background_io_context](){
-    background_io_context->run();
+  auto background_io_context = boost::asio::io_context();
+  auto work = boost::asio::make_work_guard(background_io_context);
+  std::thread network_thread([&background_io_context](){
+    background_io_context.run();
   });
 
   // Initialize io_context for server thread (for processing requests and
   // dispatching responses to the background thread).
-  auto server_io_context = std::make_shared<boost::asio::io_context>();
+  auto server_io_context = boost::asio::io_context();
   auto server_async_scheduler = std::make_shared<uni::async::AsyncSchedulerImpl>(server_io_context);
 
   // Schedule main acceptor
   auto connections_in = std::make_shared<uni::net::ConnectionsIn>(server_async_scheduler);
   auto connections_out = std::make_shared<uni::net::ConnectionsOut>(constants);
-  auto main_acceptor = std::make_shared<tcp::acceptor>(*background_io_context, tcp::endpoint(tcp::v4(), main_serving_port));
+  auto main_acceptor = std::make_shared<tcp::acceptor>(background_io_context, tcp::endpoint(tcp::v4(), main_serving_port));
   auto server_connection_handler = std::make_shared<ServerConnectionHandler>(constants, connections_in, connections_out, main_acceptor, background_io_context);
-  tcp::resolver resolver(*background_io_context);
+  tcp::resolver resolver(background_io_context);
 
   // Create self connection
   main_acceptor->async_accept([&connections_in](const boost::system::error_code &ec, tcp::socket socket) {
+    LOG(uni::logging::Level::DEBUG, "Self connection acceptor has been invoked")
     connections_in->add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(socket)));
   });
 
   tcp::resolver::results_type self_endpoints = resolver.resolve(
       std::get<0>(main_serving_endpoint), std::get<1>(main_serving_endpoint));
-  tcp::socket self_socket(*background_io_context);
+  tcp::socket self_socket(background_io_context);
   boost::asio::connect(self_socket, self_endpoints);
   connections_out->add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(self_socket)));
 
@@ -140,11 +144,11 @@ int main(int argc, char* argv[]) {
     auto endpoint_string = *it;
     tcp::resolver::results_type endpoints = resolver.resolve(
         std::get<0>(endpoint_string), std::get<1>(endpoint_string));
-    auto socket = std::make_shared<tcp::socket>(*background_io_context);
+    auto socket = std::make_shared<tcp::socket>(background_io_context);
     boost::asio::async_connect(*socket, endpoints,
         [connections_out, socket](const boost::system::error_code& ec, const tcp::endpoint& endpoint) {
       if (!ec) {
-        std::cout << "first connection to " << socket->remote_endpoint().address().to_string() << " made" << std::endl;
+        LOG(uni::logging::Level::DEBUG, "first connection to " + socket->remote_endpoint().address().to_string() + " made")
         connections_out->add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(*socket)));
       }
     });
@@ -156,7 +160,7 @@ int main(int argc, char* argv[]) {
     return uni::paxos::SinglePaxosHandler(constants, connections_out, paxos_log, index);
   };
   auto multipaxos_handler = std::make_shared<uni::paxos::MultiPaxosHandler>(paxos_log, paxos_instance_provider);
-  auto client_acceptor = std::make_shared<tcp::acceptor>(*background_io_context, tcp::endpoint(tcp::v4(), client_serving_port));
+  auto client_acceptor = std::make_shared<tcp::acceptor>(background_io_context, tcp::endpoint(tcp::v4(), client_serving_port));
   auto client_connection_handler = std::make_shared<uni::slave::ClientConnectionHandler>(server_async_scheduler, client_acceptor);
   auto client_request_handler = std::make_shared<uni::slave::ClientRequestHandler>(multipaxos_handler);
   auto incoming_message_handler = std::make_shared<uni::slave::IncomingMessageHandler>(client_request_handler, multipaxos_handler);
@@ -167,6 +171,8 @@ int main(int argc, char* argv[]) {
   server_connection_handler->async_accept();
   client_connection_handler->async_accept();
 
-  auto server_work = boost::asio::make_work_guard(*server_io_context);
-  server_io_context->run();
+  LOG(uni::logging::Level::DEBUG, "Setup finished")
+
+  auto server_work = boost::asio::make_work_guard(server_io_context);
+  server_io_context.run();
 }

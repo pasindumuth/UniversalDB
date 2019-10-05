@@ -6,7 +6,7 @@ namespace async {
 using boost::asio::io_context;
 using uni::net::IncomingMessage;
 
-AsyncSchedulerImpl::AsyncSchedulerImpl(std::shared_ptr<io_context> io_context)
+AsyncSchedulerImpl::AsyncSchedulerImpl(io_context& io_context)
     : _io_context(io_context),
       _callback([](IncomingMessage){}) {}
 
@@ -15,7 +15,7 @@ void AsyncSchedulerImpl::set_callback(std::function<void(IncomingMessage)> callb
 }
 
 void AsyncSchedulerImpl::schedule_async(IncomingMessage message) {
-  boost::asio::post(*_io_context, [this, message](){
+  boost::asio::post(_io_context, [this, message](){
     _callback(message);
   });
 }

@@ -8,11 +8,12 @@ namespace logging {
 
 // Log Levels
 enum Level {
-  INFO = 1,
-  ERROR = 2
+  INFO = 0,
+  ERROR = 1,
+  DEBUG = 2
 };
 
-static const char* LevelNames[] = { "INFO", "ERROR" };
+static const char* LevelNames[] = { "INFO", "ERROR", "DEBUG" };
 
 
 // Macros used for logging. Can be turned off for production, or the logs
