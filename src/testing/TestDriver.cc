@@ -7,6 +7,9 @@
 #include <slave/ClientRequestHandler.h>
 #include <slave/IncomingMessageHandler.h>
 
+namespace uni {
+namespace testing {
+
 using uni::async::AsyncSchedulerTesting;
 using uni::constants::Constants;
 using uni::net::ChannelTesting;
@@ -16,17 +19,11 @@ using uni::paxos::PaxosLog;
 using uni::slave::ClientRequestHandler;
 using uni::slave::IncomingMessageHandler;
 
-namespace uni {
-namespace testing {
-
 Constants initialize_constants() {
   return Constants(5, 1610);
 }
 
-void TestDriver::run_test(std::function<void(
-    std::vector<std::unique_ptr<AsyncSchedulerTesting>>&,
-    std::vector<ChannelTesting*>&,
-    std::vector<std::unique_ptr<PaxosLog>>&)> test) {
+void TestDriver::run_test(TestFunction test) {
   // Initialize constants
   auto const constants = initialize_constants();
 

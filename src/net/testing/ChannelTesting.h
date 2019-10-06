@@ -57,8 +57,7 @@ class ChannelTesting
   std::vector<uni::net::ChannelTesting*>& _nonempty_channels;
 
   // After the channel has lost a message, this function maintains the channels
-  // inclusion in _nonempty_channels, removing it from this vector if the Channel
-  // is now empty.
+  // inclusion in _nonempty_channels, removing it if the Channel becomes empty.
   void check_empty();
 };
 

@@ -12,6 +12,11 @@
 namespace uni {
 namespace testing {
 
+using TestFunction = std::function<void(
+    std::vector<std::unique_ptr<uni::async::AsyncSchedulerTesting>>&,
+    std::vector<uni::net::ChannelTesting*>&,
+    std::vector<std::unique_ptr<uni::paxos::PaxosLog>>&)>;
+
 /**
  * Recall the simulation testing method we use for testing Paxos
  * http://localhost:3000/projects/universaldb/simulationtesting. This class
@@ -21,10 +26,7 @@ namespace testing {
 class TestDriver {
  public:
   // Main function for running tests. The test takes in 3 vectors.
-  void run_test(std::function<void(
-      std::vector<std::unique_ptr<uni::async::AsyncSchedulerTesting>>&,
-      std::vector<uni::net::ChannelTesting*>&,
-      std::vector<std::unique_ptr<uni::paxos::PaxosLog>>&)> test);
+  void run_test(TestFunction test);
 };
 
 } // testing
