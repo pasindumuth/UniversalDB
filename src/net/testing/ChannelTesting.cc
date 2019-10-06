@@ -55,6 +55,17 @@ void ChannelTesting::deliver_message() {
   _async_scheduler.schedule_async(incoming_message);
   // Remove the message that was just processed.
   _message_queue.pop();
+  check_empty();
+}
+
+void ChannelTesting::drop_message() {
+  UNIVERSAL_ASSERT_MESSAGE(_message_queue.size() > 0,
+      "We should never be trying to deliver a message from an empty channel")
+  _message_queue.pop();
+  check_empty();
+}
+
+void ChannelTesting::check_empty() {
   if (_message_queue.size() == 0) {
     // This channel just became empty, so remove it from the nonempty_channels vetor.
     auto it = std::find(_nonempty_channels.begin(), _nonempty_channels.end(), this);

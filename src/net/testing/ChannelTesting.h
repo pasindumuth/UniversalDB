@@ -40,6 +40,9 @@ class ChannelTesting
   // Pops the first message in the _message_queue and runs it through the _recieve_callback.
   void deliver_message();
 
+  // Drops the message the next message (simulating a temporary loss in connectivity).
+  void drop_message();
+
  private:
   uni::constants::Constants const& _constants;
   uni::async::AsyncSchedulerTesting& _async_scheduler;
@@ -52,6 +55,11 @@ class ChannelTesting
   // This channel is responsible for maintaining its place in this vectors when
   // a call to queue_send and deliver_message is made.
   std::vector<uni::net::ChannelTesting*>& _nonempty_channels;
+
+  // After the channel has lost a message, this function maintains the channels
+  // inclusion in _nonempty_channels, removing it from this vector if the Channel
+  // is now empty.
+  void check_empty();
 };
 
 } // namespace net
