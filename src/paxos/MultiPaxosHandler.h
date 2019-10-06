@@ -15,7 +15,7 @@ namespace paxos {
 class MultiPaxosHandler {
  public:
   MultiPaxosHandler(
-      std::shared_ptr<uni::paxos::PaxosLog> paxos_log,
+      uni::paxos::PaxosLog& paxos_log,
       std::function<uni::paxos::SinglePaxosHandler(index_t)> instance_provider);
 
   void propose(proto::paxos::PaxosLogEntry const& entry);
@@ -25,7 +25,7 @@ class MultiPaxosHandler {
       proto::paxos::PaxosMessage const& paxos_messsage);
 
  private:
-  std::shared_ptr<uni::paxos::PaxosLog> _paxos_log;
+  uni::paxos::PaxosLog& _paxos_log;
   std::function<uni::paxos::SinglePaxosHandler(index_t)> _instance_provider;
   std::unordered_map<index_t, uni::paxos::SinglePaxosHandler> _paxos_instances;
 

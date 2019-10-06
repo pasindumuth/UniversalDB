@@ -16,15 +16,15 @@ using uni::async::TimerAsyncScheduler;
 using uni::paxos::MultiPaxosHandler;
 
 ClientRequestHandler::ClientRequestHandler(
-    std::shared_ptr<MultiPaxosHandler> multi_paxos_handler)
+    MultiPaxosHandler& multi_paxos_handler)
       : _multi_paxos_handler(multi_paxos_handler) {}
 
 void ClientRequestHandler::handle_request(
     uni::net::endpoint_id const& endpoint_id, ClientRequest const& message) {
   LOG(uni::logging::Level::INFO, "client request gotten. " + message.DebugString())
-  PaxosLogEntry log_entry;
+  auto log_entry = PaxosLogEntry();
   log_entry.set_value(message.SerializeAsString());
-  _multi_paxos_handler->propose(log_entry);
+  _multi_paxos_handler.propose(log_entry);
 }
 
 } // namespace slave

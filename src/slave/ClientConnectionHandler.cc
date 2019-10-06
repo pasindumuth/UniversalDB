@@ -14,19 +14,19 @@ using uni::net::Channel;
 using boost::asio::ip::tcp;
 
 ClientConnectionHandler::ClientConnectionHandler(
-    std::shared_ptr<AsyncScheduler> scheduler,
-    std::shared_ptr<tcp::acceptor> acceptor)
+    AsyncScheduler& scheduler,
+    tcp::acceptor& acceptor)
       : _scheduler(scheduler),
         _acceptor(acceptor) {}
 
 void ClientConnectionHandler::async_accept() {
-  _acceptor->async_accept([this](const boost::system::error_code &ec, tcp::socket socket) {
+  _acceptor.async_accept([this](const boost::system::error_code &ec, tcp::socket socket) {
     if (!ec) {
       std::unique_lock<std::mutex> lock(_channel_lock);
       auto channel = std::make_shared<uni::net::ChannelImpl>(std::move(socket));
       auto endpoint_id = channel->endpoint_id();
       channel->set_recieve_callback([endpoint_id, this](std::string message) {
-        _scheduler->schedule_async({endpoint_id, message});
+        _scheduler.schedule_async({endpoint_id, message});
       });
       channel->set_close_callback([endpoint_id, this]() {
         std::unique_lock<std::mutex> lock(_channel_lock);

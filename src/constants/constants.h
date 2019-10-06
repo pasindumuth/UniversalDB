@@ -6,7 +6,7 @@ namespace constants {
 
 struct Constants {
   unsigned const num_slave_servers;
-  unsigned const slave_port;
+  unsigned const slave_port; // Port that the slaves listens to for new connections from other slaves.
 
   Constants(
       unsigned const& num_slave_servers,

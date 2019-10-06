@@ -13,13 +13,13 @@ using uni::paxos::PaxosLog;
 using uni::paxos::SinglePaxosHandler;
 
 MultiPaxosHandler::MultiPaxosHandler(
-    std::shared_ptr<PaxosLog> paxos_log,
+    PaxosLog& paxos_log,
     std::function<SinglePaxosHandler(index_t)> instance_provider)
     : _paxos_log(paxos_log),
       _instance_provider(instance_provider) {}
 
 void MultiPaxosHandler::propose(PaxosLogEntry const& entry) {
-  index_t index = _paxos_log->next_available_index(); // Look for an index that we can propose this new log entry to.
+  index_t index = _paxos_log.next_available_index(); // Look for an index that we can propose this new log entry to.
   auto& paxos_instance = get_instance(index);
   paxos_instance.propose(MessageWrapper(), entry);
 }

@@ -22,8 +22,8 @@ using uni::paxos::PaxosLog;
 
 SinglePaxosHandler::SinglePaxosHandler(
     Constants const& constants,
-    std::shared_ptr<ConnectionsOut> connections_out,
-    std::shared_ptr<PaxosLog> paxos_log,
+    ConnectionsOut& connections_out,
+    PaxosLog& paxos_log,
     index_t paxos_log_index)
       : _constants(constants),
         _connections_out(connections_out),
@@ -50,7 +50,7 @@ void SinglePaxosHandler::propose(
   paxos_message->set_allocated_prepare(prepare_message);
   paxos_message->set_paxos_index(_paxos_log_index);
   message_wrapper.set_allocated_paxos_message(paxos_message);
-  _connections_out->broadcast(message_wrapper.SerializeAsString());
+  _connections_out.broadcast(message_wrapper.SerializeAsString());
 }
 
 void SinglePaxosHandler::prepare(
@@ -70,7 +70,7 @@ void SinglePaxosHandler::prepare(
     paxos_message->set_allocated_promise(promise);
     paxos_message->set_paxos_index(_paxos_log_index);
     message_wrapper.set_allocated_paxos_message(paxos_message);
-    _connections_out->send(endpoint_id, message_wrapper.SerializeAsString());
+    _connections_out.send(endpoint_id, message_wrapper.SerializeAsString());
   }
 }
 
@@ -112,7 +112,7 @@ void SinglePaxosHandler::promise(
       paxos_message->set_allocated_accept(accept_message);
       paxos_message->set_paxos_index(_paxos_log_index);
       message_wrapper.set_allocated_paxos_message(paxos_message);
-      _connections_out->broadcast(message_wrapper.SerializeAsString());
+      _connections_out.broadcast(message_wrapper.SerializeAsString());
     }
   }
 }
@@ -137,7 +137,7 @@ void SinglePaxosHandler::accept(
     paxos_message->set_allocated_learn(learn_message);
     paxos_message->set_paxos_index(_paxos_log_index);
     message_wrapper.set_allocated_paxos_message(paxos_message);
-    _connections_out->broadcast(message_wrapper.SerializeAsString());
+    _connections_out.broadcast(message_wrapper.SerializeAsString());
   }
 }
 
@@ -158,9 +158,9 @@ void SinglePaxosHandler::learn(Learn const& learn_message) {
       // Just got enough learn messages to consider the value of this proposal to be learned.
       _learner_state.learned = true;
       // Update the Paxos Log with the newly learned value.
-      _paxos_log->set_entry(_paxos_log_index, std::get<0>(it->second));
+      _paxos_log.set_entry(_paxos_log_index, std::get<0>(it->second));
 //      LOG(uni::logging::Level::INFO, "learned!!!")
-//      _paxos_log->debug_print();
+//      _paxos_log.debug_print();
     }
   }
 }

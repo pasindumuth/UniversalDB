@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 
+#include <assert/assert.h>
 #include <async/testing/AsyncSchedulerTesting.h>
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
@@ -41,10 +42,14 @@ int main(int argc, char* argv[]) {
 
   // Create the IncomingMessageHandler for each universal server
   auto nonempty_channels = std::vector<uni::net::ChannelTesting*>();
+  auto connections_outs = std::vector<std::unique_ptr<uni::net::ConnectionsOut>>();
+  auto multipaxos_handlers = std::vector<std::unique_ptr<uni::paxos::MultiPaxosHandler>>();
+  auto client_request_handlers = std::vector<std::unique_ptr<uni::slave::ClientRequestHandler>>();
   auto incoming_message_handlers = std::vector<std::unique_ptr<uni::slave::IncomingMessageHandler>>();
-  auto paxos_logs = std::vector<std::shared_ptr<uni::paxos::PaxosLog>>();
+  auto paxos_logs = std::vector<std::unique_ptr<uni::paxos::PaxosLog>>();
   for (int i = 0; i < constants.num_slave_servers; i++) {
-    auto connections_out = std::make_shared<uni::net::ConnectionsOut>(constants);
+    connections_outs.push_back(std::make_unique<uni::net::ConnectionsOut>(constants));
+    auto& connections_out = *connections_outs.back();
     // Populate connections_out with ChannelTesting objects. We iterate over
     // the other Slaves, take their Aysnc Schedulers (which receive messages relative
     // to the current Slave), and create the ChannelTesting object with that.
@@ -52,17 +57,20 @@ int main(int argc, char* argv[]) {
       auto& receiver_async_sheduler = *schedulers[j];
       auto channel = std::make_shared<uni::net::ChannelTesting>(
           constants, receiver_async_sheduler, ip_strings[i], ip_strings[j], nonempty_channels);
-      connections_out->add_channel(channel);
+      connections_out.add_channel(channel);
     }
 
-    auto paxos_log = std::make_shared<uni::paxos::PaxosLog>();
-    auto paxos_instance_provider = [constants, connections_out, paxos_log](uni::paxos::index_t index) {
+    paxos_logs.push_back(std::make_unique<uni::paxos::PaxosLog>());
+    auto& paxos_log = *paxos_logs.back();
+    auto paxos_instance_provider = [&constants, &connections_out, &paxos_log](uni::paxos::index_t index) {
       return uni::paxos::SinglePaxosHandler(constants, connections_out, paxos_log, index);
     };
-    auto multipaxos_handler = std::make_shared<uni::paxos::MultiPaxosHandler>(paxos_log, paxos_instance_provider);
-    auto client_request_handler = std::make_shared<uni::slave::ClientRequestHandler>(multipaxos_handler);
-    paxos_logs.push_back(paxos_log);
+    multipaxos_handlers.push_back(std::make_unique<uni::paxos::MultiPaxosHandler>(paxos_log, paxos_instance_provider));
+    auto& multipaxos_handler = *multipaxos_handlers.back();
+    client_request_handlers.push_back(std::make_unique<uni::slave::ClientRequestHandler>(multipaxos_handler));
+    auto& client_request_handler = *client_request_handlers.back();
     incoming_message_handlers.push_back(std::make_unique<uni::slave::IncomingMessageHandler>(client_request_handler, multipaxos_handler));
+    auto& incoming_message_handler = *incoming_message_handlers.back();
   }
 
   // Connect the AsyncSchedulers to the IncomingMessageHandler for each Slave.
@@ -74,41 +82,45 @@ int main(int argc, char* argv[]) {
   }
 
   // Simple test of the code.
-  {
-    for (int i = 0; i < 10; i++) {
-      // Create a message that a client would send.
-      std::string message("m" + std::to_string(i));
-      auto request_message = new proto::client::ClientRequest();
-      request_message->set_request_id(0);
-      request_message->set_request_type(proto::client::ClientRequest_Type_READ);
-      request_message->set_data(message);
-      auto client_message = new proto::client::ClientMessage();
-      client_message->set_allocated_request(request_message);
-      auto message_wrapper = proto::message::MessageWrapper();
-      message_wrapper.set_allocated_client_message(client_message);
+  try {
+    {
+      for (int i = 0; i < 10; i++) {
+        // Create a message that a client would send.
+        auto message = std::string("m" + std::to_string(i));
+        auto request_message = new proto::client::ClientRequest();
+        request_message->set_request_id(0);
+        request_message->set_request_type(proto::client::ClientRequest_Type_READ);
+        request_message->set_data(message);
+        auto client_message = new proto::client::ClientMessage();
+        client_message->set_allocated_request(request_message);
+        auto message_wrapper = proto::message::MessageWrapper();
+        message_wrapper.set_allocated_client_message(client_message);
 
-      // Send the client message to the first Universal Slave
-      auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
-      auto incoming_message = uni::net::IncomingMessage(client_endpoint_id, message_wrapper.SerializeAsString());
-      auto& async_scheduler = *schedulers[0];
-      async_scheduler.schedule_async(incoming_message);
+        // Send the client message to the first Universal Slave
+        auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
+        auto incoming_message = uni::net::IncomingMessage(client_endpoint_id, message_wrapper.SerializeAsString());
+        auto& async_scheduler = *schedulers[0];
+        async_scheduler.schedule_async(incoming_message);
 
-      // Simulate the message exchanging of all Slaves until there are no more messages to send.
-      std::srand(0);
-      while (nonempty_channels.size() > 0) {
-        // We use modulus to reduce the random number to the range we want.
-        // There will be minor bias with this method, but this isn't significant,
-        // and so isn't a problem for us.
-        int r = std::rand() % nonempty_channels.size();
-        auto channel = nonempty_channels[r];
-        channel->deliver_message();
+        // Simulate the message exchanging of all Slaves until there are no more messages to send.
+        std::srand(0);
+        while (nonempty_channels.size() > 0) {
+          // We use modulus to reduce the random number to the range we want.
+          // There will be minor bias with this method, but this isn't significant,
+          // and so isn't a problem for us.
+          int r = std::rand() % nonempty_channels.size();
+          auto channel = nonempty_channels[r];
+          channel->deliver_message();
+        }
       }
+      // Now that the simulation is done, print out the Paxos Log and see what we have.
+      paxos_logs[0]->debug_print();
+      paxos_logs[1]->debug_print();
+      paxos_logs[2]->debug_print();
+      paxos_logs[3]->debug_print();
+      paxos_logs[4]->debug_print();
     }
-    // Now that the simulation is done, print out the Paxos Log and see what we have.
-    paxos_logs[0]->debug_print();
-    paxos_logs[1]->debug_print();
-    paxos_logs[2]->debug_print();
-    paxos_logs[3]->debug_print();
-    paxos_logs[4]->debug_print();
+  } catch (uni::assert::UniversalException e) {
+    std::cout << e.what() << std::endl;
   }
 }

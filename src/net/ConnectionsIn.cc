@@ -9,13 +9,13 @@ using uni::async::AsyncScheduler;
 using uni::net::Channel;
 
 ConnectionsIn::ConnectionsIn(
-    std::shared_ptr<AsyncScheduler> scheduler)
+    AsyncScheduler& scheduler)
     : _scheduler(scheduler) {}
 
 void ConnectionsIn::add_channel(std::shared_ptr<Channel> channel) {
   auto endpoint_id = channel->endpoint_id();
   channel->set_recieve_callback([endpoint_id, this](std::string message) {
-    _scheduler->schedule_async({endpoint_id, message});
+    _scheduler.schedule_async({endpoint_id, message});
   });
   channel->set_close_callback([endpoint_id, this]() {
     auto it = _channels.find(endpoint_id);

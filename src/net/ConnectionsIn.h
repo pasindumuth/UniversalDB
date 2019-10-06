@@ -13,13 +13,13 @@ namespace net {
 
 class ConnectionsIn {
  public:
-  ConnectionsIn(std::shared_ptr<uni::async::AsyncScheduler> scheduler);
+  ConnectionsIn(uni::async::AsyncScheduler& scheduler);
 
   void add_channel(std::shared_ptr<uni::net::Channel> channel);
 
  private:
   std::unordered_map<uni::net::endpoint_id, std::shared_ptr<uni::net::Channel>> _channels;
-  std::shared_ptr<uni::async::AsyncScheduler> _scheduler;
+  uni::async::AsyncScheduler& _scheduler;
 };
 
 } // net

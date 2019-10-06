@@ -19,8 +19,8 @@ namespace slave {
 class ClientConnectionHandler {
  public:
   ClientConnectionHandler(
-      std::shared_ptr<uni::async::AsyncScheduler> scheduler,
-      std::shared_ptr<boost::asio::ip::tcp::acceptor> acceptor);
+      uni::async::AsyncScheduler& scheduler,
+      boost::asio::ip::tcp::acceptor& acceptor);
 
   // This method is primarily used by the background thread to listen to accept new connections
   // from the acceptor, add callbacks to send their data to the AsyncScheduler when they recieve
@@ -32,8 +32,8 @@ class ClientConnectionHandler {
   boost::optional<std::shared_ptr<uni::net::Channel>> get_channel(uni::net::endpoint_id endpoint_id);
 
  private:
-  std::shared_ptr<uni::async::AsyncScheduler> _scheduler;
-  std::shared_ptr<boost::asio::ip::tcp::acceptor> _acceptor;
+  uni::async::AsyncScheduler& _scheduler;
+  boost::asio::ip::tcp::acceptor& _acceptor;
   std::mutex _channel_lock;
   std::unordered_map<uni::net::endpoint_id, std::shared_ptr<uni::net::Channel>> _channels;
 };

@@ -1,8 +1,6 @@
 #ifndef UNI_PAXOS_SINGLEPAXOSHANDLER_H
 #define UNI_PAXOS_SINGLEPAXOSHANDLER_H
 
-#include <memory>
-
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
 #include <paxos/PaxosAcceptorState.h>
@@ -24,8 +22,8 @@ class SinglePaxosHandler {
  public:
   SinglePaxosHandler(
       uni::constants::Constants const& constants,
-      std::shared_ptr<uni::net::ConnectionsOut> connections_out,
-      std::shared_ptr<uni::paxos::PaxosLog> paxos_log,
+      uni::net::ConnectionsOut& connections_out,
+      uni::paxos::PaxosLog& paxos_log,
       index_t paxos_log_index);
 
   crnd_t next_proposal_number();
@@ -61,8 +59,8 @@ class SinglePaxosHandler {
 
  private:
   uni::constants::Constants const& _constants;
-  std::shared_ptr<uni::net::ConnectionsOut> const _connections_out;
-  std::shared_ptr<uni::paxos::PaxosLog> const _paxos_log;
+  uni::net::ConnectionsOut& _connections_out;
+  uni::paxos::PaxosLog& _paxos_log;
   index_t const _paxos_log_index; // The index of the Paxos Log that this Paxos Instance represents.
 
   PaxosProposerState _proposer_state;
