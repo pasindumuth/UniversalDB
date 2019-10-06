@@ -101,11 +101,11 @@ int main(int argc, char* argv[]) {
   auto const constants = initialize_constants();
 
   auto main_serving_hostname = std::string(std::get<0>(main_serving_endpoint));
-  int main_serving_port = std::stoi(std::get<1>(main_serving_endpoint));
+  auto main_serving_port = std::stoi(std::get<1>(main_serving_endpoint));
   LOG(uni::logging::Level::DEBUG, "Starting main server on: " + main_serving_hostname + ":" + std::to_string(main_serving_port))
 
   auto client_serving_hostname = std::string(std::get<0>(client_serving_endpoint));
-  int client_serving_port = std::stoi(std::get<1>(client_serving_endpoint));
+  auto client_serving_port = std::stoi(std::get<1>(client_serving_endpoint));
   LOG(uni::logging::Level::DEBUG, "Starting client server on: " + client_serving_hostname + ":" + std::to_string(client_serving_port))
 
   // Initialize io_context for background thread (for managing the network

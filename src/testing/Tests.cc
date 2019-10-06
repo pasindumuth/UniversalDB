@@ -23,17 +23,16 @@ TestFunction Tests::test1() {
       std::vector<std::unique_ptr<AsyncSchedulerTesting>>& schedulers,
       std::vector<ChannelTesting*>& nonempty_channels,
       std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
+    std::srand(0);
+    // Send the client message to the first Universal Slave
+    auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
     for (int i = 0; i < 10; i++) {
-      // Send the client message to the first Universal Slave
-      auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
-
       // Create a message that a client would send.
       auto incoming_message = IncomingMessage(client_endpoint_id,
-          build_client_request("m" + std::to_string(i), 0, proto::client::ClientRequest_Type_READ).SerializeAsString());
+          build_client_request("m" + std::to_string(i)).SerializeAsString());
       schedulers[0]->schedule_async(incoming_message);
 
       // Simulate the message exchanging of all Slaves until there are no more messages to send.
-      std::srand(i);
       while (nonempty_channels.size() > 0) {
         // We use modulus to reduce the random number to the range we want.
         // There will be minor bias with this method, but this isn't significant,
@@ -61,17 +60,16 @@ TestFunction Tests::test2() {
       std::vector<std::unique_ptr<AsyncSchedulerTesting>>& schedulers,
       std::vector<ChannelTesting*>& nonempty_channels,
       std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
+    std::srand(0);
+    // Send the client message to the first Universal Slave
+    auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
     for (int i = 0; i < 10; i++) {
-      // Send the client message to the first Universal Slave
-      auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
-
       // Create a message that a client would send.
       auto incoming_message = IncomingMessage(client_endpoint_id,
-          build_client_request("m" + std::to_string(i), 0, proto::client::ClientRequest_Type_READ).SerializeAsString());
+          build_client_request("m" + std::to_string(i)).SerializeAsString());
       schedulers[0]->schedule_async(incoming_message);
 
       // Simulate the message exchanging of all Slaves until there are no more messages to send.
-      std::srand(i);
       while (nonempty_channels.size() > 0) {
         // We use modulus to reduce the random number to the range we want.
         // There will be minor bias with this method, but this isn't significant,
@@ -101,10 +99,56 @@ TestFunction Tests::test2() {
   };
 }
 
-MessageWrapper Tests::build_client_request(std::string message, int request_id, proto::client::ClientRequest_Type type) {
+TestFunction Tests::test3() {
+  return [this](
+      std::vector<std::unique_ptr<AsyncSchedulerTesting>>& schedulers,
+      std::vector<ChannelTesting*>& nonempty_channels,
+      std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
+    std::srand(0);
+    // Send the client message to the first Universal Slave
+    auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
+    for (int i = 0; i < 300; i++) {
+      // Send a client message to some node in the Paxos Group. The node is
+      // chosen randomly.
+      auto incoming_message = IncomingMessage(client_endpoint_id,
+          build_client_request("m" + std::to_string(i)).SerializeAsString());
+      schedulers[std::rand() % schedulers.size()]->schedule_async(incoming_message);
+
+      // Simulate the message exchanging of all Slaves. There is a 1%
+      // chance that we'll stop sending messages and move on.
+      while (nonempty_channels.size() > 0 && ((std::rand() % 100) != 0)) {
+        // We use modulus to reduce the random number to the range we want.
+        // There will be minor bias with this method, but this isn't significant,
+        // and so isn't a problem for us.
+        int r = std::rand() % nonempty_channels.size();
+        auto channel = nonempty_channels[r];
+        int should_keep = std::rand() % 4;
+        if (should_keep) {
+          // simulate a successful delivery of the message
+          channel->deliver_message();
+        } else {
+          // simulate a drop of the message
+          channel->drop_message();
+        }
+      }
+    }
+    // Now that the simulation is done, print out the Paxos Log and see what we have.
+    for (int i = 0; i < 5; i++) {
+      paxos_logs[i]->debug_print();
+    }
+
+    if (verify_paxos_logs(paxos_logs)) {
+      std::cout << "PASSED!!!!!!!!!!!!" << std::endl;
+    } else {
+      std::cout << "FAILED!!!!!!!!!!!!" << std::endl;
+    }
+  };
+}
+
+MessageWrapper Tests::build_client_request(std::string message) {
   auto request_message = new proto::client::ClientRequest();
-  request_message->set_request_id(request_id);
-  request_message->set_request_type(type);
+  request_message->set_request_id(0);
+  request_message->set_request_type(proto::client::ClientRequest_Type_READ);
   request_message->set_data(message);
   auto client_message = new proto::client::ClientMessage();
   client_message->set_allocated_request(request_message);

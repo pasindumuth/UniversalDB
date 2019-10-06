@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
   try {
     test_driver.run_test(tests.test1());
     test_driver.run_test(tests.test2());
+    test_driver.run_test(tests.test3());
   } catch (uni::assert::UniversalException e) {
     std::cout << e.what() << std::endl;
   }

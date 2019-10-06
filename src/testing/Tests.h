@@ -29,13 +29,14 @@ class Tests {
   // messages left in the Channels.
   TestFunction test2();
 
+  // Interleave the sending of client requests, the delivery of Paxos messages,
+  // and the dropping of Paxos messages. We drop a quarter of all Paxos messages.
+  TestFunction test3();
+
  private:
   // Creates a MessageWrapper (the top level message that is sent over
   // the network) using data that only constitutes the client message.
-  proto::message::MessageWrapper build_client_request(
-      std::string message,
-      int request_id,
-      proto::client::ClientRequest_Type type);
+  proto::message::MessageWrapper build_client_request(std::string message);
 
   // Goes through all paxos logs and makes sure they are compatible. That is,
   // if log index i is populated in logs l1 and l2 with values v1 and v2, then v1 = v2.
