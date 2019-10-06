@@ -17,6 +17,9 @@
 namespace uni {
 namespace net {
 
+/**
+ * This class is used during testing for simulation.
+ */
 class ChannelTesting
     : public uni::net::Channel {
  public:
