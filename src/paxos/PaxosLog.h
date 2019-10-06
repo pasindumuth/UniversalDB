@@ -26,6 +26,8 @@ class PaxosLog {
 
   void debug_print() const;
 
+  std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> get_log() const;
+
  private:
   // The Paxos Log of this node, mapping entry index to entry value.This is calculated
   // from the PaxosLearnedState by inserting a key-value pair if it has been learned.

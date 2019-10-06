@@ -1,11 +1,13 @@
 #include "Tests.h"
 
-#include <functional>
+#include <unordered_map>
+#include <memory>
 
 #include <async/testing/AsyncSchedulerTesting.h>
 #include <net/IncomingMessage.h>
 #include <net/testing/ChannelTesting.h>
-#include <paxos/PaxosLog.h>
+#include <paxos/PaxosTypes.h>
+#include <proto/paxos.pb.h>
 
 namespace uni {
 namespace testing {
@@ -44,6 +46,12 @@ TestFunction Tests::test1() {
     // Now that the simulation is done, print out the Paxos Log and see what we have.
     for (int i = 0; i < 5; i++) {
       paxos_logs[i]->debug_print();
+    }
+
+    if (verify_paxos_logs(paxos_logs)) {
+      std::cout << "PASSED!!!!!!!!!!!!" << std::endl;
+    } else {
+      std::cout << "FAILED!!!!!!!!!!!!" << std::endl;
     }
   };
 }
@@ -84,6 +92,12 @@ TestFunction Tests::test2() {
     for (int i = 0; i < 5; i++) {
       paxos_logs[i]->debug_print();
     }
+
+    if (verify_paxos_logs(paxos_logs)) {
+      std::cout << "PASSED!!!!!!!!!!!!" << std::endl;
+    } else {
+      std::cout << "FAILED!!!!!!!!!!!!" << std::endl;
+    }
   };
 }
 
@@ -97,6 +111,35 @@ MessageWrapper Tests::build_client_request(std::string message, int request_id, 
   auto message_wrapper = proto::message::MessageWrapper();
   message_wrapper.set_allocated_client_message(client_message);
   return message_wrapper;
+}
+
+bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
+  // To verify the logs, we iterate through each one, adding each entry into a
+  // Global Paxos Log. If there is an inconsistency in this process, this means
+  // that the Paxos Logs aren't consistent. Otherwise, they are consistent.
+  std::unordered_map<uni::paxos::index_t, proto::paxos::PaxosLogEntry const> global_log;
+  for (auto const& paxos_log : paxos_logs) {
+    for (auto const& [index, entry] : paxos_log->get_log()) {
+      auto it = global_log.find(index);
+      if (it == global_log.end()) {
+        global_log.insert({index, entry});
+      } else {
+        if (it->second.SerializeAsString() != entry.SerializeAsString()) {
+          return false;
+        }
+      }
+    }
+  }
+
+  auto ss = std::stringstream();
+  ss << "Printing global log:" << std::endl;
+  for (auto const& [index, entry] : global_log) {
+    ss << "index: " << index << ", entry: " << entry.SerializeAsString() << std::endl;
+  }
+  ss << "End of PaxosLog" << std::endl;
+  std::cout << ss.str() << std::endl;
+
+  return true;
 }
 
 } // testing

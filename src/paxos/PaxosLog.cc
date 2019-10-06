@@ -62,5 +62,9 @@ void PaxosLog::debug_print() const {
   LOG(uni::logging::INFO, ss.str())
 }
 
+std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> PaxosLog::get_log() const {
+  return _log;
+}
+
 } // namespace paxos
 } // namespace uni
