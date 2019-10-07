@@ -11,15 +11,16 @@
 namespace uni {
 namespace paxos {
 
+// Stores the Learner state of a Paxos Instance. This includes all values that were
+// recieved in learn messages, and the number of acceptors to have sent that learn
+// value.
 struct PaxosLearnerState {
   PaxosLearnerState();
 
   bool learned;
-  // The keys are the proposal numbers that have been recieved by this Slave in a Learn message.
-  // Each key is mapped to the value in the learn message, along with a count of all of the Acceptors to
-  // have sent a Learn message with this proposal number. Remember that in Paxos, if an Acceptor accepts
-  // a <vrnd, vval> pair, then vval is the only value that can appear for vrnd. Hence why the values of the
-  // map below consist of only a tuple, and not an array of tuples.
+  // Maps all proposal number that were recieved in Learn messages to the value associated with that
+  // learn message, as well as the count of the number of learn messages that were recieved with that
+  // Proposal Number.
   std::unordered_map<lrnd_t, std::tuple<lval_t, unsigned>> learned_value;
 };
 

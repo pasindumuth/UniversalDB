@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
 
   // Schedule client acceptor
   auto paxos_log = uni::paxos::PaxosLog();
-  auto paxos_instance_provider = [constants, &connections_out, &paxos_log](uni::paxos::index_t index) {
+  auto paxos_instance_provider = [&constants, &connections_out, &paxos_log](uni::paxos::index_t index) {
     return uni::paxos::SinglePaxosHandler(constants, connections_out, paxos_log, index);
   };
   auto multipaxos_handler = uni::paxos::MultiPaxosHandler(paxos_log, paxos_instance_provider);

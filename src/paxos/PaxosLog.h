@@ -10,6 +10,8 @@
 namespace uni {
 namespace paxos {
 
+// The log of values that an instance of the MultiPaxos algorithms tries to add
+// values to http://localhost:3000/projects/universaldb/multipaxos.
 class PaxosLog {
  public:
   PaxosLog();

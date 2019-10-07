@@ -12,14 +12,22 @@
 namespace uni {
 namespace paxos {
 
+/**
+ * Implements the MultiPaxos algorithm
+ * http://localhost:3000/projects/universaldb/multipaxos. Recall that
+ * MultiPaxos is used to add new PaxosLogEntries to the PaxosLog
+ * of the MultiPaxos instance.
+ */
 class MultiPaxosHandler {
  public:
   MultiPaxosHandler(
       uni::paxos::PaxosLog& paxos_log,
       std::function<uni::paxos::SinglePaxosHandler(index_t)> instance_provider);
 
+  // Attempts to add the provided entry into the PaxosLog.
   void propose(proto::paxos::PaxosLogEntry const& entry);
 
+  // Handles all Paxos messages related to this MultiPaxos instance.
   void handle_incoming_message(
       uni::net::endpoint_id const& endpoint_id,
       proto::paxos::PaxosMessage const& paxos_messsage);

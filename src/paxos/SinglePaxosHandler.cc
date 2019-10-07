@@ -31,7 +31,7 @@ SinglePaxosHandler::SinglePaxosHandler(
         _paxos_log_index(paxos_log_index) {}
 
 crnd_t SinglePaxosHandler::next_proposal_number() {
-  return _proposer_state.latest + 10;
+  return _proposer_state.latest + 10; // TODO: pick this randomly.
 }
 
 unsigned SinglePaxosHandler::majority_threshold() {
