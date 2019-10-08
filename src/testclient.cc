@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <logging/log.h>
 #include <net/impl/ChannelImpl.h>
 #include <proto/client.pb.h>
 #include <proto/message.pb.h>
@@ -12,11 +13,11 @@
 using boost::asio::ip::tcp;
 
 int main(int argc, char* argv[]) {
-  auto server_endpoint = parse_endpoint(argv[1]);
+  auto hostnames = parse_hostnames(argc, argv);
+  auto hostname = hostnames[0];
 
-  std::string server_hostname(std::get<0>(server_endpoint));
-  int server_port = std::stoi(std::get<1>(server_endpoint));
-  std::cout << "Starting client on: " << server_hostname << ":" << server_port << std::endl;
+  auto const constants = initialize_constants();
+  LOG(uni::logging::Level::INFO, "Starting client on: " + hostname + ":" + std::to_string(constants.client_port))
 
   boost::asio::io_context io_context;
   auto work = boost::asio::make_work_guard(io_context);
@@ -25,7 +26,7 @@ int main(int argc, char* argv[]) {
   });
 
   tcp::resolver resolver(io_context);
-  tcp::resolver::results_type endpoints = resolver.resolve(std::get<0>(server_endpoint), std::get<1>(server_endpoint));
+  tcp::resolver::results_type endpoints = resolver.resolve(hostname, std::to_string(constants.client_port));
 
   tcp::socket socket(io_context);
   boost::asio::connect(socket, endpoints);

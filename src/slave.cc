@@ -83,30 +83,18 @@ class ServerConnectionHandler {
   boost::asio::io_context& _io_context;
 };
 
-uni::constants::Constants initialize_constants() {
-  return uni::constants::Constants(1, 1610);
-}
-
 /**
  * Arguments:
  * hostname - hostname this server is running on
  * port - port this server is running on
  */
 int main(int argc, char* argv[]) {
-  auto endpoints = parse_args(argc, argv);
-  auto main_serving_endpoint = endpoints[0];
-  auto client_serving_endpoint = endpoints[1];
+  auto hostnames = parse_hostnames(argc, argv);
+  auto main_serving_hostname = hostnames[0];
 
   // Initialize constants
   auto const constants = initialize_constants();
-
-  auto main_serving_hostname = std::string(std::get<0>(main_serving_endpoint));
-  auto main_serving_port = std::stoi(std::get<1>(main_serving_endpoint));
-  LOG(uni::logging::Level::DEBUG, "Starting main server on: " + main_serving_hostname + ":" + std::to_string(main_serving_port))
-
-  auto client_serving_hostname = std::string(std::get<0>(client_serving_endpoint));
-  auto client_serving_port = std::stoi(std::get<1>(client_serving_endpoint));
-  LOG(uni::logging::Level::DEBUG, "Starting client server on: " + client_serving_hostname + ":" + std::to_string(client_serving_port))
+  LOG(uni::logging::Level::DEBUG, "Starting main server on: " + main_serving_hostname + ":" + std::to_string(constants.slave_port))
 
   // Initialize io_context for background thread (for managing the network
   // and dispatching requests to the server thread).
@@ -124,7 +112,7 @@ int main(int argc, char* argv[]) {
   // Schedule main acceptor
   auto connections_in = uni::net::ConnectionsIn(server_async_scheduler);
   auto connections_out = uni::net::ConnectionsOut(constants);
-  auto main_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), main_serving_port));
+  auto main_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.slave_port));
   auto server_connection_handler = ServerConnectionHandler(constants, connections_in, connections_out, main_acceptor, background_io_context);
   auto resolver = tcp::resolver(background_io_context);
 
@@ -134,15 +122,14 @@ int main(int argc, char* argv[]) {
     connections_in.add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(socket)));
   });
 
-  auto self_endpoints = resolver.resolve(std::get<0>(main_serving_endpoint), std::get<1>(main_serving_endpoint));
+  auto self_endpoints = resolver.resolve(main_serving_hostname, std::to_string(constants.slave_port));
   auto self_socket = tcp::socket(background_io_context);
   boost::asio::connect(self_socket, self_endpoints);
   connections_out.add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(self_socket)));
 
   // Schedule connections to initial remote endpoints
-  for(auto it = endpoints.begin() + 2; it != endpoints.end(); ++it) {
-    auto endpoint_string = *it;
-    auto endpoints = resolver.resolve(std::get<0>(endpoint_string), std::get<1>(endpoint_string));
+  for(int i = 1; i < hostnames.size(); i++) {
+    auto endpoints = resolver.resolve(hostnames[i], std::to_string(constants.slave_port));
     auto socket = std::make_shared<tcp::socket>(background_io_context);
     boost::asio::async_connect(*socket, endpoints,
         [&connections_out, socket](const boost::system::error_code& ec, const tcp::endpoint& endpoint) {
@@ -159,7 +146,7 @@ int main(int argc, char* argv[]) {
     return uni::paxos::SinglePaxosHandler(constants, connections_out, paxos_log, index);
   };
   auto multipaxos_handler = uni::paxos::MultiPaxosHandler(paxos_log, paxos_instance_provider);
-  auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), client_serving_port));
+  auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
   auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor);
   auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler);
   auto incoming_message_handler = uni::slave::IncomingMessageHandler(client_request_handler, multipaxos_handler);
