@@ -20,12 +20,13 @@ include_directories(${Boost_INCLUDE_DIR}) # Allows us to #include boost headers 
 
 file(GLOB_RECURSE files src/**/*.h src/**/*.cc)
 add_library(lib ${files})
+target_link_libraries(lib proto protobuf ${Boost_LIBRARIES} ${Protobuf_LIBRARY})
 
-add_executable(UniversalDB src/main.cc)
-target_link_libraries(UniversalDB lib protobuf ${Boost_LIBRARIES} proto ${Protobuf_LIBRARY})
+add_executable(Slave src/slave.cc)
+target_link_libraries(Slave lib)
 
 add_executable(TestClient src/testclient.cc)
-target_link_libraries(TestClient lib protobuf ${Boost_LIBRARIES} proto ${Protobuf_LIBRARY})
+target_link_libraries(TestClient lib)
 
 add_executable(UniversalTest src/testing/test.cc)
-target_link_libraries(UniversalTest lib protobuf ${Boost_LIBRARIES} proto ${Protobuf_LIBRARY})
+target_link_libraries(UniversalTest lib)
