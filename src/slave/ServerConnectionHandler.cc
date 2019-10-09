@@ -1,0 +1,39 @@
+#include "ServerConnectionHandler.h"
+
+#include <logging/log.h>
+#include <net/impl/ChannelImpl.h>
+
+namespace uni {
+namespace slave {
+
+using uni::constants::Constants;
+using uni::net::ConnectionsIn;
+using uni::net::ConnectionsOut;
+using boost::asio::ip::tcp;
+
+ServerConnectionHandler::ServerConnectionHandler(
+    Constants const& constants,
+    ConnectionsIn& connections_in,
+    ConnectionsOut& connections_out,
+    tcp::acceptor& acceptor,
+    boost::asio::io_context& io_context)
+    : _constants(constants),
+      _connections_in(connections_in),
+      _connections_out(connections_out),
+      _acceptor(acceptor),
+      _io_context(io_context) {}
+
+void ServerConnectionHandler::async_accept() {
+  _acceptor.async_accept([this](const boost::system::error_code &ec, tcp::socket socket) {
+    if (!ec) {
+      LOG(uni::logging::Level::DEBUG, "Received a connection from " + socket.remote_endpoint().address().to_string())
+      _connections_in.add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(socket)));
+      async_accept();
+    } else {
+      LOG(uni::logging::Level::ERROR, "Error receiving a connection: " + ec.message())
+    }
+  });
+}
+
+} // slave
+} // uni

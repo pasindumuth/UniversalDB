@@ -26,45 +26,10 @@
 #include <slave/ClientConnectionHandler.h>
 #include <slave/ClientRequestHandler.h>
 #include <slave/IncomingMessageHandler.h>
+#include <slave/ServerConnectionHandler.h>
 #include <utils.h>
 
 using boost::asio::ip::tcp;
-
-// Responsible for scheduling accept handler and data recieve handlers for
-// other server connections.
-class ServerConnectionHandler {
- public:
-  ServerConnectionHandler(
-      uni::constants::Constants const& constants,
-      uni::net::ConnectionsIn& connections_in,
-      uni::net::ConnectionsOut& connections_out,
-      tcp::acceptor& acceptor,
-      boost::asio::io_context& io_context)
-      : _constants(constants),
-        _connections_in(connections_in),
-        _connections_out(connections_out),
-        _acceptor(acceptor),
-        _io_context(io_context) {}
-
-  void async_accept() {
-    _acceptor.async_accept([this](const boost::system::error_code &ec, tcp::socket socket) {
-      if (!ec) {
-        LOG(uni::logging::Level::DEBUG, "Received a connection from " + socket.remote_endpoint().address().to_string())
-        _connections_in.add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(socket)));
-        async_accept();
-      } else {
-        LOG(uni::logging::Level::ERROR, "Error receiving a connection: " + ec.message())
-      }
-    });
-  }
-
- private:
-  uni::constants::Constants const& _constants;
-  uni::net::ConnectionsIn& _connections_in;
-  uni::net::ConnectionsOut& _connections_out;
-  tcp::acceptor& _acceptor;
-  boost::asio::io_context& _io_context;
-};
 
 /**
  * Arguments:
@@ -96,7 +61,7 @@ int main(int argc, char* argv[]) {
   auto connections_in = uni::net::ConnectionsIn(server_async_scheduler);
   auto connections_out = uni::net::ConnectionsOut(constants);
   auto main_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.slave_port));
-  auto server_connection_handler = ServerConnectionHandler(constants, connections_in, connections_out, main_acceptor, background_io_context);
+  auto server_connection_handler = uni::slave::ServerConnectionHandler(constants, connections_in, connections_out, main_acceptor, background_io_context);
   auto resolver = tcp::resolver(background_io_context);
 
   // Wait for a list of all slave nodes from the master
