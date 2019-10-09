@@ -25,7 +25,9 @@ class Channel {
 
   virtual void start_listening() {};
 
-  virtual void set_recieve_callback(std::function<void(std::string)> callback) {};
+  // The callback should return true if the Channel should continue listening
+  // messages. Returning false make the stop listening to receiving data.
+  virtual void set_recieve_callback(std::function<bool(std::string)> callback) {};
 
   virtual void set_close_callback(std::function<void(void)> callback) {};
 };

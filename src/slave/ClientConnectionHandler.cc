@@ -27,6 +27,7 @@ void ClientConnectionHandler::async_accept() {
       auto endpoint_id = channel->endpoint_id();
       channel->set_recieve_callback([endpoint_id, this](std::string message) {
         _scheduler.schedule_async({endpoint_id, message});
+        return true;
       });
       channel->set_close_callback([endpoint_id, this]() {
         std::unique_lock<std::mutex> lock(_channel_lock);
@@ -41,7 +42,7 @@ void ClientConnectionHandler::async_accept() {
       _channels.insert({ endpoint_id, channel });
       async_accept();
     } else {
-      LOG(uni::logging::Level::ERROR, ec.message())
+      LOG(uni::logging::Level::ERROR, "Error accepting client connection: " + ec.message())
     }
   });
 }

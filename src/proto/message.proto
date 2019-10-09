@@ -1,13 +1,15 @@
 syntax = "proto3";
 
-import "paxos.proto";
 import "client.proto";
+import "master.proto";
+import "paxos.proto";
 
 package proto.message;
 
 message MessageWrapper {
   oneof message_wrapper {
     proto.client.ClientMessage client_message = 1;
-    proto.paxos.PaxosMessage paxos_message = 2;
+    proto.master.MasterMessage master_message = 2;
+    proto.paxos.PaxosMessage paxos_message = 3;
   }
 }

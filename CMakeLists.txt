@@ -25,6 +25,9 @@ target_link_libraries(lib proto protobuf ${Boost_LIBRARIES} ${Protobuf_LIBRARY})
 add_executable(Slave src/slave.cc)
 target_link_libraries(Slave lib)
 
+add_executable(Master src/master.cc)
+target_link_libraries(Master lib)
+
 add_executable(TestClient src/testclient.cc)
 target_link_libraries(TestClient lib)
 

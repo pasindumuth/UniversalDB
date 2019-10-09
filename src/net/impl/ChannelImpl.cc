@@ -36,7 +36,7 @@ void ChannelImpl::start_listening() {
 }
 
 // Only meant to be called once before start_listening()
-void ChannelImpl::set_recieve_callback(std::function<void(std::string)> callback) {
+void ChannelImpl::set_recieve_callback(std::function<bool(std::string)> callback) {
   _recieve_callback = callback;
 }
 
@@ -81,8 +81,9 @@ void ChannelImpl::recv() {
 //        LOG(uni::logging::INFO, "body bytes recieved: " + bytes_transferred)
         std::string serialized((char*) buf, length);
         free(buf);
-        recv();
-        _recieve_callback(serialized);
+        if (_recieve_callback(serialized)) {
+          recv();
+        }
       });
     }
   });

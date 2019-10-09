@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package proto.master;
+
+message SlaveList {
+  repeated string slave_hostnames = 1;
+}
+
+// Message sent from Master to Slave.
+message MasterRequest {
+  uint32 request_id = 1;
+  oneof data {
+    SlaveList slave_list = 3;
+  }
+}
+
+// Response sent from Slave to Master.
+message MasterResponse {
+  enum Code {
+    SUCCESS = 0;
+    ERROR = 1;
+  }
+
+  Code error_code = 1;
+}
+
+message MasterMessage {
+  oneof master_message {
+    MasterRequest request = 1;
+    MasterResponse response = 2;
+  }
+}

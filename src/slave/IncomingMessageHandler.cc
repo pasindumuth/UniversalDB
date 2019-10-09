@@ -17,7 +17,7 @@ IncomingMessageHandler::IncomingMessageHandler(
         _multi_paxos_handler(multi_paxos_handler) {}
 
 void IncomingMessageHandler::handle(IncomingMessage incoming_message) {
-  MessageWrapper message_wrapper;
+  auto message_wrapper = MessageWrapper();
   message_wrapper.ParseFromString(incoming_message.message);
   if (message_wrapper.has_client_message()) {
     auto const& client_message = message_wrapper.client_message();

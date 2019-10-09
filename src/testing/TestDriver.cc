@@ -20,7 +20,7 @@ using uni::slave::ClientRequestHandler;
 using uni::slave::IncomingMessageHandler;
 
 Constants initialize_constants() {
-  return Constants(5, 1610, 1710);
+  return Constants(5, 1610, 1710, 1810);
 }
 
 void TestDriver::run_test(TestFunction test) {

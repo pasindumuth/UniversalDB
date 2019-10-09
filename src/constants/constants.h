@@ -6,16 +6,19 @@ namespace constants {
 
 struct Constants {
   unsigned const num_slave_servers;
-  unsigned const slave_port; // Port that the slaves listens to for new connections from other slaves.
-  unsigned const client_port; // Port that the slaves listens to for new connections from clients.
+  unsigned const slave_port; // Slaves communicates with slaves through this port.
+  unsigned const client_port; // Client communicates with slaves through this port.
+  unsigned const master_port; // Master communicates with slaves through this port.
 
   Constants(
       unsigned const& num_slave_servers,
       unsigned const& slave_port,
-      unsigned const& client_port)
+      unsigned const& client_port,
+      unsigned const& master_port)
         : num_slave_servers(num_slave_servers),
           slave_port(slave_port),
-          client_port(client_port) {}
+          client_port(client_port),
+          master_port(master_port) {}
 };
 
 } // namespace constants
