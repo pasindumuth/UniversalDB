@@ -44,6 +44,7 @@ void TestDriver::run_test(TestFunction test) {
 
   // Create the IncomingMessageHandler for each universal server
   auto connections_outs = std::vector<std::unique_ptr<ConnectionsOut>>();
+  auto all_channels = std::vector<std::vector<ChannelTesting*>>();
   auto multipaxos_handlers = std::vector<std::unique_ptr<MultiPaxosHandler>>();
   auto client_request_handlers = std::vector<std::unique_ptr<ClientRequestHandler>>();
   auto incoming_message_handlers = std::vector<std::unique_ptr<IncomingMessageHandler>>();
@@ -51,6 +52,8 @@ void TestDriver::run_test(TestFunction test) {
   for (int i = 0; i < constants.num_slave_servers; i++) {
     connections_outs.push_back(std::make_unique<ConnectionsOut>(constants));
     auto& connections_out = *connections_outs.back();
+    all_channels.push_back(std::vector<ChannelTesting*>());
+    auto& channels = all_channels.back();
     // Populate connections_out with ChannelTesting objects. We iterate over
     // the other Slaves, take their Aysnc Schedulers (which receive messages relative
     // to the current Slave), and create the ChannelTesting object with that.
@@ -59,6 +62,7 @@ void TestDriver::run_test(TestFunction test) {
       auto channel = std::make_shared<ChannelTesting>(
           constants, receiver_async_sheduler, ip_strings[i], ip_strings[j], nonempty_channels);
       connections_out.add_channel(channel);
+      channels.push_back(channel.get());
     }
 
     paxos_logs.push_back(std::make_unique<PaxosLog>());
@@ -82,7 +86,7 @@ void TestDriver::run_test(TestFunction test) {
     });
   }
 
-  test(schedulers, nonempty_channels, paxos_logs);
+  test(schedulers, all_channels, nonempty_channels, paxos_logs);
 }
 
 

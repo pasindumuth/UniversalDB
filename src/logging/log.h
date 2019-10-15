@@ -15,7 +15,6 @@ enum Level {
 
 static const char* LevelNames[] = { "INFO", "ERROR", "DEBUG" };
 
-
 // Macros used for logging. Can be turned off for production, or the logs
 // can be redirected to different sources depending on the environment
 // of deployment

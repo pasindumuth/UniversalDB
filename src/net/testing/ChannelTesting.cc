@@ -26,7 +26,8 @@ ChannelTesting::ChannelTesting(
         _async_scheduler(async_scheduler),
         _sender_ip_string(sender_ip_string),
         _receiver_ip_string(receiver_ip_string),
-        _nonempty_channels(nonempty_channels) {}
+        _nonempty_channels(nonempty_channels),
+        _connection_state(true) {}
 
 void ChannelTesting::queue_send(std::string message) {
   if (_message_queue.size() < MAX_MESSAGES_QUEUE_SIZE) {
@@ -48,14 +49,19 @@ endpoint_id ChannelTesting::endpoint_id() {
 void ChannelTesting::deliver_message() {
   UNIVERSAL_ASSERT_MESSAGE(_message_queue.size() > 0,
       "We should never be trying to deliver a message from an empty channel")
-  auto message = _message_queue.front();
-  // Create the Incoming Message and dispatch it to async_scheduler.
-  auto sender_endpoint_id = uni::net::endpoint_id(_sender_ip_string, _constants.slave_port);
-  auto incoming_message = IncomingMessage(sender_endpoint_id, message);
-  _async_scheduler.schedule_async(incoming_message);
-  // Remove the message that was just processed.
-  _message_queue.pop();
-  check_empty();
+  if (!_connection_state) {
+    // If the connection state is false, drop all messages.
+    drop_message();
+  } else {
+    auto message = _message_queue.front();
+    // Create the Incoming Message and dispatch it to async_scheduler.
+    auto sender_endpoint_id = uni::net::endpoint_id(_sender_ip_string, _constants.slave_port);
+    auto incoming_message = IncomingMessage(sender_endpoint_id, message);
+    _async_scheduler.schedule_async(incoming_message);
+    // Remove the message that was just processed.
+    _message_queue.pop();
+    check_empty();
+  }
 }
 
 void ChannelTesting::drop_message() {
@@ -63,6 +69,10 @@ void ChannelTesting::drop_message() {
       "We should never be trying to deliver a message from an empty channel")
   _message_queue.pop();
   check_empty();
+}
+
+void ChannelTesting::set_connection_state(bool connection_state) {
+  _connection_state = connection_state;
 }
 
 void ChannelTesting::check_empty() {

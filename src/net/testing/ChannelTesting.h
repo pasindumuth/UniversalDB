@@ -43,6 +43,9 @@ class ChannelTesting
   // Drops the message the next message (simulating a temporary loss in connectivity).
   void drop_message();
 
+  // Sets the connection state of the channel.
+  void set_connection_state(bool connection_state);
+
  private:
   uni::constants::Constants const& _constants;
   uni::async::AsyncSchedulerTesting& _async_scheduler;
@@ -55,6 +58,10 @@ class ChannelTesting
   // This channel is responsible for maintaining its place in this vectors when
   // a call to queue_send and deliver_message is made.
   std::vector<uni::net::ChannelTesting*>& _nonempty_channels;
+  // As long as the connection state is false, calling deliver_message and
+  // drop_message will simply drop the message. This helps simulate long term
+  // or permanent connection failures.
+  bool _connection_state;
 
   // After the channel has lost a message, this function maintains the channels
   // inclusion in _nonempty_channels, removing it if the Channel becomes empty.

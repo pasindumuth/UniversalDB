@@ -14,6 +14,7 @@ namespace testing {
 
 using TestFunction = std::function<void(
     std::vector<std::unique_ptr<uni::async::AsyncSchedulerTesting>>&,
+    std::vector<std::vector<uni::net::ChannelTesting*>>&,
     std::vector<uni::net::ChannelTesting*>&,
     std::vector<std::unique_ptr<uni::paxos::PaxosLog>>&)>;
 
