@@ -33,5 +33,4 @@ class AsyncSchedulerImpl
 } // async
 } // uni
 
-
 #endif // UNI_ASYNC_ASYNCSCHEDULERIMPL_H

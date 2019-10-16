@@ -1,5 +1,6 @@
 #include "TestDriver.h"
 
+#include <async/testing/TimerAsyncSchedulerTesting.h>
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
 #include <paxos/MultiPaxosHandler.h>
@@ -7,12 +8,12 @@
 #include <slave/ClientRequestHandler.h>
 #include <slave/FailureDetector.h>
 #include <slave/IncomingMessageHandler.h>
-#include <timing/testing/TimerTesting.h>
 
 namespace uni {
 namespace testing {
 
-using uni::async::AsyncSchedulerTesting;
+using uni::async::TimerAsyncSchedulerTesting;
+using uni::async::TimerAsyncScheduler;
 using uni::constants::Constants;
 using uni::net::ChannelTesting;
 using uni::net::ConnectionsOut;
@@ -21,7 +22,6 @@ using uni::paxos::PaxosLog;
 using uni::slave::ClientRequestHandler;
 using uni::slave::FailureDetector;
 using uni::slave::IncomingMessageHandler;
-using uni::timing::TimerTesting;
 
 Constants initialize_constants() {
   return Constants(5, 1610, 1710, 1810, 1000);
@@ -48,7 +48,7 @@ void TestDriver::run_test(TestFunction test) {
 
   // Create the IncomingMessageHandler for each universal server
   auto connections_outs = std::vector<std::unique_ptr<ConnectionsOut>>();
-  auto timers = std::vector<std::unique_ptr<uni::timing::TimerTesting>>();
+  auto timer_schedulers = std::vector<std::unique_ptr<uni::async::TimerAsyncSchedulerTesting>>();
   auto all_channels = std::vector<std::vector<ChannelTesting*>>();
   auto multipaxos_handlers = std::vector<std::unique_ptr<MultiPaxosHandler>>();
   auto client_request_handlers = std::vector<std::unique_ptr<ClientRequestHandler>>();
@@ -71,8 +71,8 @@ void TestDriver::run_test(TestFunction test) {
       channels.push_back(channel.get());
     }
 
-    timers.push_back(std::make_unique<TimerTesting>());
-    auto& timer = *timers.back();
+    timer_schedulers.push_back(std::make_unique<TimerAsyncSchedulerTesting>());
+    auto& timer_scheduler = *timer_schedulers.back();
 
     paxos_logs.push_back(std::make_unique<PaxosLog>());
     auto& paxos_log = *paxos_logs.back();
@@ -83,7 +83,7 @@ void TestDriver::run_test(TestFunction test) {
     auto& multipaxos_handler = *multipaxos_handlers.back();
     client_request_handlers.push_back(std::make_unique<ClientRequestHandler>(multipaxos_handler));
     auto& client_request_handler = *client_request_handlers.back();
-    failure_detectors.push_back(std::make_unique<FailureDetector>(constants, connections_out, timer));
+    failure_detectors.push_back(std::make_unique<FailureDetector>(constants, connections_out, timer_scheduler));
     auto& failure_detector = *failure_detectors.back();
     incoming_message_handlers.push_back(std::make_unique<IncomingMessageHandler>(client_request_handler, failure_detector, multipaxos_handler));
     auto& incoming_message_handler = *incoming_message_handlers.back();

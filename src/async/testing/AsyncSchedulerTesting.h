@@ -27,5 +27,4 @@ class AsyncSchedulerTesting
 } // async
 } // uni
 
-
 #endif // UNI_ASYNC_ASYNCSCHEDULERTESTING_H

@@ -10,6 +10,7 @@
 #include <boost/system/error_code.hpp>
 
 #include <async/impl/AsyncSchedulerImpl.h>
+#include <async/impl/TimerAsyncSchedulerImpl.h>
 #include <constants/constants.h>
 #include <logging/log.h>
 #include <net/ConnectionsIn.h>
@@ -28,7 +29,6 @@
 #include <slave/FailureDetector.h>
 #include <slave/IncomingMessageHandler.h>
 #include <slave/ServerConnectionHandler.h>
-#include <timing/impl/TimerImpl.h>
 #include <utils.h>
 
 using boost::asio::ip::tcp;
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
   auto resolver = tcp::resolver(background_io_context);
 
   // Timer
-  auto timer = uni::timing::TimerImpl(background_io_context);
+  auto timer_scheduler = uni::async::TimerAsyncSchedulerImpl(background_io_context);
 
   // Wait for a list of all slave nodes from the master
   server_connection_handler.async_accept();
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
   auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor);
   auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler);
-  auto failure_detector = uni::slave::FailureDetector(constants, connections_out, timer);
+  auto failure_detector = uni::slave::FailureDetector(constants, connections_out, timer_scheduler);
   auto incoming_message_handler = uni::slave::IncomingMessageHandler(client_request_handler, failure_detector, multipaxos_handler);
   server_async_scheduler.set_callback([&incoming_message_handler](uni::net::IncomingMessage message){
     incoming_message_handler.handle(message);

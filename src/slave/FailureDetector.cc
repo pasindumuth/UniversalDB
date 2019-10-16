@@ -8,15 +8,15 @@ namespace uni {
 namespace slave {
 
 using uni::net::ConnectionsOut;
-using uni::timing::Timer;
+using uni::async::TimerAsyncScheduler;
 
 FailureDetector::FailureDetector(
     uni::constants::Constants const& constants,
     ConnectionsOut& connections_out,
-    Timer& timer)
+    TimerAsyncScheduler& timer_scheduler)
       : _constants(constants),
         _connections_out(connections_out),
-        _timer(timer) {
+        _timer_scheduler(timer_scheduler) {
   // Sub-messages are freed when the _message is freed.  
   auto slave_message = new proto::slave::SlaveMessage;
   auto heartbeat_message = new proto::slave::Heartbeat;
@@ -25,7 +25,7 @@ FailureDetector::FailureDetector(
 }
 
 void FailureDetector::schedule_heartbeat() {
-  _timer.schedule_repeated([this](){
+  _timer_scheduler.schedule_repeated([this](){
      _connections_out.broadcast(_message.SerializeAsString());
   }, _constants.heartbeat_wait_ms);
 }

@@ -1,7 +1,6 @@
 #ifndef UNI_SLAVE_CLIENTREQUESTHANDLER
 #define UNI_SLAVE_CLIENTREQUESTHANDLER
 
-#include <async/TimerAsyncScheduler.h>
 #include <net/endpoint_id.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <proto/client.pb.h>

@@ -12,7 +12,6 @@ namespace slave {
 using proto::client::ClientRequest;
 using proto::message::MessageWrapper;
 using proto::paxos::PaxosLogEntry;
-using uni::async::TimerAsyncScheduler;
 using uni::paxos::MultiPaxosHandler;
 
 ClientRequestHandler::ClientRequestHandler(

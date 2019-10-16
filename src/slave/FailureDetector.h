@@ -7,7 +7,7 @@
 #include <net/ConnectionsOut.h>
 #include <net/endpoint_id.h>
 #include <proto/message.pb.h>
-#include <timing/Timer.h>
+#include <async/TimerAsyncScheduler.h>
 
 namespace uni {
 namespace slave {
@@ -29,7 +29,7 @@ class FailureDetector {
   FailureDetector(
     uni::constants::Constants const& constants,
     uni::net::ConnectionsOut& connections_out,
-    uni::timing::Timer& timer);
+    uni::async::TimerAsyncScheduler& timer_scheduler);
 
   void schedule_heartbeat();
 
@@ -39,7 +39,7 @@ class FailureDetector {
   std::map<uni::net::endpoint_id, unsigned> heartbeat_count;
   uni::constants::Constants const& _constants;
   uni::net::ConnectionsOut& _connections_out;
-  uni::timing::Timer& _timer;
+  uni::async::TimerAsyncScheduler& _timer_scheduler;
   // Heartbeat message used across all sends
   proto::message::MessageWrapper _message;
 };

@@ -2,27 +2,24 @@
 #define UNI_ASYNC_TIMERASYNCSCHEDULER_H
 
 #include <functional>
-#include <memory>
-
-#include <boost/asio.hpp>
 
 namespace uni {
 namespace async {
 
-// This class wraps an io_context and provides an interface for scheduling
-// arbitrary tasks some time in the future.
+// Timer that's used to schedule callbacks in the future, either to run once,
+// or to run repeatedly.
 class TimerAsyncScheduler {
  public:
-  TimerAsyncScheduler(std::shared_ptr<boost::asio::io_context> io_context);
+  // Schedule the callback to run once in the background after `wait` amount of time.
+  virtual void schedule_once(std::function<void(void)> callback, unsigned wait) = 0;
 
-  void schedule_deferred(long duration_ms, std::function<void(void)> callback);
-
- private:
-  std::shared_ptr<boost::asio::io_context> _io_context;
+  // Schedul the callback to run repeatedly with period `period`. Note that
+  // the first time the callback is run after `wait` amount of time; it doesn't
+  // execute immediately.
+  virtual void schedule_repeated(std::function<void(void)> callback, unsigned period) = 0;
 };
 
-} // async
-} // uni
-
+} // namespace async
+} // namespace uni
 
 #endif // UNI_ASYNC_TIMERASYNCSCHEDULER_H
