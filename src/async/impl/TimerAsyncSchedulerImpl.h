@@ -16,9 +16,9 @@ class TimerAsyncSchedulerImpl : public uni::async::TimerAsyncScheduler {
  public:
   TimerAsyncSchedulerImpl(boost::asio::io_context& io_context);
   
-  void schedule_once(std::function<void(void)> callback, unsigned wait) override;
+  void schedule_once(std::function<void(void)> callback, long wait) override;
 
-  void schedule_repeated(std::function<void(void)> callback, unsigned period) override;
+  void schedule_repeated(std::function<void(void)> callback, long period) override;
 
  private:
   boost::asio::io_context& _io_context;

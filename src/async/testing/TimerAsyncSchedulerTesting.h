@@ -4,6 +4,7 @@
 #include <functional>
 
 #include <async/TimerAsyncScheduler.h>
+#include <async/testing/ClockTesting.h>
 
 namespace uni {
 namespace async {
@@ -11,11 +12,14 @@ namespace async {
 // Testing implementation of a TimerAsyncScheduler.
 class TimerAsyncSchedulerTesting : public uni::async::TimerAsyncScheduler {
  public:
-  TimerAsyncSchedulerTesting();
+  TimerAsyncSchedulerTesting(uni::async::ClockTesting clock);
 
-  void schedule_once(std::function<void(void)> callback, unsigned wait) override;
+  void schedule_once(std::function<void(void)> callback, long wait) override;
 
-  void schedule_repeated(std::function<void(void)> callback, unsigned period) override;
+  void schedule_repeated(std::function<void(void)> callback, long period) override;
+
+ private:
+  uni::async::ClockTesting _clock;
 };
 
 } // namespace async

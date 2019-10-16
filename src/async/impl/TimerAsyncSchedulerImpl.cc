@@ -11,7 +11,7 @@ namespace async {
 TimerAsyncSchedulerImpl::TimerAsyncSchedulerImpl(boost::asio::io_context& io_context)
     : _io_context(io_context) {}
 
-void TimerAsyncSchedulerImpl::schedule_once(std::function<void(void)> callback, unsigned wait) {
+void TimerAsyncSchedulerImpl::schedule_once(std::function<void(void)> callback, long wait) {
   auto t = std::make_shared<boost::asio::steady_timer>(_io_context, boost::asio::chrono::milliseconds(wait));
   t->async_wait([callback, t](const boost::system::error_code& ec){
     UNIVERSAL_ASSERT_MESSAGE(!ec, ec.message())
@@ -19,7 +19,7 @@ void TimerAsyncSchedulerImpl::schedule_once(std::function<void(void)> callback, 
   });
 }
 
-void TimerAsyncSchedulerImpl::schedule_repeated(std::function<void(void)> callback, unsigned period) {
+void TimerAsyncSchedulerImpl::schedule_repeated(std::function<void(void)> callback, long period) {
   auto t = std::make_shared<boost::asio::steady_timer>(_io_context, boost::asio::chrono::milliseconds(period));
   t->async_wait([this, t, callback, period](const boost::system::error_code& ec){
     UNIVERSAL_ASSERT_MESSAGE(!ec, ec.message())

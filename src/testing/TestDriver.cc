@@ -1,5 +1,6 @@
 #include "TestDriver.h"
 
+#include <async/testing/ClockTesting.h>
 #include <async/testing/TimerAsyncSchedulerTesting.h>
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
@@ -12,8 +13,8 @@
 namespace uni {
 namespace testing {
 
+using uni::async::ClockTesting;
 using uni::async::TimerAsyncSchedulerTesting;
-using uni::async::TimerAsyncScheduler;
 using uni::constants::Constants;
 using uni::net::ChannelTesting;
 using uni::net::ConnectionsOut;
@@ -48,6 +49,7 @@ void TestDriver::run_test(TestFunction test) {
 
   // Create the IncomingMessageHandler for each universal server
   auto connections_outs = std::vector<std::unique_ptr<ConnectionsOut>>();
+  auto clocks = std::vector<std::unique_ptr<ClockTesting>>();
   auto timer_schedulers = std::vector<std::unique_ptr<uni::async::TimerAsyncSchedulerTesting>>();
   auto all_channels = std::vector<std::vector<ChannelTesting*>>();
   auto multipaxos_handlers = std::vector<std::unique_ptr<MultiPaxosHandler>>();
@@ -71,7 +73,9 @@ void TestDriver::run_test(TestFunction test) {
       channels.push_back(channel.get());
     }
 
-    timer_schedulers.push_back(std::make_unique<TimerAsyncSchedulerTesting>());
+    clocks.push_back(std::make_unique<ClockTesting>());
+    auto& clock = *clocks.back();
+    timer_schedulers.push_back(std::make_unique<TimerAsyncSchedulerTesting>(clock));
     auto& timer_scheduler = *timer_schedulers.back();
 
     paxos_logs.push_back(std::make_unique<PaxosLog>());
