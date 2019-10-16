@@ -3,8 +3,11 @@
 
 #include <map>
 
+#include <constants/constants.h>
+#include <net/ConnectionsOut.h>
 #include <net/endpoint_id.h>
-#include <proto/slave.pb.h>
+#include <proto/message.pb.h>
+#include <timing/Timer.h>
 
 namespace uni {
 namespace slave {
@@ -23,12 +26,22 @@ namespace slave {
  */
 class FailureDetector {
  public:
-  FailureDetector();
+  FailureDetector(
+    uni::constants::Constants const& constants,
+    uni::net::ConnectionsOut& connections_out,
+    uni::timing::Timer& timer);
+
+  void schedule_heartbeat();
 
   void handle_heartbeat(uni::net::endpoint_id endpoint_id);
 
  private:
   std::map<uni::net::endpoint_id, unsigned> heartbeat_count;
+  uni::constants::Constants const& _constants;
+  uni::net::ConnectionsOut& _connections_out;
+  uni::timing::Timer& _timer;
+  // Heartbeat message used across all sends
+  proto::message::MessageWrapper _message;
 };
 
 } // namespace slave

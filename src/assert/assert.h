@@ -22,7 +22,7 @@ if (!(EXPRESSION)) {                                           \
     << " expression: " << #EXPRESSION                          \
     << " message: " << MESSAGE                                 \
     << std::endl;                                              \
-  throw uni::assert::UniversalException(message.str());  \
+  throw uni::assert::UniversalException(message.str());        \
 }
 
 #define UNIVERSAL_TERMINATE(MESSAGE) UNIVERSAL_ASSERT_MESSAGE(false, MESSAGE)
