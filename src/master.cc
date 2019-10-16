@@ -13,7 +13,10 @@ using boost::asio::ip::tcp;
 
 int main(int argc, char* argv[]) {
   auto hostnames = parse_hostnames(argc, argv);
+
+  // Initialize constants
   auto const constants = initialize_constants();
+  uni::logging::get_log_level() = uni::logging::Level::INFO;
 
   // To bootstrap the system, the first thing that the Master does is to send
   // all slaves a list of the hostnames of all the other slaves.

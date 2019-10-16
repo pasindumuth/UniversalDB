@@ -8,19 +8,26 @@ namespace logging {
 
 // Log Levels
 enum Level {
-  INFO = 0,
+  FATAL = 0,
   ERROR = 1,
-  DEBUG = 2
+  WARN = 2,
+  INFO = 3,
+  DEBUG = 4,
+  TRACE = 5
 };
 
-static const char* LevelNames[] = { "INFO", "ERROR", "DEBUG" };
+static const char* LevelNames[] = { "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE" };
 
-// Macros used for logging. Can be turned off for production, or the logs
+Level& get_log_level();
+
+// Macro used for logging. Can be turned off for production, or the logs
 // can be redirected to different sources depending on the environment
 // of deployment
 
 #define LOG(LEVEL, MESSAGE) \
-  std::cout << "Log " << uni::logging::LevelNames[(LEVEL)] << ": " << (MESSAGE) << std::endl;
+  if ((LEVEL) <= uni::logging::get_log_level()) { \
+    std::cout << "Log " << uni::logging::LevelNames[(LEVEL)] << ": " << (MESSAGE) << std::endl; \
+  }
 
 } // namespace logging
 } // namespace uni

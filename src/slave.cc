@@ -42,6 +42,7 @@ int main(int argc, char* argv[]) {
 
   // Initialize constants
   auto const constants = initialize_constants();
+  uni::logging::get_log_level() = uni::logging::Level::INFO;
   LOG(uni::logging::Level::DEBUG, "Starting main server on: " + main_serving_hostname + ":" + std::to_string(constants.slave_port))
 
   // Initialize io_context for background thread (for managing the network

@@ -1,4 +1,5 @@
 #include <assert/assert.h>
+#include <logging/log.h>
 #include <testing/TestDriver.h>
 #include <testing/Tests.h>
 
@@ -13,6 +14,8 @@
 int main(int argc, char* argv[]) {
   auto test_driver = uni::testing::TestDriver();
   auto tests = uni::testing::Tests();
+  uni::logging::get_log_level() = uni::logging::Level::FATAL;
+  std::cout << uni::logging::get_log_level() << std::endl;
   try {
     test_driver.run_test(tests.test1());
     test_driver.run_test(tests.test2());
