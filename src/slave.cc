@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
   // Initialize constants
   auto const constants = initialize_constants();
   uni::logging::get_log_level() = uni::logging::Level::INFO;
-  LOG(uni::logging::Level::DEBUG, "Starting main server on: " + main_serving_hostname + ":" + std::to_string(constants.slave_port))
+  LOG(uni::logging::Level::INFO, "Starting main server on: " + main_serving_hostname + ":" + std::to_string(constants.slave_port))
 
   // Initialize io_context for background thread (for managing the network
   // and dispatching requests to the server thread).
@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
         boost::asio::async_connect(*socket, endpoints,
             [&connections_out, socket](const boost::system::error_code& ec, const tcp::endpoint& endpoint) {
           if (!ec) {
-            LOG(uni::logging::Level::DEBUG, "Sent connection to " + socket->remote_endpoint().address().to_string())
+            LOG(uni::logging::Level::TRACE, "Sent connection to: " + socket->remote_endpoint().address().to_string())
             connections_out.add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(*socket)));
           } else {
             LOG(uni::logging::Level::ERROR, "Error sending connection: " + ec.message())
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
 
   client_connection_handler.async_accept();
 
-  LOG(uni::logging::Level::DEBUG, "Setup finished")
+  LOG(uni::logging::Level::INFO, "Setup finished")
   auto server_work_guard = boost::asio::make_work_guard(server_io_context);
   server_io_context.run();
 }

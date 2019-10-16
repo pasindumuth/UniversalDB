@@ -154,7 +154,7 @@ TestFunction Tests::test4() {
       std::vector<ChannelTesting*>& nonempty_channels,
       std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
     std::srand(0);
-    bool node_failed = false;
+    int nodes_failed = 0;
     // Send the client message to the first Universal Slave
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
     for (int i = 0; i < 300; i++) {
@@ -182,9 +182,15 @@ TestFunction Tests::test4() {
         }
 
         // Fail a node if there isn't already a failed node.
-        if (!node_failed && (std::rand() % 1000 == 0)) {
-          mark_node_as_failed(channels, 3);
-          node_failed = true;
+        if (nodes_failed < 3 && (std::rand() % 1000 == 0)) {
+          if (nodes_failed == 0) {
+            mark_node_as_failed(channels, 2);
+          } else if (nodes_failed == 1) {
+            mark_node_as_failed(channels, 3);
+          } else if (nodes_failed == 2) {
+            mark_node_as_failed(channels, 4);
+          }
+          nodes_failed++;
         }
       }
     }

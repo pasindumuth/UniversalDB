@@ -28,16 +28,16 @@ void MultiPaxosHandler::handle_incoming_message(
     uni::net::endpoint_id const& endpoint_id, PaxosMessage const& paxos_message) {
   auto& paxos_instance = get_instance(paxos_message.paxos_index());
   if (paxos_message.has_prepare()) {
-    LOG(uni::logging::Level::INFO, "prepare gotten.")
+    LOG(uni::logging::Level::TRACE, "Prepare gotten.")
     paxos_instance.prepare(MessageWrapper(), endpoint_id, paxos_message.prepare());
   } else if (paxos_message.has_promise()) {
-    LOG(uni::logging::Level::INFO, "promise gotten.")
+    LOG(uni::logging::Level::TRACE, "Promise gotten.")
     paxos_instance.promise(MessageWrapper(), paxos_message.promise());
   } else if (paxos_message.has_accept()) {
-    LOG(uni::logging::Level::INFO, "accept gotten.")
+    LOG(uni::logging::Level::TRACE, "Accept gotten.")
     paxos_instance.accept(MessageWrapper(), paxos_message.accept());
   } else if (paxos_message.has_learn()) {
-    LOG(uni::logging::Level::INFO, "learn gotten.")
+    LOG(uni::logging::Level::TRACE, "Learn gotten.")
     paxos_instance.learn(paxos_message.learn());
   }
 }
