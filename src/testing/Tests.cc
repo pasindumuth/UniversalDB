@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <memory>
 
+#include <logging/log.h>
 #include <net/IncomingMessage.h>
 #include <net/testing/ChannelTesting.h>
 #include <paxos/PaxosTypes.h>
@@ -47,11 +48,8 @@ TestFunction Tests::test1() {
       paxos_logs[i]->debug_print();
     }
 
-    if (verify_paxos_logs(paxos_logs)) {
-      std::cout << "PASSED!!!!!!!!!!!!" << std::endl;
-    } else {
-      std::cout << "FAILED!!!!!!!!!!!!" << std::endl;
-    }
+    std::string output_message = verify_paxos_logs(paxos_logs) ? "PASSED!" : "FAILED!";
+    LOG(uni::logging::Level::INFO, output_message);
   };
 }
 
@@ -92,11 +90,8 @@ TestFunction Tests::test2() {
       paxos_logs[i]->debug_print();
     }
 
-    if (verify_paxos_logs(paxos_logs)) {
-      std::cout << "PASSED!!!!!!!!!!!!" << std::endl;
-    } else {
-      std::cout << "FAILED!!!!!!!!!!!!" << std::endl;
-    }
+    std::string output_message = verify_paxos_logs(paxos_logs) ? "PASSED!" : "FAILED!";
+    LOG(uni::logging::Level::INFO, output_message);
   };
 }
 
@@ -139,11 +134,8 @@ TestFunction Tests::test3() {
       paxos_logs[i]->debug_print();
     }
 
-    if (verify_paxos_logs(paxos_logs)) {
-      std::cout << "PASSED!!!!!!!!!!!!" << std::endl;
-    } else {
-      std::cout << "FAILED!!!!!!!!!!!!" << std::endl;
-    }
+    std::string output_message = verify_paxos_logs(paxos_logs) ? "PASSED!" : "FAILED!";
+    LOG(uni::logging::Level::INFO, output_message);
   };
 }
 
@@ -199,11 +191,8 @@ TestFunction Tests::test4() {
       paxos_logs[i]->debug_print();
     }
 
-    if (verify_paxos_logs(paxos_logs)) {
-      std::cout << "PASSED!!!!!!!!!!!!" << std::endl;
-    } else {
-      std::cout << "FAILED!!!!!!!!!!!!" << std::endl;
-    }
+    std::string output_message = verify_paxos_logs(paxos_logs) ? "PASSED!" : "FAILED!";
+    LOG(uni::logging::Level::INFO, output_message);
   };
 }
 
@@ -236,15 +225,6 @@ bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<PaxosLog>>& paxos_logs
       }
     }
   }
-
-  auto ss = std::stringstream();
-  ss << "Printing global log:" << std::endl;
-  for (auto const& [index, entry] : global_log) {
-    ss << "index: " << index << ", entry: " << entry.SerializeAsString() << std::endl;
-  }
-  ss << "End of PaxosLog" << std::endl;
-  std::cout << ss.str() << std::endl;
-
   return true;
 }
 

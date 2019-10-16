@@ -14,7 +14,7 @@
 int main(int argc, char* argv[]) {
   auto test_driver = uni::testing::TestDriver();
   auto tests = uni::testing::Tests();
-  uni::logging::get_log_level() = uni::logging::Level::FATAL;
+  uni::logging::get_log_level() = uni::logging::Level::INFO;
   try {
     test_driver.run_test(tests.test1());
     test_driver.run_test(tests.test2());
