@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package proto.slave;
+
+message Heartbeat {}
+
+message SlaveMessage {
+  oneof slave_message {
+    Heartbeat heartbeat = 1;
+  }
+}

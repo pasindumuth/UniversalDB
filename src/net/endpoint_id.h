@@ -14,6 +14,8 @@ struct endpoint_id {
 
   bool operator==(const endpoint_id& other) const;
 
+  bool operator<(const endpoint_id& other) const;
+
   std::size_t hash() const;
 };
 

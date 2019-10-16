@@ -13,6 +13,10 @@ bool endpoint_id::operator==(const endpoint_id& other) const {
   return ip_string == other.ip_string && port == other.port;
 }
 
+bool endpoint_id::operator<(const endpoint_id& other) const {
+  return ip_string < other.ip_string;
+}
+
 std::size_t endpoint_id::hash() const {
   // Initial hash value
   std::size_t seed = 0;
