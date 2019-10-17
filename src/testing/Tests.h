@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 
-#include <async/testing/AsyncSchedulerTesting.h>
 #include <paxos/PaxosLog.h>
 #include <proto/client.pb.h>
 #include <proto/message.pb.h>

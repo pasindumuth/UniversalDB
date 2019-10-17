@@ -1,8 +1,6 @@
 #include "TestDriver.h"
 
-#include <async/testing/ClockTesting.h>
 #include <async/testing/TimerAsyncSchedulerTesting.h>
-#include <constants/constants.h>
 #include <net/ConnectionsOut.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosTypes.h>
@@ -14,6 +12,7 @@ namespace uni {
 namespace testing {
 
 using uni::async::ClockTesting;
+using uni::async::AsyncSchedulerTesting;
 using uni::async::TimerAsyncSchedulerTesting;
 using uni::constants::Constants;
 using uni::net::ChannelTesting;
@@ -25,7 +24,7 @@ using uni::slave::FailureDetector;
 using uni::slave::IncomingMessageHandler;
 
 Constants initialize_constants() {
-  return Constants(5, 1610, 1710, 1810, 1000);
+  return Constants(5, 1610, 1710, 1810, 1000, 4);
 }
 
 void TestDriver::run_test(TestFunction test) {
@@ -39,9 +38,9 @@ void TestDriver::run_test(TestFunction test) {
   }
 
   // Create mock AsyncScheduler.
-  auto schedulers = std::vector<std::unique_ptr<uni::async::AsyncSchedulerTesting>>();
+  auto schedulers = std::vector<std::unique_ptr<AsyncSchedulerTesting>>();
   for (int i = 0; i < constants.num_slave_servers; i++) {
-    schedulers.push_back(std::make_unique<uni::async::AsyncSchedulerTesting>());
+    schedulers.push_back(std::make_unique<AsyncSchedulerTesting>());
   }
 
   // Holds onto Channels that aren't empty.
@@ -50,7 +49,7 @@ void TestDriver::run_test(TestFunction test) {
   // Create the IncomingMessageHandler for each universal server
   auto connections_outs = std::vector<std::unique_ptr<ConnectionsOut>>();
   auto clocks = std::vector<std::unique_ptr<ClockTesting>>();
-  auto timer_schedulers = std::vector<std::unique_ptr<uni::async::TimerAsyncSchedulerTesting>>();
+  auto timer_schedulers = std::vector<std::unique_ptr<TimerAsyncSchedulerTesting>>();
   auto all_channels = std::vector<std::vector<ChannelTesting*>>();
   auto multipaxos_handlers = std::vector<std::unique_ptr<MultiPaxosHandler>>();
   auto client_request_handlers = std::vector<std::unique_ptr<ClientRequestHandler>>();
@@ -101,7 +100,7 @@ void TestDriver::run_test(TestFunction test) {
     });
   }
 
-  test(schedulers, all_channels, nonempty_channels, paxos_logs);
+  test(constants, schedulers, clocks, all_channels, nonempty_channels, paxos_logs);
 }
 
 

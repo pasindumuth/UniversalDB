@@ -3,6 +3,9 @@
 #include <unordered_map>
 #include <memory>
 
+#include <async/testing/ClockTesting.h>
+#include <async/testing/AsyncSchedulerTesting.h>
+#include <constants/constants.h>
 #include <logging/log.h>
 #include <net/IncomingMessage.h>
 #include <net/testing/ChannelTesting.h>
@@ -13,6 +16,8 @@ namespace uni {
 namespace testing {
 
 using proto::message::MessageWrapper;
+using uni::constants::Constants;
+using uni::async::ClockTesting;
 using uni::async::AsyncSchedulerTesting;
 using uni::net::ChannelTesting;
 using uni::paxos::PaxosLog;
@@ -20,7 +25,9 @@ using uni::net::IncomingMessage;
 
 TestFunction Tests::test1() {
   return [this](
+      Constants const& constants,
       std::vector<std::unique_ptr<AsyncSchedulerTesting>>& schedulers,
+      std::vector<std::unique_ptr<ClockTesting>>& clocks,
       std::vector<std::vector<ChannelTesting*>>&,
       std::vector<ChannelTesting*>& nonempty_channels,
       std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
@@ -55,7 +62,9 @@ TestFunction Tests::test1() {
 
 TestFunction Tests::test2() {
   return [this](
+      Constants const& constants,
       std::vector<std::unique_ptr<AsyncSchedulerTesting>>& schedulers,
+      std::vector<std::unique_ptr<ClockTesting>>& clocks,
       std::vector<std::vector<ChannelTesting*>>&,
       std::vector<ChannelTesting*>& nonempty_channels,
       std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
@@ -97,7 +106,9 @@ TestFunction Tests::test2() {
 
 TestFunction Tests::test3() {
   return [this](
+      Constants const& constants,
       std::vector<std::unique_ptr<AsyncSchedulerTesting>>& schedulers,
+      std::vector<std::unique_ptr<ClockTesting>>& clocks,
       std::vector<std::vector<ChannelTesting*>>&,
       std::vector<ChannelTesting*>& nonempty_channels,
       std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
@@ -141,7 +152,9 @@ TestFunction Tests::test3() {
 
 TestFunction Tests::test4() {
   return [this](
+      Constants const& constants,
       std::vector<std::unique_ptr<AsyncSchedulerTesting>>& schedulers,
+      std::vector<std::unique_ptr<ClockTesting>>& clocks,
       std::vector<std::vector<ChannelTesting*>>& channels,
       std::vector<ChannelTesting*>& nonempty_channels,
       std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {

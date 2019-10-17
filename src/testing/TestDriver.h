@@ -5,7 +5,9 @@
 #include <memory>
 #include <vector>
 
+#include <async/testing/ClockTesting.h>
 #include <async/testing/AsyncSchedulerTesting.h>
+#include <constants/constants.h>
 #include <net/testing/ChannelTesting.h>
 #include <paxos/PaxosLog.h>
 
@@ -13,7 +15,9 @@ namespace uni {
 namespace testing {
 
 using TestFunction = std::function<void(
+    uni::constants::Constants const&,
     std::vector<std::unique_ptr<uni::async::AsyncSchedulerTesting>>&,
+    std::vector<std::unique_ptr<uni::async::ClockTesting>>&,
     std::vector<std::vector<uni::net::ChannelTesting*>>&,
     std::vector<uni::net::ChannelTesting*>&,
     std::vector<std::unique_ptr<uni::paxos::PaxosLog>>&)>;

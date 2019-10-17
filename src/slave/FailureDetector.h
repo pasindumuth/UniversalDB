@@ -2,6 +2,7 @@
 #define UNI_SLAVE_FAILUREDETECTOR
 
 #include <map>
+#include <vector>
 
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
@@ -31,12 +32,19 @@ class FailureDetector {
     uni::net::ConnectionsOut& connections_out,
     uni::async::TimerAsyncScheduler& timer_scheduler);
 
+  // Schedule heartbeat to be sent periodically
   void schedule_heartbeat();
 
+  // Handle an incoming heartbeat message. Since we only care about whot the
+  // hearbeat came from, we don't actually pass the heartbest protobuf
+  // message into this function.
   void handle_heartbeat(uni::net::endpoint_id endpoint_id);
 
+  // Get a list of endpoints that are still alive (endpoints that haven't failed).
+  std::vector<uni::net::endpoint_id> alive_endpoints();
+
  private:
-  std::map<uni::net::endpoint_id, unsigned> heartbeat_count;
+  std::map<uni::net::endpoint_id, unsigned> _heartbeat_count;
   uni::constants::Constants const& _constants;
   uni::net::ConnectionsOut& _connections_out;
   uni::async::TimerAsyncScheduler& _timer_scheduler;

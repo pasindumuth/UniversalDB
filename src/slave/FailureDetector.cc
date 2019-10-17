@@ -31,12 +31,29 @@ void FailureDetector::schedule_heartbeat() {
 }
 
 void FailureDetector::handle_heartbeat(uni::net::endpoint_id endpoint_id) {
-  auto it = heartbeat_count.find(endpoint_id);
-  if (it == heartbeat_count.end()) {
-    heartbeat_count.insert({endpoint_id, 0});
+  auto it = _heartbeat_count.find(endpoint_id);
+  if (it == _heartbeat_count.end()) {
+    _heartbeat_count.insert({endpoint_id, 0});
   } else {
     it->second++;
   }
+}
+
+std::vector<uni::net::endpoint_id> FailureDetector::alive_endpoints() {
+  auto endpoints = std::vector<uni::net::endpoint_id>();
+  auto it = _heartbeat_count.begin();
+  // Iterate through all heartbeat counts, removing the endpoints that are
+  // dead, and populating the `endpoints` variable with the endpoints
+  // that are still alive.
+  while (it != _heartbeat_count.end()) {
+    if (it->second >= _constants.heartbeat_failure_threshold) {
+      it = _heartbeat_count.erase(it);
+    } else {
+      endpoints.push_back(it->first);
+      it = std::next(it);
+    }
+  }
+  return endpoints;
 }
 
 } // namespace slave
