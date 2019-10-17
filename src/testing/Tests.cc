@@ -3,34 +3,31 @@
 #include <unordered_map>
 #include <memory>
 
-#include <async/testing/ClockTesting.h>
 #include <async/testing/AsyncSchedulerTesting.h>
 #include <constants/constants.h>
 #include <logging/log.h>
 #include <net/IncomingMessage.h>
 #include <net/testing/ChannelTesting.h>
-#include <paxos/PaxosTypes.h>
 #include <proto/paxos.pb.h>
+#include <testing/SlaveTesting.h>
 
 namespace uni {
 namespace testing {
 
 using proto::message::MessageWrapper;
 using uni::constants::Constants;
-using uni::async::ClockTesting;
 using uni::async::AsyncSchedulerTesting;
 using uni::net::ChannelTesting;
 using uni::paxos::PaxosLog;
 using uni::net::IncomingMessage;
+using uni::testing::SlaveTesting;
 
 TestFunction Tests::test1() {
   return [this](
       Constants const& constants,
-      std::vector<std::unique_ptr<AsyncSchedulerTesting>>& schedulers,
-      std::vector<std::unique_ptr<ClockTesting>>& clocks,
-      std::vector<std::vector<ChannelTesting*>>&,
-      std::vector<ChannelTesting*>& nonempty_channels,
-      std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
+      std::vector<std::unique_ptr<SlaveTesting>>& slaves,
+      std::vector<std::vector<ChannelTesting*>>& all_channels,
+      std::vector<ChannelTesting*>& nonempty_channels) {
     std::srand(0);
     // Send the client message to the first Universal Slave
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
@@ -38,7 +35,7 @@ TestFunction Tests::test1() {
       // Create a message that a client would send.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      schedulers[0]->schedule_async(incoming_message);
+      slaves[0]->scheduler->schedule_async(incoming_message);
 
       // Simulate the message exchanging of all Slaves until there are no more messages to send.
       while (nonempty_channels.size() > 0) {
@@ -52,10 +49,10 @@ TestFunction Tests::test1() {
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
     for (int i = 0; i < 5; i++) {
-      paxos_logs[i]->debug_print();
+      slaves[i]->paxos_log->debug_print();
     }
 
-    std::string output_message = verify_paxos_logs(paxos_logs) ? "PASSED!" : "FAILED!";
+    std::string output_message = verify_paxos_logs(slaves) ? "PASSED!" : "FAILED!";
     LOG(uni::logging::Level::INFO, output_message);
   };
 }
@@ -63,11 +60,9 @@ TestFunction Tests::test1() {
 TestFunction Tests::test2() {
   return [this](
       Constants const& constants,
-      std::vector<std::unique_ptr<AsyncSchedulerTesting>>& schedulers,
-      std::vector<std::unique_ptr<ClockTesting>>& clocks,
-      std::vector<std::vector<ChannelTesting*>>&,
-      std::vector<ChannelTesting*>& nonempty_channels,
-      std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
+      std::vector<std::unique_ptr<SlaveTesting>>& slaves,
+      std::vector<std::vector<ChannelTesting*>>& all_channels,
+      std::vector<ChannelTesting*>& nonempty_channels) {
     std::srand(0);
     // Send the client message to the first Universal Slave
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
@@ -75,7 +70,7 @@ TestFunction Tests::test2() {
       // Create a message that a client would send.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      schedulers[0]->schedule_async(incoming_message);
+      slaves[0]->scheduler->schedule_async(incoming_message);
 
       // Simulate the message exchanging of all Slaves until there are no more messages to send.
       while (nonempty_channels.size() > 0) {
@@ -96,10 +91,10 @@ TestFunction Tests::test2() {
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
     for (int i = 0; i < 5; i++) {
-      paxos_logs[i]->debug_print();
+      slaves[i]->paxos_log->debug_print();
     }
 
-    std::string output_message = verify_paxos_logs(paxos_logs) ? "PASSED!" : "FAILED!";
+    std::string output_message = verify_paxos_logs(slaves) ? "PASSED!" : "FAILED!";
     LOG(uni::logging::Level::INFO, output_message);
   };
 }
@@ -107,11 +102,9 @@ TestFunction Tests::test2() {
 TestFunction Tests::test3() {
   return [this](
       Constants const& constants,
-      std::vector<std::unique_ptr<AsyncSchedulerTesting>>& schedulers,
-      std::vector<std::unique_ptr<ClockTesting>>& clocks,
-      std::vector<std::vector<ChannelTesting*>>&,
-      std::vector<ChannelTesting*>& nonempty_channels,
-      std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
+      std::vector<std::unique_ptr<SlaveTesting>>& slaves,
+      std::vector<std::vector<ChannelTesting*>>& all_channels,
+      std::vector<ChannelTesting*>& nonempty_channels) {
     std::srand(0);
     // Send the client message to the first Universal Slave
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
@@ -120,7 +113,7 @@ TestFunction Tests::test3() {
       // chosen randomly.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      schedulers[std::rand() % schedulers.size()]->schedule_async(incoming_message);
+      slaves[std::rand() % slaves.size()]->scheduler->schedule_async(incoming_message);
 
       // Simulate the message exchanging of all Slaves. There is a 1%
       // chance that we'll stop sending messages and move on.
@@ -142,10 +135,10 @@ TestFunction Tests::test3() {
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
     for (int i = 0; i < 5; i++) {
-      paxos_logs[i]->debug_print();
+      slaves[i]->paxos_log->debug_print();
     }
 
-    std::string output_message = verify_paxos_logs(paxos_logs) ? "PASSED!" : "FAILED!";
+    std::string output_message = verify_paxos_logs(slaves) ? "PASSED!" : "FAILED!";
     LOG(uni::logging::Level::INFO, output_message);
   };
 }
@@ -153,11 +146,9 @@ TestFunction Tests::test3() {
 TestFunction Tests::test4() {
   return [this](
       Constants const& constants,
-      std::vector<std::unique_ptr<AsyncSchedulerTesting>>& schedulers,
-      std::vector<std::unique_ptr<ClockTesting>>& clocks,
-      std::vector<std::vector<ChannelTesting*>>& channels,
-      std::vector<ChannelTesting*>& nonempty_channels,
-      std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
+      std::vector<std::unique_ptr<SlaveTesting>>& slaves,
+      std::vector<std::vector<ChannelTesting*>>& all_channels,
+      std::vector<ChannelTesting*>& nonempty_channels) {
     std::srand(0);
     int nodes_failed = 0;
     // Send the client message to the first Universal Slave
@@ -167,7 +158,7 @@ TestFunction Tests::test4() {
       // chosen randomly.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      schedulers[std::rand() % schedulers.size()]->schedule_async(incoming_message);
+      slaves[std::rand() % slaves.size()]->scheduler->schedule_async(incoming_message);
 
       // Simulate the message exchanging of all Slaves. There is a 1%
       // chance that we'll stop sending messages and move on.
@@ -189,11 +180,11 @@ TestFunction Tests::test4() {
         // Fail a node if there isn't already a failed node.
         if (nodes_failed < 3 && (std::rand() % 1000 == 0)) {
           if (nodes_failed == 0) {
-            mark_node_as_failed(channels, 2);
+            mark_node_as_failed(all_channels, 2);
           } else if (nodes_failed == 1) {
-            mark_node_as_failed(channels, 3);
+            mark_node_as_failed(all_channels, 3);
           } else if (nodes_failed == 2) {
-            mark_node_as_failed(channels, 4);
+            mark_node_as_failed(all_channels, 4);
           }
           nodes_failed++;
         }
@@ -201,10 +192,10 @@ TestFunction Tests::test4() {
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
     for (int i = 0; i < 5; i++) {
-      paxos_logs[i]->debug_print();
+      slaves[i]->paxos_log->debug_print();
     }
 
-    std::string output_message = verify_paxos_logs(paxos_logs) ? "PASSED!" : "FAILED!";
+    std::string output_message = verify_paxos_logs(slaves) ? "PASSED!" : "FAILED!";
     LOG(uni::logging::Level::INFO, output_message);
   };
 }
@@ -221,13 +212,13 @@ MessageWrapper Tests::build_client_request(std::string message) {
   return message_wrapper;
 }
 
-bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<PaxosLog>>& paxos_logs) {
+bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<SlaveTesting>>& slaves) {
   // To verify the logs, we iterate through each one, adding each entry into a
   // Global Paxos Log. If there is an inconsistency in this process, this means
   // that the Paxos Logs aren't consistent. Otherwise, they are consistent.
   std::unordered_map<uni::paxos::index_t, proto::paxos::PaxosLogEntry const> global_log;
-  for (auto const& paxos_log : paxos_logs) {
-    for (auto const& [index, entry] : paxos_log->get_log()) {
+  for (auto const& slave : slaves) {
+    for (auto const& [index, entry] : slave->paxos_log->get_log()) {
       auto it = global_log.find(index);
       if (it == global_log.end()) {
         global_log.insert({index, entry});

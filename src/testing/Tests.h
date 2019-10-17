@@ -1,10 +1,9 @@
 #ifndef UNI_TESTING_TESTS_H
 #define UNI_TESTING_TESTS_H
 
-#include <vector>
 #include <memory>
+#include <vector>
 
-#include <paxos/PaxosLog.h>
 #include <proto/client.pb.h>
 #include <proto/message.pb.h>
 #include <testing/TestDriver.h>
@@ -46,7 +45,7 @@ class Tests {
 
   // Goes through all paxos logs and makes sure they are compatible. That is,
   // if log index i is populated in logs l1 and l2 with values v1 and v2, then v1 = v2.
-  bool verify_paxos_logs(std::vector<std::unique_ptr<uni::paxos::PaxosLog>>& paxos_logs);
+  bool verify_paxos_logs(std::vector<std::unique_ptr<uni::testing::SlaveTesting>>& slaves);
 
   // Simulates the failure of a node
   void mark_node_as_failed(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, unsigned node);

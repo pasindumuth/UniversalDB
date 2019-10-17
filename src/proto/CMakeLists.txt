@@ -1,4 +1,4 @@
-# By having a second CMakeLists.txt file, we can #include the ph.h
+# By having a second CMakeLists.txt file, we can #include the pb.h
 # files by doing #include <proto/.pb.h>. If we included these commands
 # in the root CMakeLists.txt file, we must #include the generated files
 # with #include <.pb.h>.
