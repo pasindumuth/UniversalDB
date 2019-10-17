@@ -50,6 +50,8 @@ class FailureDetector {
   uni::async::TimerAsyncScheduler& _timer_scheduler;
   // Heartbeat message used across all sends
   proto::message::MessageWrapper _message;
+
+  void debug_print();
 };
 
 } // namespace slave

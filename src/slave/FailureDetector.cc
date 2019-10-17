@@ -1,7 +1,9 @@
 #include "FailureDetector.h"
 
+#include <sstream>
 #include <memory>
 
+#include <logging/log.h>
 #include <proto/slave.pb.h>
 
 namespace uni {
@@ -26,7 +28,10 @@ FailureDetector::FailureDetector(
 
 void FailureDetector::schedule_heartbeat() {
   _timer_scheduler.schedule_repeated([this](){
-     _connections_out.broadcast(_message.SerializeAsString());
+    _connections_out.broadcast(_message.SerializeAsString());
+    for (auto& it : _heartbeat_count) {
+      it.second++;
+    }
   }, _constants.heartbeat_wait_ms);
 }
 
@@ -35,7 +40,7 @@ void FailureDetector::handle_heartbeat(uni::net::endpoint_id endpoint_id) {
   if (it == _heartbeat_count.end()) {
     _heartbeat_count.insert({endpoint_id, 0});
   } else {
-    it->second++;
+    it->second = 0;
   }
 }
 
@@ -54,6 +59,16 @@ std::vector<uni::net::endpoint_id> FailureDetector::alive_endpoints() {
     }
   }
   return endpoints;
+}
+
+void FailureDetector::debug_print() {
+  auto ss = std::stringstream();
+  ss << "==============================" << std::endl;
+  for (auto const& it : _heartbeat_count) {
+    ss << it.first.ip_string << ", " << std::to_string(it.second) << std::endl;
+  }
+  ss << "==============================" << std::endl;
+  LOG(uni::logging::Level::DEBUG, ss.str());
 }
 
 } // namespace slave

@@ -55,4 +55,3 @@ COPY --from=universal:latest /home/build build/
 # # Build the code
 RUN cmake -B build
 RUN cmake --build build
-RUN make -C build

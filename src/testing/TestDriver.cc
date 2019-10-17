@@ -77,15 +77,10 @@ void TestDriver::run_test(TestFunction test) {
     slave.multipaxos_handler = std::make_unique<MultiPaxosHandler>(*slave.paxos_log, paxos_instance_provider);
     slave.client_request_handler = std::make_unique<ClientRequestHandler>(*slave.multipaxos_handler);
     slave.failure_detector = std::make_unique<FailureDetector>(constants, *slave.connections_out, *slave.timer_scheduler);
+    slave.failure_detector->schedule_heartbeat();
     slave.incoming_message_handler = std::make_unique<IncomingMessageHandler>(*slave.client_request_handler, *slave.failure_detector, *slave.multipaxos_handler);
-  }
-
-  // Connect the AsyncSchedulers to the IncomingMessageHandler for each Slave.
-  for (int i = 0; i < constants.num_slave_servers; i++) {
-    auto& slave = *slaves[i];
-    auto& incoming_message_handler = *slave.incoming_message_handler;
-    slave.scheduler->set_callback([&incoming_message_handler](uni::net::IncomingMessage message) {
-      incoming_message_handler.handle(message);
+    slave.scheduler->set_callback([&slave](uni::net::IncomingMessage message) {
+      slave.incoming_message_handler->handle(message);
     });
   }
 

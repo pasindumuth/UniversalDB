@@ -38,6 +38,10 @@ class Tests {
   // random time.
   TestFunction test4();
 
+  // This is a test that tests the FailureDetector by failing a node, waiting some time
+  // and seeing if the remaining nodes have marked that node as deleted.
+  TestFunction test5();
+
  private:
   // Creates a MessageWrapper (the top level message that is sent over
   // the network) using data that only constitutes the client message.

@@ -3,9 +3,9 @@
 namespace uni {
 namespace async {
 
-uni::async::ClockTesting;
+using uni::async::ClockTesting;
 
-TimerAsyncSchedulerTesting::TimerAsyncSchedulerTesting(ClockTesting clock)
+TimerAsyncSchedulerTesting::TimerAsyncSchedulerTesting(ClockTesting& clock)
     : _clock(clock) {}
 
 void TimerAsyncSchedulerTesting::schedule_once(std::function<void(void)> callback, long wait) {

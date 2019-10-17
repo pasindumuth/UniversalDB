@@ -12,14 +12,14 @@ namespace async {
 // Testing implementation of a TimerAsyncScheduler.
 class TimerAsyncSchedulerTesting : public uni::async::TimerAsyncScheduler {
  public:
-  TimerAsyncSchedulerTesting(uni::async::ClockTesting clock);
+  TimerAsyncSchedulerTesting(uni::async::ClockTesting& clock);
 
   void schedule_once(std::function<void(void)> callback, long wait) override;
 
   void schedule_repeated(std::function<void(void)> callback, long period) override;
 
  private:
-  uni::async::ClockTesting _clock;
+  uni::async::ClockTesting& _clock;
 };
 
 } // namespace async
