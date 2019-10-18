@@ -79,7 +79,7 @@ void SinglePaxosHandler::promise(
   auto rnd = promise_message.rnd();
   auto it = _proposer_state.prepare_state.find(rnd);
   UNIVERSAL_ASSERT_MESSAGE(it != _proposer_state.prepare_state.end(),
-      "The prepare_state of a proposal number must have been initialized if it is to be recieved as a promise")
+      "The prepare_state of a proposal number must have been initialized if it is to be received as a promise")
   auto& promises = it->second;
   if (promises.size() < majority_threshold()) {
     // Haven't sent out an Accept message, and we need more Promises from other Universal Slaves.
@@ -88,7 +88,7 @@ void SinglePaxosHandler::promise(
       // Just got enough Promises to send out an Accept message to all Universal Slaves, so send it out.
       auto it = _proposer_state.proposal.find(rnd);
       UNIVERSAL_ASSERT_MESSAGE(it != _proposer_state.proposal.end(),
-          "The proposal for a proposal number must have been initialized if it is to be recieved as a promise")
+          "The proposal for a proposal number must have been initialized if it is to be received as a promise")
       auto proposal_value = it->second;
       // If a promising Slaves has already accepted a value, we ignore that original value we
       // were trying to propose at this node. Instead, take the value returned from the Slaves
@@ -123,7 +123,7 @@ void SinglePaxosHandler::accept(
   auto new_rnd = accept_message.vrnd();
   if (new_rnd >= cur_rnd) {
     // This check is necessary even for Slaves that were contacted earlier
-    // with a Prepare message from the proposer, in case those Slaves recieved a
+    // with a Prepare message from the proposer, in case those Slaves received a
     // new Prepare or Accept message with an even higher proposal number.
     std::get<0>(_acceptor_state.accepted_state) = new_rnd;
     std::get<1>(_acceptor_state.accepted_state) = new_rnd;
@@ -146,7 +146,7 @@ void SinglePaxosHandler::learn(Learn const& learn_message) {
   auto rnd = learn_message.vrnd();
   auto it = _learner_state.learned_value.find(rnd);
   if (it == _learner_state.learned_value.end()) {
-    // A learn message with a proposal number of rnd has been recieved for the first time.
+    // A learn message with a proposal number of rnd has been received for the first time.
     _learner_state.learned_value.insert({rnd, {learn_message.vval(), 0}});
     it = _learner_state.learned_value.find(rnd);
   }

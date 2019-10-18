@@ -55,8 +55,8 @@ index_t PaxosLog::next_available_index() const {
 void PaxosLog::debug_print() const {
   auto ss = std::stringstream();
   ss << "Printing PaxosLog:" << std::endl;
-  for (auto it : _log) {
-    ss << "index: " << it.first << ", entry: " << it.second.SerializeAsString() << std::endl;
+  for (auto const& [index, entry] : _log) {
+    ss << "index: " << index << ", entry: " << entry.SerializeAsString() << std::endl;
   }
   ss << "End of PaxosLog" << std::endl;
   LOG(uni::logging::INFO, ss.str())

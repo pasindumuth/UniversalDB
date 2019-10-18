@@ -29,8 +29,8 @@ FailureDetector::FailureDetector(
 void FailureDetector::schedule_heartbeat() {
   _timer_scheduler.schedule_repeated([this](){
     _connections_out.broadcast(_message.SerializeAsString());
-    for (auto& it : _heartbeat_count) {
-      it.second++;
+    for (auto& [endpoint, count] : _heartbeat_count) {
+      count++;
     }
   }, _constants.heartbeat_wait_ms);
 }
@@ -64,8 +64,8 @@ std::vector<uni::net::endpoint_id> FailureDetector::alive_endpoints() {
 void FailureDetector::debug_print() {
   auto ss = std::stringstream();
   ss << "==============================" << std::endl;
-  for (auto const& it : _heartbeat_count) {
-    ss << it.first.ip_string << ", " << std::to_string(it.second) << std::endl;
+  for (auto const& [endpoint, count] : _heartbeat_count) {
+    ss << endpoint.ip_string << ", " << std::to_string(count) << std::endl;
   }
   ss << "==============================" << std::endl;
   LOG(uni::logging::Level::DEBUG, ss.str());
