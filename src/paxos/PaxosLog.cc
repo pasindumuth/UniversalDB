@@ -24,19 +24,22 @@ boost::optional<PaxosLogEntry const> PaxosLog::get_entry(index_t index) const {
 }
 
 void PaxosLog::set_entry(index_t index, PaxosLogEntry const entry) {
-  UNIVERSAL_ASSERT_MESSAGE(_log.find(index) == _log.end(),
-      "The index in the Paxos Log should never already be populated.")
   UNIVERSAL_ASSERT_MESSAGE(_available_indices.size() > 0, "Set of available indices should never be 0")
   auto const last_index = _available_indices.back();
   auto const it = std::find(_available_indices.begin(), _available_indices.end(), index);
-  UNIVERSAL_ASSERT_MESSAGE(last_index < index || it != _available_indices.end(),
-      "The index that the entry is being inserted should be a missing index or the index after the latest index")
+  if (index <= last_index && it == _available_indices.end()) {
+    // A value for the index is already set.
+    return;
+  }
   if (index < last_index) {
+    // index must be in _available_indices
     _available_indices.erase(it);
   } else if (index == last_index) {
+    // index must be in _available_indices
     _available_indices.erase(it);
     _available_indices.push_back(index + 1);
   } else {
+    // index must not be in _available_indices
     for (index_t i = last_index + 1; i < index; i++) {
       _available_indices.push_back(i);
     }

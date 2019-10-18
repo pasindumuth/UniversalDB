@@ -214,12 +214,14 @@ TestFunction Tests::test5() {
     std::srand(0);
     bool passed = true;
     // Wait one heartbeat cycle so that the nodes can send each other a heartbeat
-    for (auto& slave : slaves) {
-      slave->clock->increment_time(constants.heartbeat_wait_ms + 1); // Add one just to make sure
-    }
-    // Exchange all the messages that need to be exchanged
-    while (nonempty_channels.size() > 0) {
-      nonempty_channels[0]->deliver_message();
+    for (int i = 0; i < constants.heartbeat_wait_ms; i++) {
+      for (int j = 0; j < slaves.size(); j++) {
+        slaves[j]->clock->increment_time(1);
+      }
+      // Exchange all the messages that need to be exchanged
+      while (nonempty_channels.size() > 0) {
+        nonempty_channels[0]->deliver_message();
+      }
     }
     // All failure detectors should report that all of the slaves are still alive.
     for (auto const& slave : slaves) {
@@ -231,9 +233,9 @@ TestFunction Tests::test5() {
     mark_node_as_failed(all_channels, 0);
     // Increment the clock on all other slaves an amount such that
     // they will detect the failure
-    for (int i = 0; i < constants.heartbeat_failure_threshold; i++) {
+    for (int i = 0; i < constants.heartbeat_failure_threshold * constants.heartbeat_wait_ms; i++) {
       for (int j = 1; j < slaves.size(); j++) {
-        slaves[j]->clock->increment_time(constants.heartbeat_wait_ms + 1); // Add one just to make sure
+        slaves[j]->clock->increment_time(1);
       }
       // Exchange all the messages that need to be exchanged
       while (nonempty_channels.size() > 0) {
