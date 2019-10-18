@@ -1,6 +1,8 @@
 #include "TestDriver.h"
 
+#include <assert/UniversalException.h>
 #include <async/testing/TimerAsyncSchedulerTesting.h>
+#include <logging/log.h>
 #include <net/ConnectionsOut.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosTypes.h>
@@ -84,7 +86,12 @@ void TestDriver::run_test(TestFunction test) {
     });
   }
 
-  test(constants, slaves, all_channels, nonempty_channels);
+  try {
+    test(constants, slaves, all_channels, nonempty_channels);
+    LOG(uni::logging::Level::INFO, "[TEST PASSED]")
+  } catch (uni::assert::UniversalException& e) {
+    LOG(uni::logging::Level::INFO, "[TEST FAILED] " + std::string(e.what()))
+  }
 }
 
 } // testing

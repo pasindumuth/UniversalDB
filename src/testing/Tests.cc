@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <memory>
 
+#include <assert/assert.h>
 #include <async/testing/AsyncSchedulerTesting.h>
 #include <constants/constants.h>
 #include <logging/log.h>
@@ -52,8 +53,9 @@ TestFunction Tests::test1() {
       slaves[i]->paxos_log->debug_print();
     }
 
-    std::string output_message = verify_paxos_logs(slaves) ? "PASSED!" : "FAILED!";
-    LOG(uni::logging::Level::INFO, output_message);
+    UNIVERSAL_ASSERT_MESSAGE(
+      verify_paxos_logs(slaves),
+      "The Paxos Logs should agree with one another.")
   };
 }
 
@@ -94,8 +96,9 @@ TestFunction Tests::test2() {
       slaves[i]->paxos_log->debug_print();
     }
 
-    std::string output_message = verify_paxos_logs(slaves) ? "PASSED!" : "FAILED!";
-    LOG(uni::logging::Level::INFO, output_message);
+    UNIVERSAL_ASSERT_MESSAGE(
+      verify_paxos_logs(slaves),
+      "The Paxos Logs should agree with one another.")
   };
 }
 
@@ -138,8 +141,9 @@ TestFunction Tests::test3() {
       slaves[i]->paxos_log->debug_print();
     }
 
-    std::string output_message = verify_paxos_logs(slaves) ? "PASSED!" : "FAILED!";
-    LOG(uni::logging::Level::INFO, output_message);
+    UNIVERSAL_ASSERT_MESSAGE(
+      verify_paxos_logs(slaves),
+      "The Paxos Logs should agree with one another.")
   };
 }
 
@@ -195,8 +199,9 @@ TestFunction Tests::test4() {
       slaves[i]->paxos_log->debug_print();
     }
 
-    std::string output_message = verify_paxos_logs(slaves) ? "PASSED!" : "FAILED!";
-    LOG(uni::logging::Level::INFO, output_message);
+    UNIVERSAL_ASSERT_MESSAGE(
+      verify_paxos_logs(slaves),
+      "The Paxos Logs should agree with one another.")
   };
 }
 
@@ -218,10 +223,9 @@ TestFunction Tests::test5() {
     }
     // All failure detectors should report that all of the slaves are still alive.
     for (auto const& slave : slaves) {
-      if (slave->failure_detector->alive_endpoints().size() != slaves.size()) {
-        LOG(uni::logging::Level::ERROR, "All failure detectors should report that all slaves are alive.");
-        passed = false;
-      }
+      UNIVERSAL_ASSERT_MESSAGE(
+        slave->failure_detector->alive_endpoints().size() == slaves.size(),
+        "The Paxos Logs should agree with one another.")
     }
     // Now kill one of the slaves
     mark_node_as_failed(all_channels, 0);
@@ -237,13 +241,10 @@ TestFunction Tests::test5() {
       }
     }
     for (int i = 1; i < slaves.size(); i++) {
-      if (slaves[i]->failure_detector->alive_endpoints().size() != slaves.size() - 1) {
-        LOG(uni::logging::Level::ERROR, "All failure detectors should report that one slave is dead.");
-        passed = false;
-      }
+      UNIVERSAL_ASSERT_MESSAGE(
+        slaves[i]->failure_detector->alive_endpoints().size() == slaves.size() - 1,
+        "All failure detectors should report that one slave is dead.")
     }
-    std::string output_message = passed ? "PASSED!" : "FAILED!";
-    LOG(uni::logging::Level::INFO, output_message);
   };
 }
 
