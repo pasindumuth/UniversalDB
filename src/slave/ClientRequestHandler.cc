@@ -20,7 +20,6 @@ ClientRequestHandler::ClientRequestHandler(
 
 void ClientRequestHandler::handle_request(
     uni::net::endpoint_id const& endpoint_id, ClientRequest const& message) {
-  LOG(uni::logging::Level::TRACE, "Client request gotten: " + message.DebugString())
   auto log_entry = PaxosLogEntry();
   log_entry.set_value(message.SerializeAsString());
   _multi_paxos_handler.propose(log_entry);

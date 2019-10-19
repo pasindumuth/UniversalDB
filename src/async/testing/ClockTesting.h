@@ -22,7 +22,7 @@ class ClockTesting {
 
  private:
   long _time; // time in milliseconds
-  std::map<long, std::function<void(void)>> _scheduled_callbacks;
+  std::multimap<long, std::function<void(void)>> _scheduled_callbacks;
 };
 
 } // namespace async

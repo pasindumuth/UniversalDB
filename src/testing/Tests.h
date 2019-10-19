@@ -42,6 +42,11 @@ class Tests {
   // and seeing if the remaining nodes have marked that node as deleted.
   TestFunction test5();
 
+  // This is a test where PaxosLogs are made to be populated evenly (by partitioning
+  // off some of the nodes and populated the other nodes with message), and the LogSyncer
+  // is left to do it's job and even out the PaxosLogs across all nodes.
+  TestFunction test6();
+
  private:
   // Creates a MessageWrapper (the top level message that is sent over
   // the network) using data that only constitutes the client message.
@@ -51,8 +56,11 @@ class Tests {
   // if log index i is populated in logs l1 and l2 with values v1 and v2, then v1 = v2.
   bool verify_paxos_logs(std::vector<std::unique_ptr<uni::testing::SlaveTesting>>& slaves);
 
-  // Simulates the failure of a node
-  void mark_node_as_failed(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, unsigned node);
+  // Simulates a node as unresponsive (due to node faiure or a network partition)
+  void mark_node_as_unresponsive(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, unsigned node);
+
+  // Simulates a node as responsive
+  void mark_node_as_responsive(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, unsigned node);
 };
 
 } // testing

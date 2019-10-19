@@ -25,6 +25,7 @@ FailureDetector::FailureDetector(
   auto heartbeat_message = new proto::slave::Heartbeat;
   slave_message->set_allocated_heartbeat(heartbeat_message);
   _message.set_allocated_slave_message(slave_message);
+  schedule_heartbeat();
 }
 
 void FailureDetector::schedule_heartbeat() {

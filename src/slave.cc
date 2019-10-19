@@ -116,7 +116,6 @@ int main(int argc, char* argv[]) {
   auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor);
   auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler);
   auto failure_detector = uni::slave::FailureDetector(constants, connections_out, timer_scheduler);
-  failure_detector.schedule_heartbeat();
   auto log_syncer = uni::slave::LogSyncer(constants, connections_out, timer_scheduler, paxos_log, failure_detector);
   auto incoming_message_handler = uni::slave::IncomingMessageHandler(client_request_handler, failure_detector, log_syncer, multipaxos_handler);
   server_async_scheduler.set_callback([&incoming_message_handler](uni::net::IncomingMessage message){

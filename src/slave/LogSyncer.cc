@@ -27,7 +27,9 @@ LogSyncer::LogSyncer(
         _connections_out(connections_out),
         _timer_scheduler(timer_scheduler),
         _paxos_log(paxos_log),
-        _failure_detector(failure_detector) {}
+        _failure_detector(failure_detector) {
+  schedule_syncing();
+}
 
 void LogSyncer::schedule_syncing() {
   _timer_scheduler.schedule_repeated([this]() {
@@ -44,7 +46,7 @@ void LogSyncer::schedule_syncing() {
         std::get<1>(cur_subarray)++;
       } else {
         available_index_subarrays.push_back(cur_subarray);
-        auto cur_subarray = std::tuple<uni::paxos::index_t, uni::paxos::index_t>(available_indices[i], available_indices[i]);
+        cur_subarray = std::tuple<uni::paxos::index_t, uni::paxos::index_t>(available_indices[i], available_indices[i]);
       }
     }
     available_index_subarrays.push_back(cur_subarray);
@@ -105,10 +107,11 @@ void LogSyncer::handle_sync_request(uni::net::endpoint_id endpoint_id, proto::sl
     }
   }
 
+  slave_message->set_allocated_sync_response(sync_response);
+  message_wrapper->set_allocated_slave_message(slave_message);
+
   // Send the response to the sender.
-  if (auto leader_endpoint_id = _failure_detector.leader_endpoint_id()) {
-    _connections_out.send(leader_endpoint_id.get(), message_wrapper->SerializeAsString());
-  }
+  _connections_out.send(endpoint_id, message_wrapper->SerializeAsString());
 }
 
 void LogSyncer::handle_sync_response(proto::slave::SyncResponse response) {

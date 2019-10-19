@@ -33,7 +33,7 @@ class LogSyncer {
   uni::net::ConnectionsOut& _connections_out;
   uni::async::TimerAsyncScheduler& _timer_scheduler;
   uni::paxos::PaxosLog& _paxos_log;
-  uni::slave::FailureDetector _failure_detector;
+  uni::slave::FailureDetector& _failure_detector;
 };
 
 } // namespace slave
