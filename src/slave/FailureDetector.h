@@ -4,6 +4,8 @@
 #include <map>
 #include <vector>
 
+#include <boost/optional.hpp>
+
 #include <async/TimerAsyncScheduler.h>
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
@@ -40,8 +42,20 @@ class FailureDetector {
   // message into this function.
   void handle_heartbeat(uni::net::endpoint_id endpoint_id);
 
-  // Get a list of endpoints that are still alive (endpoints that haven't failed).
+  // Get an ordered list of endpoints that are still alive (endpoints that haven't failed).
   std::vector<uni::net::endpoint_id> alive_endpoints();
+
+  // Gets the endpoint_id of the leader. The leader is defined the node with the smallest
+  // endpoint_id (endpoints_ids are totally ordered) which is not detected as dead. Recall
+  // that a node's perceived leader doesn't need to be consistent across all nodes. However
+  // as the network stabilizes and after some after a node's failure, all nodes will end up
+  // having the same perceived leader, which is what's important.
+  // 
+  // We return an optional in case there is a moment, for whatever reason, a leader couldn't
+  // be found. This should never happen in practice because this node would send itself a heartbeat
+  // message. But if for whatever reason that doesn't happen, the alive_endpoints() list would
+  // be empty, and there would be no leader.
+  boost::optional<uni::net::endpoint_id> leader_endpoint_id();
 
  private:
   std::map<uni::net::endpoint_id, unsigned> _heartbeat_count;

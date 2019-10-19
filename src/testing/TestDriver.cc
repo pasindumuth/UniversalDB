@@ -9,6 +9,7 @@
 #include <slave/ClientRequestHandler.h>
 #include <slave/FailureDetector.h>
 #include <slave/IncomingMessageHandler.h>
+#include <slave/LogSyncer.h>
 #include <testing/SlaveTesting.h>
 
 namespace uni {
@@ -25,6 +26,7 @@ using uni::paxos::PaxosLog;
 using uni::slave::ClientRequestHandler;
 using uni::slave::FailureDetector;
 using uni::slave::IncomingMessageHandler;
+using uni::slave::LogSyncer;
 using uni::testing::SlaveTesting;
 
 Constants initialize_constants() {
@@ -80,7 +82,8 @@ void TestDriver::run_test(TestFunction test) {
     slave.client_request_handler = std::make_unique<ClientRequestHandler>(*slave.multipaxos_handler);
     slave.failure_detector = std::make_unique<FailureDetector>(constants, *slave.connections_out, *slave.timer_scheduler);
     slave.failure_detector->schedule_heartbeat();
-    slave.incoming_message_handler = std::make_unique<IncomingMessageHandler>(*slave.client_request_handler, *slave.failure_detector, *slave.multipaxos_handler);
+    slave.log_syncer = std::make_unique<LogSyncer>(constants, *slave.connections_out, *slave.timer_scheduler, *slave.paxos_log, *slave.failure_detector);
+    slave.incoming_message_handler = std::make_unique<IncomingMessageHandler>(*slave.client_request_handler, *slave.failure_detector, *slave.log_syncer, *slave.multipaxos_handler);
     slave.scheduler->set_callback([&slave](uni::net::IncomingMessage message) {
       slave.incoming_message_handler->handle(message);
     });

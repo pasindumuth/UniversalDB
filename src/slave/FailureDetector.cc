@@ -62,6 +62,14 @@ std::vector<uni::net::endpoint_id> FailureDetector::alive_endpoints() {
   return endpoints;
 }
 
+boost::optional<uni::net::endpoint_id> FailureDetector::leader_endpoint_id() {
+  auto endpoints = alive_endpoints();
+  if (endpoints.size() > 0) {
+    return alive_endpoints()[0];
+  }
+  return boost::none;
+}
+
 void FailureDetector::debug_print() {
   auto ss = std::stringstream();
   ss << "==============================" << std::endl;
