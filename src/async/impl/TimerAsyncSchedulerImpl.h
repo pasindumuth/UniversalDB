@@ -20,6 +20,8 @@ class TimerAsyncSchedulerImpl : public uni::async::TimerAsyncScheduler {
 
   void schedule_repeated(std::function<void(void)> callback, long period) override;
 
+  void schedule_repeated_finite(std::function<void(void)> callback, long period, int tries) override;
+
  private:
   boost::asio::io_context& _io_context;
 };

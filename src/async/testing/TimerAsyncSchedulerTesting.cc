@@ -19,5 +19,14 @@ void TimerAsyncSchedulerTesting::schedule_repeated(std::function<void(void)> cal
   }, period);
 }
 
+void TimerAsyncSchedulerTesting::schedule_repeated_finite(std::function<void(void)> callback, long period, int tries) {
+  _clock.schedule_async([this, callback, period, tries]() {
+    callback();
+    if (tries > 1) {
+      schedule_repeated_finite(callback, period, tries - 1);
+    }
+  }, period);
+}
+
 } // namespace async
 } // namespace uni

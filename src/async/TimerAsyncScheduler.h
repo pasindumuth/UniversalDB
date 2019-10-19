@@ -13,10 +13,14 @@ class TimerAsyncScheduler {
   // Schedule the callback to run once in the background after `wait` amount of time.
   virtual void schedule_once(std::function<void(void)> callback, long wait) = 0;
 
-  // Schedul the callback to run repeatedly with period `period`. Note that
+  // Schedule the callback to run repeatedly with period `period`. Note that
   // the first time the callback is run after `wait` amount of time; it doesn't
   // execute immediately.
   virtual void schedule_repeated(std::function<void(void)> callback, long period) = 0;
+  
+  // Schedule a callback to run several times, each time running after a certain period.
+  // This is useful for retrying requests, for instance.
+  virtual void schedule_repeated_finite(std::function<void(void)> callback, long period, int tries) = 0;
 };
 
 } // namespace async
