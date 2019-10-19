@@ -39,7 +39,7 @@ TestFunction Tests::test1() {
       // Create a message that a client would send.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[0]->scheduler->schedule_async(incoming_message);
+      slaves[0]->scheduler->queue_message(incoming_message);
 
       // Simulate the message exchanging of all Slaves until there are no more messages to send.
       while (nonempty_channels.size() > 0) {
@@ -75,7 +75,7 @@ TestFunction Tests::test2() {
       // Create a message that a client would send.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[0]->scheduler->schedule_async(incoming_message);
+      slaves[0]->scheduler->queue_message(incoming_message);
 
       // Simulate the message exchanging of all Slaves until there are no more messages to send.
       while (nonempty_channels.size() > 0) {
@@ -119,7 +119,7 @@ TestFunction Tests::test3() {
       // chosen randomly.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[std::rand() % slaves.size()]->scheduler->schedule_async(incoming_message);
+      slaves[std::rand() % slaves.size()]->scheduler->queue_message(incoming_message);
 
       // Simulate the message exchanging of all Slaves. There is a 1%
       // chance that we'll stop sending messages and move on.
@@ -165,7 +165,7 @@ TestFunction Tests::test4() {
       // chosen randomly.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[std::rand() % slaves.size()]->scheduler->schedule_async(incoming_message);
+      slaves[std::rand() % slaves.size()]->scheduler->queue_message(incoming_message);
 
       // Simulate the message exchanging of all Slaves. There is a 1%
       // chance that we'll stop sending messages and move on.
@@ -269,7 +269,7 @@ TestFunction Tests::test6() {
         // chosen randomly.
         auto incoming_message = IncomingMessage(client_endpoint_id,
             build_client_request("m" + std::to_string(client_request_id)).SerializeAsString());
-        slaves[target_slave]->scheduler->schedule_async(incoming_message);
+        slaves[target_slave]->scheduler->queue_message(incoming_message);
 
         while (nonempty_channels.size() > 0) {
           nonempty_channels[0]->deliver_message();

@@ -12,7 +12,7 @@ void AsyncSchedulerTesting::set_callback(std::function<void(IncomingMessage)> ca
   _callback = callback;
 }
 
-void AsyncSchedulerTesting::schedule_async(IncomingMessage message) {
+void AsyncSchedulerTesting::queue_message(IncomingMessage message) {
   _callback(message);
 }
 

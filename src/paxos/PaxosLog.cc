@@ -70,7 +70,7 @@ void PaxosLog::debug_print() const {
     ss << "index: " << index << ", entry: " << entry.SerializeAsString() << std::endl;
   }
   ss << "End of PaxosLog" << std::endl;
-  LOG(uni::logging::INFO, ss.str())
+  LOG(uni::logging::DEBUG, ss.str())
 }
 
 } // namespace paxos

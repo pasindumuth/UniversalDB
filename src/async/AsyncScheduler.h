@@ -12,7 +12,7 @@ class AsyncScheduler {
  public:
   virtual void set_callback(std::function<void(uni::net::IncomingMessage)> callback) = 0;
 
-  virtual void schedule_async(uni::net::IncomingMessage message) = 0;
+  virtual void queue_message(uni::net::IncomingMessage message) = 0;
 };
 
 } // async

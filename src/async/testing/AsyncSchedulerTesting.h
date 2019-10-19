@@ -18,7 +18,7 @@ class AsyncSchedulerTesting
 
   void set_callback(std::function<void(uni::net::IncomingMessage)> callback) override;
 
-  void schedule_async(uni::net::IncomingMessage message) override;
+  void queue_message(uni::net::IncomingMessage message) override;
 
  private:
   std::function<void(uni::net::IncomingMessage)> _callback;

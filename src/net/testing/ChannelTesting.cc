@@ -57,7 +57,7 @@ void ChannelTesting::deliver_message() {
     // Create the Incoming Message and dispatch it to async_scheduler.
     auto sender_endpoint_id = uni::net::endpoint_id(_sender_ip_string, _constants.slave_port);
     auto incoming_message = IncomingMessage(sender_endpoint_id, message);
-    _async_scheduler.schedule_async(incoming_message);
+    _async_scheduler.queue_message(incoming_message);
     // Remove the message that was just processed.
     _message_queue.pop();
     check_empty();
