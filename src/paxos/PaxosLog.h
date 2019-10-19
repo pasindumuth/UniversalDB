@@ -26,9 +26,11 @@ class PaxosLog {
   // Gets the lowest available index.
   index_t next_available_index() const;
 
-  void debug_print() const;
+  std::vector<index_t> get_available_indices() const;
 
   std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> get_log() const;
+
+  void debug_print() const;
 
  private:
   // The Paxos Log of this node, mapping entry index to entry value.This is calculated

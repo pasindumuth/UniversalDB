@@ -55,6 +55,14 @@ index_t PaxosLog::next_available_index() const {
   return *_available_indices.begin();
 }
 
+std::vector<index_t> PaxosLog::get_available_indices() const {
+  return _available_indices;
+}
+
+std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> PaxosLog::get_log() const {
+  return _log;
+}
+
 void PaxosLog::debug_print() const {
   auto ss = std::stringstream();
   ss << "Printing PaxosLog:" << std::endl;
@@ -63,10 +71,6 @@ void PaxosLog::debug_print() const {
   }
   ss << "End of PaxosLog" << std::endl;
   LOG(uni::logging::INFO, ss.str())
-}
-
-std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> PaxosLog::get_log() const {
-  return _log;
 }
 
 } // namespace paxos

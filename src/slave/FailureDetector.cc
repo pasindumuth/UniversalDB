@@ -9,11 +9,12 @@
 namespace uni {
 namespace slave {
 
-using uni::net::ConnectionsOut;
 using uni::async::TimerAsyncScheduler;
+using uni::constants::Constants;
+using uni::net::ConnectionsOut;
 
 FailureDetector::FailureDetector(
-    uni::constants::Constants const& constants,
+    Constants const& constants,
     ConnectionsOut& connections_out,
     TimerAsyncScheduler& timer_scheduler)
       : _constants(constants),
@@ -32,7 +33,7 @@ void FailureDetector::schedule_heartbeat() {
     for (auto& [endpoint, count] : _heartbeat_count) {
       count++;
     }
-  }, _constants.heartbeat_wait_ms);
+  }, _constants.heartbeat_period);
 }
 
 void FailureDetector::handle_heartbeat(uni::net::endpoint_id endpoint_id) {

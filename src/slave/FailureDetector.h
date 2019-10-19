@@ -4,11 +4,11 @@
 #include <map>
 #include <vector>
 
+#include <async/TimerAsyncScheduler.h>
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
 #include <net/endpoint_id.h>
 #include <proto/message.pb.h>
-#include <async/TimerAsyncScheduler.h>
 
 namespace uni {
 namespace slave {

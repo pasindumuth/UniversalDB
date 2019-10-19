@@ -28,7 +28,7 @@ using uni::slave::IncomingMessageHandler;
 using uni::testing::SlaveTesting;
 
 Constants initialize_constants() {
-  return Constants(5, 1610, 1710, 1810, 1000, 4);
+  return Constants(5, 1610, 1710, 1810, 1000, 4, 1000);
 }
 
 void TestDriver::run_test(TestFunction test) {
