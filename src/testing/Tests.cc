@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <memory>
 
+#include <google/protobuf/util/message_differencer.h>
+
 #include <assert/assert.h>
 #include <async/testing/AsyncSchedulerTesting.h>
 #include <constants/constants.h>
@@ -15,6 +17,7 @@
 namespace uni {
 namespace testing {
 
+using google::protobuf::util::MessageDifferencer;
 using proto::message::MessageWrapper;
 using uni::constants::Constants;
 using uni::async::AsyncSchedulerTesting;
@@ -256,44 +259,55 @@ TestFunction Tests::test6() {
       std::vector<std::unique_ptr<SlaveTesting>>& slaves,
       std::vector<std::vector<ChannelTesting*>>& all_channels,
       std::vector<ChannelTesting*>& nonempty_channels) {
-    std::srand(0);
-    int nodes_failed = 0;
-    // Send the client message to the first Universal Slave
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
-    for (int i = 0; i < 100; i++) {
-      // Send a client message to some node in the Paxos Group. The node is
-      // chosen randomly.
-      auto incoming_message = IncomingMessage(client_endpoint_id,
-          build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[0]->scheduler->schedule_async(incoming_message);
+    auto client_request_id = 0;
+    auto simulate_client_requests = [&](int request_count, int target_slave) {
+      // Send the client message to the first Universal Slave
+      auto final_request_id = client_request_id + request_count;
+      for (; client_request_id < final_request_id; client_request_id++) {
+        // Send a client message to some node in the Paxos Group. The node is
+        // chosen randomly.
+        auto incoming_message = IncomingMessage(client_endpoint_id,
+            build_client_request("m" + std::to_string(client_request_id)).SerializeAsString());
+        slaves[target_slave]->scheduler->schedule_async(incoming_message);
 
-      // Simulate the message exchanging of all Slaves. There is a 1%
-      // chance that we'll stop sending messages and move on.
-      while (nonempty_channels.size() > 0) {
-        nonempty_channels[0]->deliver_message();
-        // Fail a node if there isn't already a failed node.
-        if (nodes_failed < 3 && (std::rand() % 1000 == 0)) {
-          if (nodes_failed == 0) {
-            mark_node_as_unresponsive(all_channels, 2);
-          } else if (nodes_failed == 1) {
-            mark_node_as_unresponsive(all_channels, 3);
-          } else if (nodes_failed == 2) {
-            mark_node_as_unresponsive(all_channels, 4);
-          }
-          nodes_failed++;
+        while (nonempty_channels.size() > 0) {
+          nonempty_channels[0]->deliver_message();
         }
       }
-    }
-    // Make sure PaxosLogs have different sizes.
-    UNIVERSAL_ASSERT_MESSAGE(verify_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
-    UNIVERSAL_ASSERT_MESSAGE(slaves[2]->paxos_log->get_log().size() < slaves[3]->paxos_log->get_log().size(),
-      "Paxos Logs should not all have the same number of entries, due to the way we executed the nodes.")
-    UNIVERSAL_ASSERT_MESSAGE(slaves[3]->paxos_log->get_log().size() < slaves[4]->paxos_log->get_log().size(),
-      "Paxos Logs should not all have the same number of entries, due to the way we executed the nodes.")
+    };
+    mark_node_as_unresponsive(all_channels, 0);
 
+    simulate_client_requests(10, 1);
+    mark_node_as_responsive(all_channels, 0);
+    mark_node_as_unresponsive(all_channels, 1);
+
+    simulate_client_requests(10, 2);
+    mark_node_as_responsive(all_channels, 1);
+    mark_node_as_unresponsive(all_channels, 2);
+
+    simulate_client_requests(10, 3);
     mark_node_as_responsive(all_channels, 2);
+    mark_node_as_unresponsive(all_channels, 3);
+
+    simulate_client_requests(10, 4);
     mark_node_as_responsive(all_channels, 3);
+    mark_node_as_unresponsive(all_channels, 4);
+
+    simulate_client_requests(10, 0);
     mark_node_as_responsive(all_channels, 4);
+    mark_node_as_unresponsive(all_channels, 0);
+
+    mark_node_as_responsive(all_channels, 0);
+
+    UNIVERSAL_ASSERT_MESSAGE(verify_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
+    // None of the PaxosLogs should be equal
+    for (int i = 0; i < constants.num_slave_servers; i++) {
+      for (int j = i + 1; j < constants.num_slave_servers; j++) {
+        UNIVERSAL_ASSERT_MESSAGE(!equals(*slaves[i]->paxos_log, *slaves[j]->paxos_log),
+          "Not two PaxosLogs should be equal.")
+      }
+    }
 
     // Make sure that at least one heartbeat is sent to ensure a leader is known
     for (int i = 0; i < constants.heartbeat_period; i++) {
@@ -317,12 +331,13 @@ TestFunction Tests::test6() {
       }
     }
 
-    // Verify that the Paxos logs agree and that they are all now the same size.
-    UNIVERSAL_ASSERT_MESSAGE( verify_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
-    auto const log_size = slaves[0]->paxos_log->get_log().size();
-    for (int i = 0; i < 5; i++) {
-      UNIVERSAL_ASSERT_MESSAGE(slaves[i]->paxos_log->get_log().size() == log_size,
-        "After Syncing, all nodes should have the same number of entries in their PaxosLog.")
+    UNIVERSAL_ASSERT_MESSAGE(verify_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
+    // All of the PaxosLogs should now be equal
+    for (int i = 0; i < constants.num_slave_servers; i++) {
+      for (int j = i + 1; j < constants.num_slave_servers; j++) {
+        UNIVERSAL_ASSERT_MESSAGE(equals(*slaves[i]->paxos_log, *slaves[j]->paxos_log),
+          "Paxos Logs should all be equal.")
+      }
     }
   };
 }
@@ -354,6 +369,21 @@ bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<SlaveTesting>>& slaves
           return false;
         }
       }
+    }
+  }
+  return true;
+}
+
+bool Tests::equals(PaxosLog& paxos_log1, PaxosLog& paxos_log2) {
+  auto log1 = paxos_log1.get_log();
+  auto log2 = paxos_log2.get_log();
+  if (log1.size() != log2.size()) {
+    return false;
+  }
+  for (auto const& [index, entry] : log1) {
+    auto it = log2.find(index);
+    if (it == log2.end() || !MessageDifferencer::Equivalent(it->second, entry)) {
+      return false;
     }
   }
   return true;

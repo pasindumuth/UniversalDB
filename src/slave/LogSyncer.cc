@@ -62,9 +62,7 @@ void LogSyncer::schedule_syncing() {
     message_wrapper->set_allocated_slave_message(slave_message);
 
     // Send the sync_request to the leader.
-    if (auto leader_endpoint_id = _failure_detector.leader_endpoint_id()) {
-      _connections_out.send(leader_endpoint_id.get(), message_wrapper->SerializeAsString());
-    }
+    _connections_out.broadcast(message_wrapper->SerializeAsString());
   }, _constants.log_syncer_period);
 }
 

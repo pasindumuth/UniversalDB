@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include <paxos/PaxosLog.h>
 #include <proto/client.pb.h>
 #include <proto/message.pb.h>
 #include <testing/TestDriver.h>
@@ -55,6 +56,9 @@ class Tests {
   // Goes through all paxos logs and makes sure they are compatible. That is,
   // if log index i is populated in logs l1 and l2 with values v1 and v2, then v1 = v2.
   bool verify_paxos_logs(std::vector<std::unique_ptr<uni::testing::SlaveTesting>>& slaves);
+
+  // Checks if 2 paxos logs are equal. This simply compares the maps.
+  bool equals(uni::paxos::PaxosLog& paxos_log1, uni::paxos::PaxosLog& paxos_log2);
 
   // Simulates a node as unresponsive (due to node faiure or a network partition)
   void mark_node_as_unresponsive(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, unsigned node);
