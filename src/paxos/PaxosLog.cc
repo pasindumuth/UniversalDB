@@ -27,6 +27,7 @@ void PaxosLog::set_entry(index_t index, PaxosLogEntry const entry) {
   UNIVERSAL_ASSERT_MESSAGE(_available_indices.size() > 0, "Set of available indices should never be 0")
   auto const last_index = _available_indices.back();
   auto const it = std::find(_available_indices.begin(), _available_indices.end(), index);
+  auto const first_available_index = next_available_index();
   if (index <= last_index && it == _available_indices.end()) {
     // A value for the index is already set.
     return;
@@ -45,7 +46,21 @@ void PaxosLog::set_entry(index_t index, PaxosLogEntry const entry) {
     }
     _available_indices.push_back(index + 1);
   }
+  auto next_first_available_index = next_available_index();
+  if (first_available_index < next_first_available_index) {
+    // This means that the we can fill out more of the derived
+    // state. So invoke the callbacks for all new PaxosLogEntries
+    for (int i = first_available_index; i < next_first_available_index; i++) {
+      for (auto const& callback: _callbacks) {
+        callback(_log[i]);
+      }
+    }
+  }
   _log.insert({ index, entry });
+}
+
+void PaxosLog::add_callback(std::function<void(PaxosLogEntry)> callback) {
+  _callbacks.push_back(callback);
 }
 
 index_t PaxosLog::next_available_index() const {

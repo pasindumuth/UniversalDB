@@ -1,7 +1,9 @@
 #ifndef UNI_PAXOS_PAXOSLOG_H
 #define UNI_PAXOS_PAXOSLOG_H
 
+#include <functional>
 #include <unordered_map>
+
 #include <boost/optional.hpp>
 
 #include <paxos/PaxosTypes.h>
@@ -19,9 +21,12 @@ class PaxosLog {
   // Returns the entry at the index if it exists, otherwise returns an empty optional
   boost::optional<proto::paxos::PaxosLogEntry const> get_entry(index_t index) const;
 
-  // Sets the index of the log with the provided entry. This method requires there
-  // to be no existing entry for the provided index. Otherwise, an exception is thrown.
+  // Sets the index of the log with the provided entry. If an entry already exists,
+  // for the index, then the method just returns.
   void set_entry(index_t index, proto::paxos::PaxosLogEntry const entry);
+
+  // Add callback to the list of callbacks to invoke when an entry is added.
+  void add_callback(std::function<void(proto::paxos::PaxosLogEntry)> callback);
 
   // Gets the lowest available index.
   index_t next_available_index() const;
@@ -44,6 +49,11 @@ class PaxosLog {
   // if non are populated). We use this vector to select a paxos instance when this node want's
   // to propose a new log entry.
   std::vector<index_t> _available_indices;
+
+  // Callbacks to invoke everytime a new entry is entered into the PaxosLog.
+  // Note that we don't invoke these for entries that aren't yet connected to
+  // all continuguously received entries.
+  std::vector<std::function<void(proto::paxos::PaxosLogEntry)>> _callbacks;
 };
 
 } // namespace paxos

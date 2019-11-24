@@ -3,9 +3,10 @@ project(UniversalDB)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# This commands lets us to do `#include <net/Channel.h>` in the source code to use
-# the file ./net/Channel.h. Using include_directories for any directory does a similar
-# sort of thing with all the files underneath.
+# This commands lets us to do `#include <net/Channel.h>` in the
+# source code to use the file ./net/Channel.h. Using include_directories
+# for any directory does a similar sort of thing with all the files
+# underneath. Otherwise, we would have to use `#include "net/Channel.h"`.
 include_directories(src)
 
 set(CMAKE_CXX_FLAGS "-fexceptions -fsanitize=address -fsanitize=undefined -pthread")
