@@ -2,6 +2,7 @@
 #include <logging/log.h>
 #include <testing/TestDriver.h>
 #include <testing/Tests.h>
+#include <testing/UnitTestDriver.h>
 
 /*
  * Our testing scheme is as follows. We mock out Channel and AsyncScheduler such that
@@ -12,10 +13,12 @@
  * Slave it's associated with.
  */
 int main(int argc, char* argv[]) {
+  auto unit_test_driver = uni::testing::UnitTestDriver();
   auto test_driver = uni::testing::TestDriver();
   auto tests = uni::testing::Tests();
   uni::logging::get_log_level() = uni::logging::Level::DEBUG;
   try {
+    unit_test_driver.run_tests();
     test_driver.run_test(tests.test1());
     test_driver.run_test(tests.test2());
     test_driver.run_test(tests.test3());
