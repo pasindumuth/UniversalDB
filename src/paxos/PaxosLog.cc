@@ -46,6 +46,7 @@ void PaxosLog::set_entry(index_t index, PaxosLogEntry const entry) {
     }
     _available_indices.push_back(index + 1);
   }
+  _log.insert({ index, entry });
   auto next_first_available_index = next_available_index();
   if (first_available_index < next_first_available_index) {
     // This means that the we can fill out more of the derived
@@ -56,7 +57,6 @@ void PaxosLog::set_entry(index_t index, PaxosLogEntry const entry) {
       }
     }
   }
-  _log.insert({ index, entry });
 }
 
 void PaxosLog::add_callback(std::function<void(PaxosLogEntry)> callback) {

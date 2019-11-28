@@ -12,6 +12,7 @@
 #include <slave/FailureDetector.h>
 #include <slave/IncomingMessageHandler.h>
 #include <slave/LogSyncer.h>
+#include <slave/ProposerQueue.h>
 
 namespace uni {
 namespace testing {
@@ -23,6 +24,7 @@ struct SlaveTesting {
   std::unique_ptr<uni::net::ConnectionsOut> connections_out;
   std::unique_ptr<uni::paxos::MultiPaxosHandler> multipaxos_handler;
   std::unique_ptr<uni::paxos::PaxosLog> paxos_log;
+  std::unique_ptr<uni::slave::ProposerQueue> proposer_queue;
   std::unique_ptr<uni::slave::ClientRequestHandler> client_request_handler;
   std::unique_ptr<uni::slave::FailureDetector> failure_detector;
   std::unique_ptr<uni::slave::IncomingMessageHandler> incoming_message_handler;

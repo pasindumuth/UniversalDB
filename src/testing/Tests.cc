@@ -1,6 +1,7 @@
 #include "Tests.h"
 
 #include <unordered_map>
+#include <unordered_set>
 #include <memory>
 
 #include <google/protobuf/util/message_differencer.h>
@@ -32,24 +33,16 @@ TestFunction Tests::test1() {
       std::vector<std::unique_ptr<SlaveTesting>>& slaves,
       std::vector<std::vector<ChannelTesting*>>& all_channels,
       std::vector<ChannelTesting*>& nonempty_channels) {
-    std::srand(0);
     // Send the client message to the first Universal Slave
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
-    for (int i = 0; i < 10; i++) {
-      // Create a message that a client would send.
+    for (int i = 0; i < 300; i++) {
+      // Send a client message to some node in the Paxos Group. The node is
+      // chosen randomly.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[0]->scheduler->queue_message(incoming_message);
-
-      // Simulate the message exchanging of all Slaves until there are no more messages to send.
-      while (nonempty_channels.size() > 0) {
-        // We use modulus to reduce the random number to the range we want.
-        // There will be minor bias with this method, but this isn't significant,
-        // and so isn't a problem for us.
-        int r = std::rand() % nonempty_channels.size();
-        auto channel = nonempty_channels[r];
-        channel->deliver_message();
-      }
+      slaves[std::rand() % slaves.size()]->scheduler->queue_message(incoming_message);
+      // Run the nodes and network for 1ms.
+      run_for_milliseconds(slaves, nonempty_channels, 1);
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
     for (int i = 0; i < 5; i++) {
@@ -68,30 +61,27 @@ TestFunction Tests::test2() {
       std::vector<std::unique_ptr<SlaveTesting>>& slaves,
       std::vector<std::vector<ChannelTesting*>>& all_channels,
       std::vector<ChannelTesting*>& nonempty_channels) {
-    std::srand(0);
+    int nodes_failed = 0;
     // Send the client message to the first Universal Slave
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
-    for (int i = 0; i < 10; i++) {
-      // Create a message that a client would send.
+    for (int i = 0; i < 300; i++) {
+      // Send a client message to some node in the Paxos Group. The node is
+      // chosen randomly.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[0]->scheduler->queue_message(incoming_message);
-
-      // Simulate the message exchanging of all Slaves until there are no more messages to send.
-      while (nonempty_channels.size() > 0) {
-        // We use modulus to reduce the random number to the range we want.
-        // There will be minor bias with this method, but this isn't significant,
-        // and so isn't a problem for us.
-        int r = std::rand() % nonempty_channels.size();
-        auto channel = nonempty_channels[r];
-        int should_keep = std::rand() % 4;
-        if (should_keep) {
-          // simulate a successful delivery of the message
-          channel->deliver_message();
-        } else {
-          // simulate a drop of the message
-          channel->drop_message();
+      slaves[std::rand() % slaves.size()]->scheduler->queue_message(incoming_message);
+      // Run the nodes and network for 1ms.
+      run_for_milliseconds(slaves, nonempty_channels, 1);
+      // Fail a node if there isn't already a failed node.
+      if (nodes_failed < 3 && (std::rand() % 40 == 0)) {
+        if (nodes_failed == 0) {
+          mark_node_as_unresponsive(all_channels, 2);
+        } else if (nodes_failed == 1) {
+          mark_node_as_unresponsive(all_channels, 3);
+        } else if (nodes_failed == 2) {
+          mark_node_as_unresponsive(all_channels, 4);
         }
+        nodes_failed++;
       }
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
@@ -111,110 +101,6 @@ TestFunction Tests::test3() {
       std::vector<std::unique_ptr<SlaveTesting>>& slaves,
       std::vector<std::vector<ChannelTesting*>>& all_channels,
       std::vector<ChannelTesting*>& nonempty_channels) {
-    std::srand(0);
-    // Send the client message to the first Universal Slave
-    auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
-    for (int i = 0; i < 300; i++) {
-      // Send a client message to some node in the Paxos Group. The node is
-      // chosen randomly.
-      auto incoming_message = IncomingMessage(client_endpoint_id,
-          build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[std::rand() % slaves.size()]->scheduler->queue_message(incoming_message);
-
-      // Simulate the message exchanging of all Slaves. There is a 1%
-      // chance that we'll stop sending messages and move on.
-      while (nonempty_channels.size() > 0 && ((std::rand() % 100) != 0)) {
-        // We use modulus to reduce the random number to the range we want.
-        // There will be minor bias with this method, but this isn't significant,
-        // and so isn't a problem for us.
-        int r = std::rand() % nonempty_channels.size();
-        auto channel = nonempty_channels[r];
-        int should_keep = std::rand() % 4;
-        if (should_keep) {
-          // simulate a successful delivery of the message
-          channel->deliver_message();
-        } else {
-          // simulate a drop of the message
-          channel->drop_message();
-        }
-      }
-    }
-    // Now that the simulation is done, print out the Paxos Log and see what we have.
-    for (int i = 0; i < 5; i++) {
-      slaves[i]->paxos_log->debug_print();
-    }
-
-    UNIVERSAL_ASSERT_MESSAGE(
-      verify_paxos_logs(slaves),
-      "The Paxos Logs should agree with one another.")
-  };
-}
-
-TestFunction Tests::test4() {
-  return [this](
-      Constants const& constants,
-      std::vector<std::unique_ptr<SlaveTesting>>& slaves,
-      std::vector<std::vector<ChannelTesting*>>& all_channels,
-      std::vector<ChannelTesting*>& nonempty_channels) {
-    std::srand(0);
-    int nodes_failed = 0;
-    // Send the client message to the first Universal Slave
-    auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
-    for (int i = 0; i < 300; i++) {
-      // Send a client message to some node in the Paxos Group. The node is
-      // chosen randomly.
-      auto incoming_message = IncomingMessage(client_endpoint_id,
-          build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[std::rand() % slaves.size()]->scheduler->queue_message(incoming_message);
-
-      // Simulate the message exchanging of all Slaves. There is a 1%
-      // chance that we'll stop sending messages and move on.
-      while (nonempty_channels.size() > 0 && ((std::rand() % 100) != 0)) {
-        // We use modulus to reduce the random number to the range we want.
-        // There will be minor bias with this method, but this isn't significant,
-        // and so isn't a problem for us.
-        int r = std::rand() % nonempty_channels.size();
-        auto channel = nonempty_channels[r];
-        int should_keep = std::rand() % 4;
-        if (should_keep) {
-          // simulate a successful delivery of the message
-          channel->deliver_message();
-        } else {
-          // simulate a drop of the message
-          channel->drop_message();
-        }
-
-        // Fail a node if there isn't already a failed node.
-        if (nodes_failed < 3 && (std::rand() % 1000 == 0)) {
-          if (nodes_failed == 0) {
-            mark_node_as_unresponsive(all_channels, 2);
-          } else if (nodes_failed == 1) {
-            mark_node_as_unresponsive(all_channels, 3);
-          } else if (nodes_failed == 2) {
-            mark_node_as_unresponsive(all_channels, 4);
-          }
-          nodes_failed++;
-        }
-      }
-    }
-    // Now that the simulation is done, print out the Paxos Log and see what we have.
-    for (int i = 0; i < 5; i++) {
-      slaves[i]->paxos_log->debug_print();
-    }
-
-    UNIVERSAL_ASSERT_MESSAGE(
-      verify_paxos_logs(slaves),
-      "The Paxos Logs should agree with one another.")
-  };
-}
-
-TestFunction Tests::test5() {
-  return [this](
-      Constants const& constants,
-      std::vector<std::unique_ptr<SlaveTesting>>& slaves,
-      std::vector<std::vector<ChannelTesting*>>& all_channels,
-      std::vector<ChannelTesting*>& nonempty_channels) {
-    std::srand(0);
     bool passed = true;
     // Wait one heartbeat cycle so that the nodes can send each other a heartbeat
     for (int i = 0; i < constants.heartbeat_period; i++) {
@@ -253,7 +139,7 @@ TestFunction Tests::test5() {
   };
 }
 
-TestFunction Tests::test6() {
+TestFunction Tests::test4() {
   return [this](
       Constants const& constants,
       std::vector<std::unique_ptr<SlaveTesting>>& slaves,
@@ -270,10 +156,7 @@ TestFunction Tests::test6() {
         auto incoming_message = IncomingMessage(client_endpoint_id,
             build_client_request("m" + std::to_string(client_request_id)).SerializeAsString());
         slaves[target_slave]->scheduler->queue_message(incoming_message);
-
-        while (nonempty_channels.size() > 0) {
-          nonempty_channels[0]->deliver_message();
-        }
+        run_for_milliseconds(slaves, nonempty_channels, 5);
       }
     };
     mark_node_as_unresponsive(all_channels, 0);
@@ -310,26 +193,11 @@ TestFunction Tests::test6() {
     }
 
     // Make sure that at least one heartbeat is sent to ensure a leader is known
-    for (int i = 0; i < constants.heartbeat_period; i++) {
-      for (int j = 0; j < slaves.size(); j++) {
-        slaves[j]->clock->increment_time(1);
-      }
-      // Exchange all the messages that need to be exchanged
-      while (nonempty_channels.size() > 0) {
-        nonempty_channels[0]->deliver_message();
-      }
-    }
-
+    // (plus an extra 5 milliseconds to make sure all messages are sent).
+    run_for_milliseconds(slaves, nonempty_channels, constants.heartbeat_period + 5);
     // Make sure one sync message is sent to ensure at least one syncing
-    for (int i = 0; i < constants.log_syncer_period; i++) {
-      for (int j = 0; j < slaves.size(); j++) {
-        slaves[j]->clock->increment_time(1);
-      }
-      // Exchange all the messages that need to be exchanged
-      while (nonempty_channels.size() > 0) {
-        nonempty_channels[0]->deliver_message();
-      }
-    }
+    // (plus an extra 5 milliseconds to make sure all messages are sent).
+    run_for_milliseconds(slaves, nonempty_channels, constants.log_syncer_period + 5);
 
     UNIVERSAL_ASSERT_MESSAGE(verify_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
     // All of the PaxosLogs should now be equal
@@ -346,12 +214,75 @@ MessageWrapper Tests::build_client_request(std::string message) {
   auto request_message = new proto::client::ClientRequest();
   request_message->set_request_id(0);
   request_message->set_request_type(proto::client::ClientRequest_Type_READ);
-  request_message->set_data(message);
+  request_message->set_value(message);
   auto client_message = new proto::client::ClientMessage();
   client_message->set_allocated_request(request_message);
   auto message_wrapper = proto::message::MessageWrapper();
   message_wrapper.set_allocated_client_message(client_message);
   return message_wrapper;
+}
+
+// Looks at the proposer queues and returns true iff there is a task scheduled in one.
+bool Tests::some_proposer_queue_nonempty(
+  std::vector<std::unique_ptr<SlaveTesting>>& slaves) {
+    for (auto const& slave: slaves) {
+      if (!slave->proposer_queue->empty()) {
+        return true;
+      }
+    }
+    return false;
+}
+
+void Tests::run_until_completion(
+  std::vector<std::unique_ptr<SlaveTesting>>& slaves,
+  std::vector<ChannelTesting*>& nonempty_channels) {
+    while (some_proposer_queue_nonempty(slaves) || nonempty_channels.size() > 0) {
+      run_for_milliseconds(slaves, nonempty_channels, 1);
+    }
+}
+
+void Tests::run_for_milliseconds(
+  std::vector<std::unique_ptr<SlaveTesting>>& slaves,
+  std::vector<ChannelTesting*>& nonempty_channels,
+  int milliseconds) {
+    // Since we increase the clocks by 1ms, we assume one message is passed along a
+    // channel on average (remember there 2 channels between 2 nodes, one for each direction).
+    auto n = slaves.size() * (slaves.size() + 1); // the number of messages to exchange
+    for (auto t = 0; t < milliseconds; t++) {
+      for (auto const& slave: slaves) {
+        if (std::rand() % 100 < 99) {
+          // This if statement helps simulate unsynchronized clocks. This is a fairly
+          // naive method; it doesn't simulate clocks that have slightly different speeds.
+          slave->clock->increment_time(1); 
+        }
+      }
+      auto channels_sent = std::unordered_set<ChannelTesting*>();
+      for (auto i = 0; i < n; i++) {
+        if (std::rand() % 10 < 9) {
+          // This if statement helps prevent the exact same number of
+          // of messages being exchanged everytime.
+          auto channels_not_sent = std::vector<ChannelTesting*>();
+          for (auto const& channel : nonempty_channels) {
+            if (channels_sent.find(channel) == channels_sent.end()) {
+              channels_not_sent.push_back(channel);
+            }
+          }
+          if (channels_not_sent.size() > 0) {
+            auto& channel = channels_not_sent[std::rand() % channels_not_sent.size()];
+            if (std::rand() % 10 < 9) {
+              // simulate a successful delivery of the message
+              channel->deliver_message();
+            } else {
+              // simulate a drop of the message
+              channel->drop_message();
+            }
+            channels_sent.insert(channel);
+          } else {
+            break;
+          }
+        }
+      }
+    }
 }
 
 bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<SlaveTesting>>& slaves) {

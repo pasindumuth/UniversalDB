@@ -10,6 +10,7 @@
 #include <slave/FailureDetector.h>
 #include <slave/IncomingMessageHandler.h>
 #include <slave/LogSyncer.h>
+#include <slave/ProposerQueue.h>
 #include <testing/SlaveTesting.h>
 
 namespace uni {
@@ -27,6 +28,7 @@ using uni::slave::ClientRequestHandler;
 using uni::slave::FailureDetector;
 using uni::slave::IncomingMessageHandler;
 using uni::slave::LogSyncer;
+using uni::slave::ProposerQueue;
 using uni::testing::SlaveTesting;
 
 Constants initialize_constants() {
@@ -79,7 +81,8 @@ void TestDriver::run_test(TestFunction test) {
       return uni::paxos::SinglePaxosHandler(constants, *slave.connections_out, *slave.paxos_log, index);
     };
     slave.multipaxos_handler = std::make_unique<MultiPaxosHandler>(*slave.paxos_log, paxos_instance_provider);
-    slave.client_request_handler = std::make_unique<ClientRequestHandler>(*slave.multipaxos_handler);
+    slave.proposer_queue = std::make_unique<ProposerQueue>(*slave.timer_scheduler);
+    slave.client_request_handler = std::make_unique<ClientRequestHandler>(*slave.multipaxos_handler, *slave.proposer_queue);
     slave.failure_detector = std::make_unique<FailureDetector>(constants, *slave.connections_out, *slave.timer_scheduler);
     slave.log_syncer = std::make_unique<LogSyncer>(constants, *slave.connections_out, *slave.timer_scheduler, *slave.paxos_log, *slave.failure_detector);
     slave.incoming_message_handler = std::make_unique<IncomingMessageHandler>(*slave.client_request_handler, *slave.failure_detector, *slave.log_syncer, *slave.multipaxos_handler);

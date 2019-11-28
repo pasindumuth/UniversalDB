@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     auto request_message = new proto::client::ClientRequest();
     request_message->set_request_id(request_id);
     request_message->set_request_type(proto::client::ClientRequest_Type_READ);
-    request_message->set_data(message);
+    request_message->set_value(message);
 
     auto client_message = new proto::client::ClientMessage();
     client_message->set_allocated_request(request_message);

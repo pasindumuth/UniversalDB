@@ -20,33 +20,24 @@ namespace testing {
  */
 class Tests {
  public:
-  // This is a test where a client message is sent, all Paxos messages are delivered
-  // until there are no more message left in the Channels.
-  TestFunction test1();
-
-  // This is a test where a client message is sent, and a quarter of the messages
-  // are dropped. The Paxos messages are dealt with until there are no more
-  // messages left in the Channels.
-  TestFunction test2();
-
   // This is a test where the sending of client requests, the delivery of Paxos messages,
   // and the dropping of Paxos messages are all interleaved. We drop a quarter of all
   // Paxos messages.
-  TestFunction test3();
+  TestFunction test1();
 
   // This is a test where the sending of client requests, the delivery of Paxos messages,
   // and the dropping of Paxos messages are interleaved, and node is failed at some
   // random time.
-  TestFunction test4();
+  TestFunction test2();
 
   // This is a test that tests the FailureDetector by failing a node, waiting some time
   // and seeing if the remaining nodes have marked that node as deleted.
-  TestFunction test5();
+  TestFunction test3();
 
   // This is a test where PaxosLogs are made to be populated evenly (by partitioning
   // off some of the nodes and populated the other nodes with message), and the LogSyncer
   // is left to do it's job and even out the PaxosLogs across all nodes.
-  TestFunction test6();
+  TestFunction test4();
 
  private:
   // Creates a MessageWrapper (the top level message that is sent over
@@ -56,6 +47,24 @@ class Tests {
   // Goes through all paxos logs and makes sure they are compatible. That is,
   // if log index i is populated in logs l1 and l2 with values v1 and v2, then v1 = v2.
   bool verify_paxos_logs(std::vector<std::unique_ptr<uni::testing::SlaveTesting>>& slaves);
+
+  // Looks at the proposer queues and returns true iff there is a task scheduled in one.
+  bool some_proposer_queue_nonempty(
+    std::vector<std::unique_ptr<SlaveTesting>>& slaves);
+
+  // While there are messages in the ProposerQueue at any node, and while are any
+  // messages in the channels, keep increasing the clock on each slave. There is no
+  // message dropping.
+  void run_until_completion(
+    std::vector<std::unique_ptr<SlaveTesting>>& slaves,
+    std::vector<uni::net::ChannelTesting*>& nonempty_channels);
+
+  // Runs for the provided number of milliseconds, each millisecond delivering n(n+1)
+  // messages, with a drop rate of 0.1.
+  void run_for_milliseconds(
+    std::vector<std::unique_ptr<SlaveTesting>>& slaves,
+    std::vector<uni::net::ChannelTesting*>& nonempty_channels,
+    int milliseconds);
 
   // Checks if 2 paxos logs are equal. This simply compares the maps.
   bool equals(uni::paxos::PaxosLog& paxos_log1, uni::paxos::PaxosLog& paxos_log2);

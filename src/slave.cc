@@ -30,6 +30,7 @@
 #include <slave/IncomingMessageHandler.h>
 #include <slave/KVStore.h>
 #include <slave/LogSyncer.h>
+#include <slave/ProposerQueue.h>
 #include <slave/ServerConnectionHandler.h>
 #include <utils.h>
 
@@ -115,7 +116,8 @@ int main(int argc, char* argv[]) {
   auto multipaxos_handler = uni::paxos::MultiPaxosHandler(paxos_log, paxos_instance_provider);
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
   auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor);
-  auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler);
+  auto proposer_queue = uni::slave::ProposerQueue(timer_scheduler);
+  auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler, proposer_queue);
   auto failure_detector = uni::slave::FailureDetector(constants, connections_out, timer_scheduler);
   auto log_syncer = uni::slave::LogSyncer(constants, connections_out, timer_scheduler, paxos_log, failure_detector);
   auto incoming_message_handler = uni::slave::IncomingMessageHandler(client_request_handler, failure_detector, log_syncer, multipaxos_handler);

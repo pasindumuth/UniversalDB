@@ -11,7 +11,9 @@ message ClientRequest {
 
   uint32 request_id = 1;
   Type request_type = 2;
-  string data = 3;
+  string key = 3;
+  string value = 4;
+  uint64 timestamp = 5;
 }
 
 // Response sent to a client from the Universal slaves.
