@@ -46,7 +46,7 @@ TestFunction Tests::test1() {
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
     for (int i = 0; i < 5; i++) {
-      slaves[i]->paxos_log->debug_print();
+      LOG(uni::logging::Level::DEBUG, slaves[i]->paxos_log->debug_string())
     }
 
     UNIVERSAL_ASSERT_MESSAGE(
@@ -86,7 +86,7 @@ TestFunction Tests::test2() {
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
     for (int i = 0; i < 5; i++) {
-      slaves[i]->paxos_log->debug_print();
+      LOG(uni::logging::Level::DEBUG, slaves[i]->paxos_log->debug_string())
     }
 
     UNIVERSAL_ASSERT_MESSAGE(

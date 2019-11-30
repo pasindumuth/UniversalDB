@@ -159,7 +159,7 @@ void SinglePaxosHandler::learn(Learn const& learn_message) {
       _learner_state.learned = true;
       // Update the Paxos Log with the newly learned value.
       _paxos_log.set_entry(_paxos_log_index, std::get<0>(it->second));
-      _paxos_log.debug_print();
+      LOG(uni::logging::Level::DEBUG, _paxos_log.debug_string())
     }
   }
 }

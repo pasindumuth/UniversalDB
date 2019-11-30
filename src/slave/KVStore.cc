@@ -64,7 +64,6 @@ std::function<void(PaxosLogEntry)> KVStore::get_paxos_callback() {
   };
 }
 
-// TODO: make this mess look nicer
 std::string KVStore::debug_string() const {
   auto ss = std::stringstream();
   ss << "KVStore: {" << std::endl;

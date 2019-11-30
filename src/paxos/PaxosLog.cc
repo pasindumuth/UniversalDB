@@ -4,6 +4,7 @@
 
 #include <assert/assert.h>
 #include <logging/log.h>
+#include <utils/stringutils.h>
 
 namespace uni {
 namespace paxos {
@@ -78,14 +79,17 @@ std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> PaxosLog::get_log
   return _log;
 }
 
-void PaxosLog::debug_print() const {
+std::string PaxosLog::debug_string() const {
   auto ss = std::stringstream();
-  ss << "Printing PaxosLog:" << std::endl;
+  ss << "PaxosLog: {" << std::endl;
   for (auto const& [index, entry] : _log) {
-    ss << "index: " << index << ", entry: " << entry.DebugString() << std::endl;
+    ss << "  " << "index: " << index << std::endl;
+    ss << "  " << "value: {" << std::endl;
+    ss << uni::utils::indent(entry.DebugString(), 4);
+    ss << "  }" << std::endl;
   }
-  ss << "End of PaxosLog" << std::endl;
-  LOG(uni::logging::Level::DEBUG, ss.str())
+  ss << "}" << std::endl;
+  return ss.str();
 }
 
 } // namespace paxos
