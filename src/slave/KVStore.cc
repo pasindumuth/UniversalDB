@@ -51,10 +51,10 @@ std::function<void(PaxosLogEntry)> KVStore::get_paxos_callback() {
   return [this](PaxosLogEntry entry) {
     switch (entry.type()) {
       case PaxosLogEntry::WRITE:
-        write(entry.key(), entry.value(), entry.timestamp());
+        write(entry.key().value(), entry.value().value(), entry.timestamp().value());
         break;
       case PaxosLogEntry::READ:
-        read(entry.key(), entry.timestamp());
+        read(entry.key().value(), entry.timestamp().value());
         break;
       default:
         // No-op

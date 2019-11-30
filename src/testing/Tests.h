@@ -39,6 +39,16 @@ class Tests {
   // is left to do it's job and even out the PaxosLogs across all nodes.
   TestFunction test4();
 
+  // Makes sure that KVStore updates as expected. We must insert requsts in there in a
+  // controlled way.
+  // TestFunction test5();
+
+  // To prevent memory leaks, we have reflection of various memory consuming variables.
+  // This includes derivations of the PaxosLog (like the request_id_set). There are methods
+  // in these classes to get the size of the datastructures, so in this test, we make
+  // sure they decrease together.
+  // TestFunction test6();
+
  private:
   // Creates a MessageWrapper (the top level message that is sent over
   // the network) using data that only constitutes the client message.

@@ -85,7 +85,7 @@ std::string PaxosLog::debug_string() const {
   for (auto const& [index, entry] : _log) {
     ss << "  " << "index: " << index << std::endl;
     ss << "  " << "value: {" << std::endl;
-    ss << uni::utils::indent(entry.DebugString(), 4);
+    ss << uni::utils::string::indent(entry.DebugString(), 4);
     ss << "  }" << std::endl;
   }
   ss << "}" << std::endl;

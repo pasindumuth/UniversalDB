@@ -1,8 +1,11 @@
 #ifndef UNI_SLAVE_CLIENTREQUESTHANDLER
 #define UNI_SLAVE_CLIENTREQUESTHANDLER
 
+#include <functional>
+
 #include <net/endpoint_id.h>
 #include <paxos/MultiPaxosHandler.h>
+#include <paxos/PaxosLog.h>
 #include <proto/client.pb.h>
 #include <slave/ProposerQueue.h>
 
@@ -13,13 +16,20 @@ class ClientRequestHandler {
  public:
   ClientRequestHandler(
       uni::paxos::MultiPaxosHandler& multi_paxos_handler,
+      uni::paxos::PaxosLog& paxos_log,
       uni::slave::ProposerQueue& proposer_queue);
 
-  void handle_request(uni::net::endpoint_id const& endpoint_id, proto::client::ClientRequest const& message);
+  void handle_request(
+    std::function<void(proto::client::ClientResponse*)> response_callback,
+    proto::client::ClientRequest const& message);
 
  private:
   uni::paxos::MultiPaxosHandler& _multi_paxos_handler;
+  uni::paxos::PaxosLog& _paxos_log;
   uni::slave::ProposerQueue& _proposer_queue;
+
+  // Another thing to maintain, another thing that could result in a memory leak.
+  std::unordered_set<std::string> _request_id_set;
 };
 
 } // namespace slave

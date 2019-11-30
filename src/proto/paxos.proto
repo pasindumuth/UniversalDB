@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
+
 package proto.paxos;
 
 // The fields that must be populated in PaxosLogEntry when the EntryType is READ.
@@ -26,11 +28,11 @@ message PaxosLogEntry {
     WRITE = 1;
   }
 
-  uint32 request_id = 1;
+  google.protobuf.StringValue request_id = 1;
   EntryType type = 2;
-  string key = 3;
-  string value = 4;
-  uint64 timestamp = 5;
+  google.protobuf.StringValue key = 3;
+  google.protobuf.StringValue value = 4;
+  google.protobuf.UInt64Value timestamp = 5;
 }
 
 message Prepare {

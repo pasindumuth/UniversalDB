@@ -14,6 +14,7 @@
 #include <net/testing/ChannelTesting.h>
 #include <proto/paxos.pb.h>
 #include <testing/SlaveTesting.h>
+#include <utils/pbutil.h>
 
 namespace uni {
 namespace testing {
@@ -217,11 +218,11 @@ static long timestamp = 0;
 
 MessageWrapper Tests::build_client_request(std::string message) {
   auto request_message = new proto::client::ClientRequest();
-  request_message->set_request_id(++request_id);
-  request_message->set_request_type(proto::client::ClientRequest_Type_WRITE);
-  request_message->set_key("key");
-  request_message->set_value(message);
-  request_message->set_timestamp(++timestamp);
+  request_message->set_request_id(std::to_string(++request_id));
+  request_message->set_request_type(proto::client::ClientRequest::WRITE);
+  request_message->set_allocated_key(uni::utils::pb::string("key"));
+  request_message->set_allocated_value(uni::utils::pb::string(message));
+  request_message->set_allocated_timestamp(uni::utils::pb::uint64(++timestamp));
   auto client_message = new proto::client::ClientMessage();
   client_message->set_allocated_request(request_message);
   auto message_wrapper = proto::message::MessageWrapper();

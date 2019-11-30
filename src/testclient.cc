@@ -4,12 +4,14 @@
 
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
+#include <google/protobuf/wrappers.pb.h>
 
 #include <logging/log.h>
 #include <net/impl/ChannelImpl.h>
 #include <proto/client.pb.h>
 #include <proto/message.pb.h>
 #include <utils.h>
+#include <utils/pbutil.h>
 
 using boost::asio::ip::tcp;
 
@@ -41,11 +43,11 @@ int main(int argc, char* argv[]) {
     std::string value = message.substr(2, 2);
 
     auto request_message = new proto::client::ClientRequest();
-    request_message->set_request_id(request_id);
+    request_message->set_request_id(std::to_string(request_id));
     request_message->set_request_type(proto::client::ClientRequest::WRITE);
-    request_message->set_key(key);
-    request_message->set_value(message);
-    request_message->set_timestamp(std::time(nullptr));
+    request_message->set_allocated_key(uni::utils::pb::string(key));
+    request_message->set_allocated_value(uni::utils::pb::string(value));
+    request_message->set_allocated_timestamp(uni::utils::pb::uint64(std::time(nullptr)));
 
     auto client_message = new proto::client::ClientMessage();
     client_message->set_allocated_request(request_message);

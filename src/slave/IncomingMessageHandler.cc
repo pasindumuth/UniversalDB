@@ -1,11 +1,14 @@
 #include "IncomingMessageHandler.h"
 
 #include <logging/log.h>
+#include <proto/client.pb.h>
 #include <proto/message.pb.h>
 
 namespace uni {
 namespace slave {
 
+using proto::client::ClientMessage;
+using proto::client::ClientResponse;
 using proto::message::MessageWrapper;
 using uni::net::IncomingMessage;
 using uni::paxos::MultiPaxosHandler;
@@ -31,7 +34,12 @@ void IncomingMessageHandler::handle(IncomingMessage incoming_message) {
     auto const& client_message = message_wrapper.client_message();
     if (client_message.has_request()) {
       LOG(uni::logging::Level::TRACE2, "Client Request gotten.")
-      _client_request_handler.handle_request(endpoint_id, client_message.request());
+      _client_request_handler.handle_request([](ClientResponse* client_response){
+        auto client_message = new ClientMessage();
+        client_message->set_allocated_response(client_response);
+        auto message_wrapper = new MessageWrapper();
+        message_wrapper->set_allocated_client_message(client_message);
+      }, client_message.request());
     }
   } else if (message_wrapper.has_paxos_message()) {
     LOG(uni::logging::Level::TRACE2, "Paxos Message gotten.")

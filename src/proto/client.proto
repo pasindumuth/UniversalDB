@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
+
 package proto.client;
 
 // Message sent from client applications to the Universal slaves.
@@ -9,11 +11,11 @@ message ClientRequest {
     WRITE = 1;
   }
 
-  uint32 request_id = 1;
+  string request_id = 1;
   Type request_type = 2;
-  string key = 3;
-  string value = 4;
-  uint64 timestamp = 5;
+  google.protobuf.StringValue key = 3;
+  google.protobuf.StringValue value = 4;
+  google.protobuf.UInt64Value timestamp = 5;
 }
 
 // Response sent to a client from the Universal slaves.
@@ -23,11 +25,13 @@ message ClientResponse {
     ERROR = 1;
   }
 
-  Code error_code = 1;
+  google.protobuf.StringValue value = 1;
+  Code error_code = 2;
 }
 
 message ClientMessage {
   oneof client_message {
     ClientRequest request = 1;
+    ClientResponse response = 2;
   }
 }
