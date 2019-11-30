@@ -11,6 +11,7 @@
 #include <slave/ClientRequestHandler.h>
 #include <slave/FailureDetector.h>
 #include <slave/IncomingMessageHandler.h>
+#include <slave/KVStore.h>
 #include <slave/LogSyncer.h>
 #include <slave/ProposerQueue.h>
 
@@ -28,6 +29,7 @@ struct SlaveTesting {
   std::unique_ptr<uni::slave::ClientRequestHandler> client_request_handler;
   std::unique_ptr<uni::slave::FailureDetector> failure_detector;
   std::unique_ptr<uni::slave::IncomingMessageHandler> incoming_message_handler;
+  std::unique_ptr<uni::slave::KVStore> kvstore;
   std::unique_ptr<uni::slave::LogSyncer> log_syncer;
 };
 

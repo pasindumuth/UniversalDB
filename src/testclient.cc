@@ -1,5 +1,6 @@
-#include <string>
+#include <ctime>
 #include <iostream>
+#include <string>
 
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
@@ -36,11 +37,15 @@ int main(int argc, char* argv[]) {
     char message_array[50];
     std::cin >> message_array;
     std::string message(message_array);
+    std::string key = message.substr(0, 2);
+    std::string value = message.substr(2, 2);
 
     auto request_message = new proto::client::ClientRequest();
     request_message->set_request_id(request_id);
-    request_message->set_request_type(proto::client::ClientRequest_Type_READ);
+    request_message->set_request_type(proto::client::ClientRequest::WRITE);
+    request_message->set_key(key);
     request_message->set_value(message);
+    request_message->set_timestamp(std::time(nullptr));
 
     auto client_message = new proto::client::ClientMessage();
     client_message->set_allocated_request(request_message);

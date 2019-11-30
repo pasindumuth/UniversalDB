@@ -82,10 +82,10 @@ void PaxosLog::debug_print() const {
   auto ss = std::stringstream();
   ss << "Printing PaxosLog:" << std::endl;
   for (auto const& [index, entry] : _log) {
-    ss << "index: " << index << ", entry: " << entry.SerializeAsString() << std::endl;
+    ss << "index: " << index << ", entry: " << entry.DebugString() << std::endl;
   }
   ss << "End of PaxosLog" << std::endl;
-  LOG(uni::logging::DEBUG, ss.str())
+  LOG(uni::logging::Level::DEBUG, ss.str())
 }
 
 } // namespace paxos

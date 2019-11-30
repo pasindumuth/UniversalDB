@@ -32,6 +32,8 @@ class KVStore {
 
   std::function<void(proto::paxos::PaxosLogEntry)> get_paxos_callback();
 
+  std::string debug_string() const;
+
  private:
   std::map<std::string, MultiVersionEntry> _mvkvs;
 };

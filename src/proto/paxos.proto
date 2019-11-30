@@ -26,10 +26,11 @@ message PaxosLogEntry {
     WRITE = 1;
   }
 
-  EntryType type = 1;
-  string key = 2;
-  string value = 3;
-  uint64 timestamp = 4;
+  uint32 request_id = 1;
+  EntryType type = 2;
+  string key = 3;
+  string value = 4;
+  uint64 timestamp = 5;
 }
 
 message Prepare {

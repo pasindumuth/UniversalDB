@@ -60,7 +60,27 @@ std::function<void(PaxosLogEntry)> KVStore::get_paxos_callback() {
         // No-op
         break;
     }
+    // LOG(uni::logging::Level::DEBUG, debug_string()); // Only useful 
   };
+}
+
+// TODO: make this mess look nicer
+std::string KVStore::debug_string() const {
+  auto ss = std::stringstream();
+  ss << "KVStore: {" << std::endl;
+  for (auto const& [key, entry] : _mvkvs) {
+    ss << "  " << "key: " << key << std::endl;
+    ss << "  " << "value: {" << std::endl;
+    ss << "    " << "lat: " << entry.lat << std::endl;
+    ss << "    " << "versions: [" << std::endl;
+    for (auto const& version: entry.versions) {
+      ss << "      " << "{ value: " << version.value << ", timestamp: " << version.timestamp << " }" << std::endl;
+    }
+    ss << "    " << "]" << std::endl;
+    ss << "  " << "}" << std::endl;
+  }
+  ss << "}" << std::endl;
+  return ss.str();
 }
 
 } // namespace slave

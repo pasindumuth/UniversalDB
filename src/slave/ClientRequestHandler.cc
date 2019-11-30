@@ -2,9 +2,11 @@
 
 #include <iostream>
 
+#include <assert/assert.h>
 #include <logging/log.h>
-#include <proto/paxos.pb.h>
+#include <proto/client.pb.h>
 #include <proto/message.pb.h>
+#include <proto/paxos.pb.h>
 
 namespace uni {
 namespace slave {
@@ -24,8 +26,22 @@ ClientRequestHandler::ClientRequestHandler(
 void ClientRequestHandler::handle_request(
     uni::net::endpoint_id const& endpoint_id, ClientRequest const& message) {
   _proposer_queue.add_task([this, message](){
+    // TOOD: fix the logic here
     auto log_entry = PaxosLogEntry();
-    log_entry.set_value(message.SerializeAsString());
+    log_entry.set_request_id(message.request_id());
+    switch (message.request_type()) {
+      case ClientRequest::WRITE:
+        log_entry.set_type(PaxosLogEntry::WRITE);
+        break;
+      case ClientRequest::READ:
+        log_entry.set_type(PaxosLogEntry::READ);
+        break;
+      default:
+        UNIVERSAL_ASSERT_MESSAGE(false, "Client request type should be READ or WRITE")
+    }
+    log_entry.set_key(message.key());
+    log_entry.set_value(message.value());
+    log_entry.set_timestamp(message.timestamp());
     _multi_paxos_handler.propose(log_entry);
     return -1;
   });

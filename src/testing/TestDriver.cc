@@ -9,6 +9,7 @@
 #include <slave/ClientRequestHandler.h>
 #include <slave/FailureDetector.h>
 #include <slave/IncomingMessageHandler.h>
+#include <slave/KVStore.h>
 #include <slave/LogSyncer.h>
 #include <slave/ProposerQueue.h>
 #include <testing/SlaveTesting.h>
@@ -27,6 +28,7 @@ using uni::paxos::PaxosLog;
 using uni::slave::ClientRequestHandler;
 using uni::slave::FailureDetector;
 using uni::slave::IncomingMessageHandler;
+using uni::slave::KVStore;
 using uni::slave::LogSyncer;
 using uni::slave::ProposerQueue;
 using uni::testing::SlaveTesting;
@@ -89,6 +91,8 @@ void TestDriver::run_test(TestFunction test) {
     slave.scheduler->set_callback([&slave](uni::net::IncomingMessage message) {
       slave.incoming_message_handler->handle(message);
     });
+    slave.kvstore = std::make_unique<KVStore>();
+    slave.paxos_log->add_callback(slave.kvstore->get_paxos_callback());
   }
 
   try {

@@ -207,14 +207,21 @@ TestFunction Tests::test4() {
           "Paxos Logs should all be equal.")
       }
     }
+    LOG(uni::logging::Level::DEBUG, slaves[0]->kvstore->debug_string());
   };
 }
 
+// TODO(pasindu): Get rid of these in due time.
+static long request_id = 0;
+static long timestamp = 0;
+
 MessageWrapper Tests::build_client_request(std::string message) {
   auto request_message = new proto::client::ClientRequest();
-  request_message->set_request_id(0);
-  request_message->set_request_type(proto::client::ClientRequest_Type_READ);
+  request_message->set_request_id(++request_id);
+  request_message->set_request_type(proto::client::ClientRequest_Type_WRITE);
+  request_message->set_key("key");
   request_message->set_value(message);
+  request_message->set_timestamp(++timestamp);
   auto client_message = new proto::client::ClientMessage();
   client_message->set_allocated_request(request_message);
   auto message_wrapper = proto::message::MessageWrapper();
