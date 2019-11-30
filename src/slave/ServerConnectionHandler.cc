@@ -26,7 +26,7 @@ ServerConnectionHandler::ServerConnectionHandler(
 void ServerConnectionHandler::async_accept() {
   _acceptor.async_accept([this](const boost::system::error_code &ec, tcp::socket socket) {
     if (!ec) {
-      LOG(uni::logging::Level::TRACE, "Received a connection from " + socket.remote_endpoint().address().to_string())
+      LOG(uni::logging::Level::TRACE2, "Received a connection from " + socket.remote_endpoint().address().to_string())
       _connections_in.add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(socket)));
       async_accept();
     } else {

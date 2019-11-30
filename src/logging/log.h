@@ -13,10 +13,11 @@ enum Level {
   WARN = 2,
   INFO = 3,
   DEBUG = 4,
-  TRACE = 5
+  TRACE1 = 5,
+  TRACE2 = 6
 };
 
-static const char* LevelNames[] = { "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE" };
+static const char* LevelNames[] = { "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE1", "TRACE2" };
 
 Level& get_log_level();
 

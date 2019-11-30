@@ -50,10 +50,10 @@ void ChannelImpl::send(std::string message) {
   int length = message.size();
   boost::asio::async_write(_socket, boost::asio::buffer(INT_TO_STR(length)),
       [this, message](const boost::system::error_code&, size_t bytes_transferred) {
-   LOG(uni::logging::Level::TRACE, "Header bytes sent: " + std::to_string(bytes_transferred))
+   LOG(uni::logging::Level::TRACE2, "Header bytes sent: " + std::to_string(bytes_transferred))
     boost::asio::async_write(_socket, boost::asio::buffer(message),
         [this](const boost::system::error_code&, size_t bytes_transferred) {
-     LOG(uni::logging::Level::TRACE, "Body bytes sent: " + std::to_string(bytes_transferred))
+     LOG(uni::logging::Level::TRACE2, "Body bytes sent: " + std::to_string(bytes_transferred))
       std::unique_lock<std::mutex> lock(_queue_lock);
       _message_queue.pop();
       if (_message_queue.size() > 0) {
@@ -67,9 +67,9 @@ void ChannelImpl::recv() {
   void* header_buf = malloc(4);
   boost::asio::async_read(_socket, boost::asio::buffer(header_buf, 4),
       [this, header_buf](const boost::system::error_code&, size_t bytes_transferred) {
-   LOG(uni::logging::TRACE, "Header bytes received: " + std::to_string(bytes_transferred))
+   LOG(uni::logging::TRACE2, "Header bytes received: " + std::to_string(bytes_transferred))
     if (bytes_transferred == 0) {
-     LOG(uni::logging::TRACE, "Remove socket closed")
+     LOG(uni::logging::TRACE2, "Remove socket closed")
       free(header_buf);
       _close_callback();
     } else {
@@ -78,7 +78,7 @@ void ChannelImpl::recv() {
       void* buf = malloc(length);
       boost::asio::async_read(_socket, boost::asio::buffer(buf, length),
           [this, buf, length](const boost::system::error_code&, size_t bytes_transferred) {
-       LOG(uni::logging::TRACE, "Body bytes received: " + std::to_string(bytes_transferred))
+       LOG(uni::logging::TRACE2, "Body bytes received: " + std::to_string(bytes_transferred))
         std::string serialized((char*) buf, length);
         free(buf);
         if (_recieve_callback(serialized)) {
