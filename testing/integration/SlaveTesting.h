@@ -17,6 +17,7 @@
 
 namespace uni {
 namespace testing {
+namespace integration {
 
 struct SlaveTesting {
   std::unique_ptr<uni::async::AsyncSchedulerTesting> scheduler;
@@ -33,6 +34,7 @@ struct SlaveTesting {
   std::unique_ptr<uni::slave::LogSyncer> log_syncer;
 };
 
+} // integration
 } // testing
 } // uni
 

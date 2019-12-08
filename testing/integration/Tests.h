@@ -11,6 +11,7 @@
 
 namespace uni {
 namespace testing {
+namespace integration {
 
 /**
  * This class defines test simulations. In a test simulation, the order in which
@@ -56,7 +57,7 @@ class Tests {
 
   // Goes through all paxos logs and makes sure they are compatible. That is,
   // if log index i is populated in logs l1 and l2 with values v1 and v2, then v1 = v2.
-  bool verify_paxos_logs(std::vector<std::unique_ptr<uni::testing::SlaveTesting>>& slaves);
+  bool verify_paxos_logs(std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves);
 
   // Looks at the proposer queues and returns true iff there is a task scheduled in one.
   bool some_proposer_queue_nonempty(
@@ -86,6 +87,7 @@ class Tests {
   void mark_node_as_responsive(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, unsigned node);
 };
 
+} // integration
 } // testing
 } // uni
 

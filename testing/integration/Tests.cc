@@ -18,6 +18,7 @@
 
 namespace uni {
 namespace testing {
+namespace integration {
 
 using google::protobuf::util::MessageDifferencer;
 using proto::message::MessageWrapper;
@@ -26,7 +27,7 @@ using uni::async::AsyncSchedulerTesting;
 using uni::net::ChannelTesting;
 using uni::paxos::PaxosLog;
 using uni::net::IncomingMessage;
-using uni::testing::SlaveTesting;
+using uni::testing::integration::SlaveTesting;
 
 TestFunction Tests::test1() {
   return [this](
@@ -342,5 +343,6 @@ void Tests::mark_node_as_responsive(std::vector<std::vector<ChannelTesting*>>& c
   }
 }
 
+} // integration
 } // testing
 } // uni

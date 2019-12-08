@@ -24,19 +24,38 @@ add_library(lib ${files})
 target_include_directories(lib PUBLIC src)
 target_link_libraries(lib proto protobuf ${Boost_LIBRARIES} ${Protobuf_LIBRARY})
 
+# Create Slave executable
 add_executable(Slave src/slave.cc)
 target_link_libraries(Slave lib)
 
+# Create Master executable
 add_executable(Master src/master.cc)
 target_link_libraries(Master lib)
 
+# Create TestClient executable
 add_executable(TestClient src/testclient.cc)
 target_link_libraries(TestClient lib)
 
+# Setup gtest
+include(FetchContent)
+
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        release-1.8.0
+)
+
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+  FetchContent_Populate(googletest)
+  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+endif()
+
+# Create create UniversalTest library and executable
 file(GLOB_RECURSE testfiles testing/**/*.cc)
 add_library(test ${testfiles})
 target_include_directories(test PUBLIC testing)
-target_link_libraries(test lib proto protobuf ${Boost_LIBRARIES} ${Protobuf_LIBRARY})
+target_link_libraries(test gtest_main lib proto protobuf ${Boost_LIBRARIES} ${Protobuf_LIBRARY})
 
 add_executable(UniversalTest testing/test.cc)
 target_link_libraries(UniversalTest test)

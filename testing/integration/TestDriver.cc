@@ -15,6 +15,7 @@
 
 namespace uni {
 namespace testing {
+namespace integration {
 
 using uni::async::ClockTesting;
 using uni::async::AsyncSchedulerTesting;
@@ -30,7 +31,7 @@ using uni::slave::IncomingMessageHandler;
 using uni::slave::KVStore;
 using uni::slave::LogSyncer;
 using uni::slave::ProposerQueue;
-using uni::testing::SlaveTesting;
+using uni::testing::integration::SlaveTesting;
 
 Constants initialize_constants() {
   return Constants(5, 1610, 1710, 1810, 1000, 4, 1000);
@@ -102,5 +103,6 @@ void TestDriver::run_test(TestFunction test) {
   }
 }
 
+} // integration
 } // testing
 } // uni

@@ -11,10 +11,11 @@
 
 namespace uni {
 namespace testing {
+namespace integration {
 
 using TestFunction = std::function<void(
     uni::constants::Constants const&,
-    std::vector<std::unique_ptr<uni::testing::SlaveTesting>>&,
+    std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>&,
     std::vector<std::vector<uni::net::ChannelTesting*>>&,
     std::vector<uni::net::ChannelTesting*>&)>;
 
@@ -30,6 +31,7 @@ class TestDriver {
   void run_test(TestFunction test);
 };
 
+} // integration
 } // testing
 } // uni
 
