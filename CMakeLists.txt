@@ -57,5 +57,9 @@ add_library(test ${testfiles})
 target_include_directories(test PUBLIC testing)
 target_link_libraries(test gtest_main lib proto protobuf ${Boost_LIBRARIES} ${Protobuf_LIBRARY})
 
-add_executable(UniversalTest testing/test.cc)
+add_executable(UniversalTest
+  testing/test.cc
+  testing/unit/slave/KVStoreTest.cc
+)
+
 target_link_libraries(UniversalTest test)

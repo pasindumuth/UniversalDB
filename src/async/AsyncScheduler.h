@@ -15,8 +15,8 @@ class AsyncScheduler {
   virtual void queue_message(uni::net::IncomingMessage message) = 0;
 };
 
-} // async
-} // uni
+} //  namespaceasync
+} //  namespaceuni
 
 
 #endif // UNI_ASYNC_ASYNCSCHEDULER_H

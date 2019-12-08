@@ -1,8 +1,9 @@
+#include "gtest/gtest.h"
+
 #include <assert/assert.h>
 #include <logging/log.h>
 #include <integration/TestDriver.h>
 #include <integration/Tests.h>
-#include <unit/UnitTestDriver.h>
 
 /*
  * Our testing scheme is as follows. We mock out Channel and AsyncScheduler such that
@@ -13,13 +14,11 @@
  * Slave it's associated with.
  */
 int main(int argc, char* argv[]) {
-  auto unit_test_driver = uni::testing::UnitTestDriver();
   auto test_driver = uni::testing::integration::TestDriver();
   auto tests = uni::testing::integration::Tests();
   uni::logging::get_log_level() = uni::logging::Level::DEBUG;
   std::srand(0); // initialize random numbers
   try {
-    unit_test_driver.run_tests();
     test_driver.run_test(tests.test1());
     test_driver.run_test(tests.test2());
     test_driver.run_test(tests.test3());
@@ -27,4 +26,8 @@ int main(int argc, char* argv[]) {
   } catch (uni::assert::UniversalException e) {
     std::cout << e.what() << std::endl;
   }
+
+  // Run unit tests
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
