@@ -17,6 +17,7 @@ using proto::client::ClientRequest;
 using proto::client::ClientResponse;
 using proto::message::MessageWrapper;
 using proto::paxos::PaxosLogEntry;
+using uni::paxos::index_t;
 using uni::paxos::MultiPaxosHandler;
 using uni::paxos::PaxosLog;
 using uni::slave::ProposerQueue;
@@ -28,9 +29,9 @@ ClientRequestHandler::ClientRequestHandler(
       : _multi_paxos_handler(multi_paxos_handler),
         _paxos_log(paxos_log),
         _proposer_queue(proposer_queue) {
-  _paxos_log.add_callback([this](PaxosLogEntry entry){
+  _paxos_log.add_callback([this](index_t index, PaxosLogEntry entry){
     if (entry.request_id().value().length() > 0) {
-      _request_id_set.insert(entry.request_id().value());
+      _request_id_map.insert({ entry.request_id().value(), index });
     }
   });
 }
@@ -41,16 +42,24 @@ void ClientRequestHandler::handle_request(
     ClientRequest const& message) {
   auto retry_count = std::make_shared<int>(0);
   _proposer_queue.add_task([this, retry_count, response_callback, message](){
-    if (_request_id_set.find(message.request_id()) != _request_id_set.end()) {
+    auto entry_index = _request_id_map.find(message.request_id());
+    if (entry_index != _request_id_map.end()) { // Is this correct?
       // The request was fullfilled in the last retry
       auto client_response = new ClientResponse();
       client_response->set_error_code(ClientResponse::SUCCESS);
+      if (message.request_type() == ClientRequest::READ) {
+        // Populate the value of the read
+        auto entry = _paxos_log.get_entry(entry_index->second);
+        client_response->set_allocated_value(uni::utils::pb::string(entry.get().value()));
+      }
       response_callback(client_response);
+      return -1;
     } else if (*retry_count == 3) { // TODO make this into a constant
       // Maximum number of retries have been reached
       auto client_response = new ClientResponse();
       client_response->set_error_code(ClientResponse::ERROR);
       response_callback(client_response);
+      return -1;
     }
     
     auto log_entry = PaxosLogEntry();

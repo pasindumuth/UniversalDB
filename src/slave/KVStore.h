@@ -9,6 +9,7 @@
 #include <boost/optional.hpp>
 
 #include <common/types.h>
+#include <paxos/PaxosTypes.h>
 #include <proto/paxos.pb.h>
 
 namespace uni {
@@ -30,7 +31,7 @@ class KVStore {
 
   boost::optional<std::string> read(std::string key, timestamp_t timestamp);
 
-  std::function<void(proto::paxos::PaxosLogEntry)> get_paxos_callback();
+  std::function<void(uni::paxos::index_t, proto::paxos::PaxosLogEntry)> get_paxos_callback();
 
   std::string debug_string() const;
 

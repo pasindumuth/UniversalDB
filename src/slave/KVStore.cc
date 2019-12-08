@@ -47,8 +47,8 @@ boost::optional<std::string> KVStore::read(std::string key, timestamp_t timestam
   }
 }
 
-std::function<void(PaxosLogEntry)> KVStore::get_paxos_callback() {
-  return [this](PaxosLogEntry entry) {
+std::function<void(uni::paxos::index_t, PaxosLogEntry)> KVStore::get_paxos_callback() {
+  return [this](uni::paxos::index_t index, PaxosLogEntry entry) {
     switch (entry.type()) {
       case PaxosLogEntry::WRITE:
         write(entry.key().value(), entry.value().value(), entry.timestamp().value());

@@ -2,12 +2,14 @@
 #define UNI_SLAVE_CLIENTREQUESTHANDLER
 
 #include <functional>
+#include <unordered_map>
 
 #include <net/endpoint_id.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosLog.h>
 #include <proto/client.pb.h>
 #include <slave/ProposerQueue.h>
+#include <paxos/PaxosTypes.h>
 
 namespace uni {
 namespace slave {
@@ -29,7 +31,7 @@ class ClientRequestHandler {
   uni::slave::ProposerQueue& _proposer_queue;
 
   // Another thing to maintain, another thing that could result in a memory leak.
-  std::unordered_set<std::string> _request_id_set;
+  std::unordered_map<std::string, uni::paxos::index_t> _request_id_map;
 };
 
 } // namespace slave

@@ -26,7 +26,7 @@ class Tests {
   TestFunction test1();
 
   // This is a test where the sending of client requests, the delivery of Paxos messages,
-  // and the dropping of Paxos messages are interleaved, and node is failed at some
+  // the dropping of Paxos messages are interleaved, and a node is failed at some
   // random time.
   TestFunction test2();
 

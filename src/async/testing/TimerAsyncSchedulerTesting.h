@@ -9,7 +9,11 @@
 namespace uni {
 namespace async {
 
-// Testing implementation of a TimerAsyncScheduler.
+// An implementation of TimerAsyncScheduler that is used for testing. It
+// uses ClockTesting to simulate the clock. When callbacks are scheduled,
+// they are scheduled according to the current time of the clock, and when
+// the clock is incremented, any callbacks whose scheduled time lies after
+// the previous time and before the next time will be executed.
 class TimerAsyncSchedulerTesting : public uni::async::TimerAsyncScheduler {
  public:
   TimerAsyncSchedulerTesting(uni::async::ClockTesting& clock);

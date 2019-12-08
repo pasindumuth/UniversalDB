@@ -54,13 +54,13 @@ void PaxosLog::set_entry(index_t index, PaxosLogEntry const entry) {
     // state. So invoke the callbacks for all new PaxosLogEntries
     for (int i = first_available_index; i < next_first_available_index; i++) {
       for (auto const& callback: _callbacks) {
-        callback(_log[i]);
+        callback(i, _log[i]);
       }
     }
   }
 }
 
-void PaxosLog::add_callback(std::function<void(PaxosLogEntry)> callback) {
+void PaxosLog::add_callback(std::function<void(index_t, PaxosLogEntry)> callback) {
   _callbacks.push_back(callback);
 }
 
