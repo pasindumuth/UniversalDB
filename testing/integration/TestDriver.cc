@@ -12,7 +12,6 @@
 #include <slave/KVStore.h>
 #include <slave/LogSyncer.h>
 #include <slave/ProposerQueue.h>
-#include <testing/SlaveTesting.h>
 
 namespace uni {
 namespace testing {

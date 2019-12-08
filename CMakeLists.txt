@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 # source code to use the file ./net/Channel.h. Using include_directories
 # for any directory does a similar sort of thing with all the files
 # underneath. Otherwise, we would have to use `#include "net/Channel.h"`.
-include_directories(src)
+# include_directories(src)
 
 set(CMAKE_CXX_FLAGS "-fexceptions -fsanitize=address -fsanitize=undefined -pthread")
 
@@ -19,8 +19,9 @@ find_package( Boost 1.40 COMPONENTS program_options REQUIRED )
 find_package( Boost 1.40 REQUIRED system )
 include_directories(${Boost_INCLUDE_DIR}) # Allows us to #include boost headers in our code.
 
-file(GLOB_RECURSE files src/**/*.h src/**/*.cc)
+file(GLOB_RECURSE files src/**/*.cc)
 add_library(lib ${files})
+target_include_directories(lib PUBLIC src)
 target_link_libraries(lib proto protobuf ${Boost_LIBRARIES} ${Protobuf_LIBRARY})
 
 add_executable(Slave src/slave.cc)
@@ -32,5 +33,10 @@ target_link_libraries(Master lib)
 add_executable(TestClient src/testclient.cc)
 target_link_libraries(TestClient lib)
 
-add_executable(UniversalTest src/testing/test.cc)
-target_link_libraries(UniversalTest lib)
+file(GLOB_RECURSE testfiles testing/**/*.cc)
+add_library(test ${testfiles})
+target_include_directories(test PUBLIC testing)
+target_link_libraries(test lib proto protobuf ${Boost_LIBRARIES} ${Protobuf_LIBRARY})
+
+add_executable(UniversalTest testing/test.cc)
+target_link_libraries(UniversalTest test)

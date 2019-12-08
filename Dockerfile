@@ -47,6 +47,7 @@ RUN ldconfig
 
 # Copy sources into the Docker Image
 COPY ./src ./src
+COPY ./testing ./testing
 COPY ./CMakeLists.txt ./CMakeLists.txt
 
 # Copy old builds into this new Image (for faster builds)

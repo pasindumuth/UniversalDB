@@ -7,7 +7,7 @@
 
 #include <constants/constants.h>
 #include <net/testing/ChannelTesting.h>
-#include <testing/SlaveTesting.h>
+#include <integration/SlaveTesting.h>
 
 namespace uni {
 namespace testing {

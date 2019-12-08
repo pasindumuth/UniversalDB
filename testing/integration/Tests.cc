@@ -13,7 +13,7 @@
 #include <net/IncomingMessage.h>
 #include <net/testing/ChannelTesting.h>
 #include <proto/paxos.pb.h>
-#include <testing/SlaveTesting.h>
+#include <integration/SlaveTesting.h>
 #include <utils/pbutil.h>
 
 namespace uni {

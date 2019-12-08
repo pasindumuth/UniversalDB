@@ -1,8 +1,8 @@
 #include <assert/assert.h>
 #include <logging/log.h>
-#include <testing/TestDriver.h>
-#include <testing/Tests.h>
-#include <testing/UnitTestDriver.h>
+#include <integration/TestDriver.h>
+#include <integration/Tests.h>
+#include <unit/UnitTestDriver.h>
 
 /*
  * Our testing scheme is as follows. We mock out Channel and AsyncScheduler such that

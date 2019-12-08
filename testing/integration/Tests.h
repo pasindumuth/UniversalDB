@@ -7,7 +7,7 @@
 #include <paxos/PaxosLog.h>
 #include <proto/client.pb.h>
 #include <proto/message.pb.h>
-#include <testing/TestDriver.h>
+#include <integration/TestDriver.h>
 
 namespace uni {
 namespace testing {

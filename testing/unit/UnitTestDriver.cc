@@ -1,7 +1,7 @@
 #include "UnitTestDriver.h"
 
 #include <logging/log.h>
-#include <testing/slave/KVStoreTest.h>
+#include <unit/slave/KVStoreTest.h>
 
 namespace uni {
 namespace testing {
