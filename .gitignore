@@ -5,3 +5,6 @@ build
 .idea
 .vscode
 cmake-build-debug
+
+# Doxygen
+html
