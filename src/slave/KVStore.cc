@@ -23,13 +23,14 @@ boost::optional<std::string> KVStore::read(std::string key, timestamp_t timestam
   if (it == _mvkvs.end()) {
     return boost::none;
   } else {
-    // Perform binary search to find the version right before the timestamp.
+    // Perform binary search to find the version such that all version (strictly)
+    // before have <= timestamp, and all verions (non-strictly) above have > timestamp.
     auto const& versions =  _mvkvs[key].versions;
     int start = 0;
     int end = versions.size();
     while (start < end) {
       int middle = (start + end) / 2;
-      if (versions[middle].timestamp < timestamp) {
+      if (versions[middle].timestamp <= timestamp) {
         start = middle + 1;
       } else {
         end = middle;

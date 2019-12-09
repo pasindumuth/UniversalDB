@@ -64,7 +64,7 @@ class KVStore {
    * @brief Read the value of a key at the given timestamp
    * 
    * If the key doesn't exist, returns an empty optiona. If it does exist, then the version whose
-   * timestamp is <= than the @p timestamp is retried, and it's value returned. If no such
+   * timestamp is <= than the @p timestamp is returned, and it's value returned. If no such
    * version exists (the @p timestamp is earlier than the earlier version), then an empty optiona
    * is returned.
    */
