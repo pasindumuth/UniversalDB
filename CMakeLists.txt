@@ -60,6 +60,7 @@ target_link_libraries(test gtest_main lib proto protobuf ${Boost_LIBRARIES} ${Pr
 add_executable(UniversalTest
   testing/test.cc
   testing/unit/slave/KVStoreTest.cc
+  testing/unit/slave/ProposerQueueTest.cc
   testing/unit/async/testing/TimerAsyncSchedulerTestingTest.cc
 )
 

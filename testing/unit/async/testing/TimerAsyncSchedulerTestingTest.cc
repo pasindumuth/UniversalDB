@@ -14,7 +14,7 @@ class TimerAsyncSchedulerTestingTest
     : public ::testing::Test {
  protected:
   TimerAsyncSchedulerTestingTest():
-    _clock(uni::async::ClockTesting()),
+    _clock(),
     _scheduler(_clock) {}
 
   uni::async::ClockTesting _clock;
@@ -65,6 +65,28 @@ TEST_F(TimerAsyncSchedulerTestingTest, ScheduleOnceZeroWait) {
   EXPECT_EQ(i, 0) << "Callback should not have been called without incrementing the clock";
   _clock.increment_time(1);
   EXPECT_EQ(i, 1) << "Callback should have been called";
+}
+
+/////////////// TESTS with schedule_once with task chaining ///////////////
+
+/**
+ * Ensures that when a task schedules another task, the second task is scheduled from
+ * the time the scheduling task is scheduled to run (meaning it's indepedent of 
+ * the increment time of the clock).
+ */
+TEST_F(TimerAsyncSchedulerTestingTest, ScheduleWithChaining) {
+  auto i = 0;
+  _scheduler.schedule_once([&i, this](){
+    _scheduler.schedule_once([&i](){
+      i++;
+    }, 5);
+    i++;
+  }, 5);
+  EXPECT_EQ(i, 0) << "Callback should not have been called without incrementing the clock";
+  _clock.increment_time(9);
+  EXPECT_EQ(i, 1) << "First callback should have been called";
+  _clock.increment_time(1);
+  EXPECT_EQ(i, 2) << "Second callback should have been called";
 }
 
 /////////////// TESTS with schedule_repeated ///////////////
