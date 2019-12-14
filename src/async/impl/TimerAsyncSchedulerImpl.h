@@ -10,8 +10,11 @@
 namespace uni {
 namespace async {
 
-// Implementation of a TimerAsyncScheduler that uses boost::asio to schedule
-// the deferred callbacks. This is used for production.
+/**
+ * @brief Implementation of a TimerAsyncScheduler that uses boost::asio to schedule the deferred callbacks
+ * 
+ * This is used for production.
+ */
 class TimerAsyncSchedulerImpl : public uni::async::TimerAsyncScheduler {
  public:
   TimerAsyncSchedulerImpl(boost::asio::io_context& io_context);

@@ -7,17 +7,28 @@
 namespace uni {
 namespace async {
 
-// Clock used for testing.
+/**
+ * @brief This class is a clock used for testing. The units of time are milliseconds.
+ */
 class ClockTesting {
  public:
   ClockTesting();
 
-  // Increments the clock's time by an amount `increment`. All callbacks 
-  // whose deadline lies within the window from where the old time was to
-  // where the new time is now is executed.
+  /**
+   * @brief Increments the time and executes callbacks upto and including the new time.
+   * 
+   * All callbacks whose deadlines which are less than or equal to the new time are
+   * exeucted. Note that as a callback executes, it may schedule a new task that
+   * is before the new clock's time as well. This too will be executed.
+   */
   void increment_time(long increment);
 
-  // Schedules the callback to execute after some time `wait`
+  /**
+   * @brief Schedules a callback to run @p wait milliseconds into the future.
+   * 
+   * If there are already callbacks that need to be run at that time in the future,
+   * this new callback will run after all those finish running.
+   */
   void schedule_async(std::function<void(void)> callback, long wait);
 
  private:

@@ -12,8 +12,8 @@ namespace slave {
 
 class KVStoreTest
     : public ::testing::Test {
-  protected:
-   uni::slave::KVStore _kvstore;
+ protected:
+  uni::slave::KVStore _kvstore;
 };
 
 /////////////// TESTS with only one key k1 ///////////////

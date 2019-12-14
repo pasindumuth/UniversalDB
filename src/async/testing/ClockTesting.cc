@@ -2,6 +2,7 @@
 
 #include <assert/assert.h>
 #include <chrono>
+#include <logging/log.h>
 
 namespace uni {
 namespace async {
@@ -14,7 +15,7 @@ void ClockTesting::increment_time(long increment) {
   auto it = _scheduled_callbacks.begin();
   // Iterate through the scheduled callbacks in order (starting from the earliest),
   // and execute the ones which are scheduled to run before the new _time.
-  while (it->first <= _time) {
+  while (it != _scheduled_callbacks.end() && it->first <= _time) {
     // Note that _scheduled_callbacks might dynamically change as this iteration
     // is happening. That's why we immediately erase the last etry
     it->second();
