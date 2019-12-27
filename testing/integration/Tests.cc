@@ -37,7 +37,7 @@ TestFunction Tests::test1() {
       std::vector<ChannelTesting*>& nonempty_channels) {
     // Send the client message to the first Universal Slave
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
-    for (int i = 0; i < 300; i++) {
+    for (auto i = 0; i < 300; i++) {
       // Send a client message to some node in the Paxos Group. The node is
       // chosen randomly.
       auto incoming_message = IncomingMessage(client_endpoint_id,
@@ -47,7 +47,7 @@ TestFunction Tests::test1() {
       run_for_milliseconds(slaves, nonempty_channels, 1);
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
-    for (int i = 0; i < 5; i++) {
+    for (auto i = 0; i < 5; i++) {
       LOG(uni::logging::Level::DEBUG, slaves[i]->paxos_log->debug_string())
     }
 
@@ -63,10 +63,10 @@ TestFunction Tests::test2() {
       std::vector<std::unique_ptr<SlaveTesting>>& slaves,
       std::vector<std::vector<ChannelTesting*>>& all_channels,
       std::vector<ChannelTesting*>& nonempty_channels) {
-    int nodes_failed = 0;
+    auto nodes_failed = 0;
     // Send the client message to the first Universal Slave
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
-    for (int i = 0; i < 300; i++) {
+    for (auto i = 0; i < 300; i++) {
       // Send a client message to some node in the Paxos Group. The node is
       // chosen randomly.
       auto incoming_message = IncomingMessage(client_endpoint_id,
@@ -87,7 +87,7 @@ TestFunction Tests::test2() {
       }
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
-    for (int i = 0; i < 5; i++) {
+    for (auto i = 0; i < 5; i++) {
       LOG(uni::logging::Level::DEBUG, slaves[i]->paxos_log->debug_string())
     }
 
@@ -105,8 +105,8 @@ TestFunction Tests::test3() {
       std::vector<ChannelTesting*>& nonempty_channels) {
     bool passed = true;
     // Wait one heartbeat cycle so that the nodes can send each other a heartbeat
-    for (int i = 0; i < constants.heartbeat_period; i++) {
-      for (int j = 0; j < slaves.size(); j++) {
+    for (auto i = 0; i < constants.heartbeat_period; i++) {
+      for (auto j = 0; j < slaves.size(); j++) {
         slaves[j]->clock->increment_time(1);
       }
       // Exchange all the messages that need to be exchanged
@@ -124,8 +124,8 @@ TestFunction Tests::test3() {
     mark_node_as_unresponsive(all_channels, 0);
     // Increment the clock on all other slaves an amount such that
     // they will detect the failure
-    for (int i = 0; i < constants.heartbeat_failure_threshold * constants.heartbeat_period; i++) {
-      for (int j = 1; j < slaves.size(); j++) {
+    for (auto i = 0; i < constants.heartbeat_failure_threshold * constants.heartbeat_period; i++) {
+      for (auto j = 1; j < slaves.size(); j++) {
         slaves[j]->clock->increment_time(1);
       }
       // Exchange all the messages that need to be exchanged
@@ -133,7 +133,7 @@ TestFunction Tests::test3() {
         nonempty_channels[0]->deliver_message();
       }
     }
-    for (int i = 1; i < slaves.size(); i++) {
+    for (auto i = 1; i < slaves.size(); i++) {
       UNIVERSAL_ASSERT_MESSAGE(
         slaves[i]->failure_detector->alive_endpoints().size() == slaves.size() - 1,
         "All failure detectors should report that one slave is dead.")
@@ -149,7 +149,7 @@ TestFunction Tests::test4() {
       std::vector<ChannelTesting*>& nonempty_channels) {
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
     auto client_request_id = 0;
-    auto simulate_client_requests = [&](int request_count, int target_slave) {
+    auto simulate_client_requests = [&](int32_t request_count, int32_t target_slave) {
       // Send the client message to the first Universal Slave
       auto final_request_id = client_request_id + request_count;
       for (; client_request_id < final_request_id; client_request_id++) {
@@ -187,8 +187,8 @@ TestFunction Tests::test4() {
 
     UNIVERSAL_ASSERT_MESSAGE(verify_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
     // None of the PaxosLogs should be equal
-    for (int i = 0; i < constants.num_slave_servers; i++) {
-      for (int j = i + 1; j < constants.num_slave_servers; j++) {
+    for (auto i = 0; i < constants.num_slave_servers; i++) {
+      for (auto j = i + 1; j < constants.num_slave_servers; j++) {
         UNIVERSAL_ASSERT_MESSAGE(!equals(*slaves[i]->paxos_log, *slaves[j]->paxos_log),
           "Not two PaxosLogs should be equal.")
       }
@@ -203,8 +203,8 @@ TestFunction Tests::test4() {
 
     UNIVERSAL_ASSERT_MESSAGE(verify_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
     // All of the PaxosLogs should now be equal
-    for (int i = 0; i < constants.num_slave_servers; i++) {
-      for (int j = i + 1; j < constants.num_slave_servers; j++) {
+    for (auto i = 0; i < constants.num_slave_servers; i++) {
+      for (auto j = i + 1; j < constants.num_slave_servers; j++) {
         UNIVERSAL_ASSERT_MESSAGE(equals(*slaves[i]->paxos_log, *slaves[j]->paxos_log),
           "Paxos Logs should all be equal.")
       }
@@ -214,8 +214,8 @@ TestFunction Tests::test4() {
 }
 
 // TODO(pasindu): Get rid of these in due time.
-static long request_id = 0;
-static long timestamp = 0;
+static int64_t request_id = 0;
+static int64_t timestamp = 0;
 
 MessageWrapper Tests::build_client_request(std::string message) {
   auto request_message = new proto::client::ClientRequest();
@@ -253,7 +253,7 @@ void Tests::run_until_completion(
 void Tests::run_for_milliseconds(
   std::vector<std::unique_ptr<SlaveTesting>>& slaves,
   std::vector<ChannelTesting*>& nonempty_channels,
-  int milliseconds) {
+  int32_t milliseconds) {
     // Since we increase the clocks by 1ms, we assume one message is passed along a
     // channel on average (remember there 2 channels between 2 nodes, one for each direction).
     auto n = slaves.size() * (slaves.size() + 1); // the number of messages to exchange
@@ -329,15 +329,15 @@ bool Tests::equals(PaxosLog& paxos_log1, PaxosLog& paxos_log2) {
   return true;
 }
 
-void Tests::mark_node_as_unresponsive(std::vector<std::vector<ChannelTesting*>>& channels, unsigned node) {
-  for (int i = 0; i < channels.size(); i++) {
+void Tests::mark_node_as_unresponsive(std::vector<std::vector<ChannelTesting*>>& channels, uint32_t node) {
+  for (auto i = 0; i < channels.size(); i++) {
     channels[node][i]->set_connection_state(false);
     channels[i][node]->set_connection_state(false);
   }
 }
 
-void Tests::mark_node_as_responsive(std::vector<std::vector<ChannelTesting*>>& channels, unsigned node) {
-  for (int i = 0; i < channels.size(); i++) {
+void Tests::mark_node_as_responsive(std::vector<std::vector<ChannelTesting*>>& channels, uint32_t node) {
+  for (auto i = 0; i < channels.size(); i++) {
     channels[node][i]->set_connection_state(true);
     channels[i][node]->set_connection_state(true);
   }

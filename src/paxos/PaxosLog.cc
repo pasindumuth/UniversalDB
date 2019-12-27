@@ -52,7 +52,7 @@ void PaxosLog::set_entry(index_t index, PaxosLogEntry const entry) {
   if (first_available_index < next_first_available_index) {
     // This means that the we can fill out more of the derived
     // state. So invoke the callbacks for all new PaxosLogEntries
-    for (int i = first_available_index; i < next_first_available_index; i++) {
+    for (auto i = first_available_index; i < next_first_available_index; i++) {
       for (auto const& callback: _callbacks) {
         callback(i, _log[i]);
       }

@@ -47,7 +47,7 @@ void ChannelImpl::set_close_callback(std::function<void(void)> callback) {
 
 // Implement timeouts, retries, and safety on remote socket closure.
 void ChannelImpl::send(std::string message) {
-  int length = message.size();
+  auto length = message.size();
   boost::asio::async_write(_socket, boost::asio::buffer(INT_TO_STR(length)),
       [this, message](const boost::system::error_code&, size_t bytes_transferred) {
    LOG(uni::logging::Level::TRACE2, "Header bytes sent: " + std::to_string(bytes_transferred))
@@ -73,7 +73,7 @@ void ChannelImpl::recv() {
       free(header_buf);
       _close_callback();
     } else {
-      int length = *((int*) header_buf);
+      auto length = *((int*) header_buf);
       free(header_buf);
       void* buf = malloc(length);
       boost::asio::async_read(_socket, boost::asio::buffer(buf, length),

@@ -5,6 +5,7 @@
 #include <tuple>
 #include <vector>
 
+#include <common/common.h>
 #include <net/endpoint_id.h>
 #include <paxos/PaxosTypes.h>
 
@@ -21,7 +22,7 @@ struct PaxosLearnerState {
   // Maps all proposal number that were received in Learn messages to the value associated with that
   // learn message, as well as the count of the number of learn messages that were received with that
   // Proposal Number.
-  std::unordered_map<lrnd_t, std::tuple<lval_t, unsigned>> learned_value;
+  std::unordered_map<lrnd_t, std::tuple<lval_t, uint32_t>> learned_value;
 };
 
 } // namespace paxos

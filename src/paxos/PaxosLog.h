@@ -6,6 +6,7 @@
 
 #include <boost/optional.hpp>
 
+#include <common/common.h>
 #include <paxos/PaxosTypes.h>
 #include <proto/paxos.pb.h>
 

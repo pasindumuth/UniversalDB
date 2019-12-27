@@ -3,6 +3,7 @@
 
 #include <boost/asio.hpp>
 
+#include <common/common.h>
 #include <constants/constants.h>
 #include <net/ConnectionsIn.h>
 #include <net/ConnectionsOut.h>

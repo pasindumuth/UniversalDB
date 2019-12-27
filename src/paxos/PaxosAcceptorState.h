@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <tuple>
 
+#include <common/common.h>
 #include <paxos/PaxosTypes.h>
 
 namespace uni {

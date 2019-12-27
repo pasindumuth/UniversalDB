@@ -8,7 +8,7 @@
 
 #include <boost/optional.hpp>
 
-#include <common/types.h>
+#include <common/common.h>
 #include <paxos/PaxosTypes.h>
 #include <proto/paxos.pb.h>
 

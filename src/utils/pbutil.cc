@@ -14,7 +14,7 @@ google::protobuf::StringValue* string(google::protobuf::StringValue const& value
   return new google::protobuf::StringValue(value);
 }
 
-google::protobuf::UInt64Value* uint64(long const& value) {
+google::protobuf::UInt64Value* uint64(int64_t const& value) {
   auto pb = new google::protobuf::UInt64Value();
   pb->set_value(value);
   return pb;

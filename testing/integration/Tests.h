@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include <common/common.h>
 #include <paxos/PaxosLog.h>
 #include <proto/client.pb.h>
 #include <proto/message.pb.h>
@@ -75,16 +76,16 @@ class Tests {
   void run_for_milliseconds(
     std::vector<std::unique_ptr<SlaveTesting>>& slaves,
     std::vector<uni::net::ChannelTesting*>& nonempty_channels,
-    int milliseconds);
+    int32_t milliseconds);
 
   // Checks if 2 paxos logs are equal. This simply compares the maps.
   bool equals(uni::paxos::PaxosLog& paxos_log1, uni::paxos::PaxosLog& paxos_log2);
 
   // Simulates a node as unresponsive (due to node failure or a network partition)
-  void mark_node_as_unresponsive(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, unsigned node);
+  void mark_node_as_unresponsive(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, uint32_t node);
 
   // Simulates a node as responsive
-  void mark_node_as_responsive(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, unsigned node);
+  void mark_node_as_responsive(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, uint32_t node);
 };
 
 } // integration

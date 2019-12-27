@@ -10,7 +10,7 @@ namespace async {
 ClockTesting::ClockTesting()
     : _time(0) {}
 
-void ClockTesting::increment_time(long increment) {
+void ClockTesting::increment_time(int64_t increment) {
   for (auto i = 0; i < increment; i++) {
     // We increment _time progressively (rather than all at once) so that if
     // schedule_async is called during one of the callbacks in _scheduled_callbacks,
@@ -32,7 +32,7 @@ void ClockTesting::increment_time(long increment) {
   }
 }
 
-void ClockTesting::schedule_async(std::function<void(void)> callback, long wait) {
+void ClockTesting::schedule_async(std::function<void(void)> callback, int64_t wait) {
   UNIVERSAL_ASSERT_MESSAGE(wait >= 0, "A clock can only wait on positive amount of time into the future.")
   _scheduled_callbacks.insert({_time + wait, callback});
 }

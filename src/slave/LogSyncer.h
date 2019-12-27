@@ -2,6 +2,7 @@
 #define UNI_SLAVE_LOGSYNCER
 
 #include <async/TimerAsyncScheduler.h>
+#include <common/common.h>
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
 #include <net/endpoint_id.h>

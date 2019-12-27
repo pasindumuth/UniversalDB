@@ -2,6 +2,7 @@
 
 #include <async/testing/ClockTesting.h>
 #include <async/testing/TimerAsyncSchedulerTesting.h>
+#include <common/common.h>
 #include <slave/ProposerQueue.h>
 
 namespace uni {

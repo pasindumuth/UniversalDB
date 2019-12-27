@@ -3,6 +3,7 @@
 #include <boost/optional.hpp>
 
 #include <assert/UniversalException.h>
+#include <common/common.h>
 #include <slave/KVStore.h>
 
 namespace uni {

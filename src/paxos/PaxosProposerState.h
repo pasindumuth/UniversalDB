@@ -6,6 +6,7 @@
 #include <tuple>
 #include <vector>
 
+#include <common/common.h>
 #include <paxos/PaxosTypes.h>
 
 namespace uni {

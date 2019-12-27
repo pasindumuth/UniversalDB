@@ -9,6 +9,7 @@
 #include <boost/optional.hpp>
 
 #include <async/AsyncScheduler.h>
+#include <common/common.h>
 #include <net/Channel.h>
 
 namespace uni {

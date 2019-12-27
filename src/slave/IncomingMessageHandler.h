@@ -1,6 +1,7 @@
 #ifndef UNI_SLAVE_INCOMINGMESSAGEHANDLER_H
 #define UNI_SLAVE_INCOMINGMESSAGEHANDLER_H
 
+#include <common/common.h>
 #include <net/IncomingMessage.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <slave/ClientRequestHandler.h>

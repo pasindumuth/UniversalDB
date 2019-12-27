@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 
+#include <common/common.h>
 #include <constants/constants.h>
 #include <net/Channel.h>
 #include <net/endpoint_id.h>

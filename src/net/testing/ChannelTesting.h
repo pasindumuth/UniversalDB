@@ -10,6 +10,7 @@
 #include <boost/asio.hpp>
 
 #include <async/testing/AsyncSchedulerTesting.h>
+#include <common/common.h>
 #include <constants/constants.h>
 #include <net/Channel.h>
 #include <net/endpoint_id.h>

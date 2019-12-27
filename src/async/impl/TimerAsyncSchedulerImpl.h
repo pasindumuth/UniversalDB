@@ -6,6 +6,7 @@
 #include <boost/asio.hpp>
 
 #include <async/TimerAsyncScheduler.h>
+#include <common/common.h>
 
 namespace uni {
 namespace async {
@@ -19,11 +20,11 @@ class TimerAsyncSchedulerImpl : public uni::async::TimerAsyncScheduler {
  public:
   TimerAsyncSchedulerImpl(boost::asio::io_context& io_context);
   
-  void schedule_once(std::function<void(void)> callback, long wait) override;
+  void schedule_once(std::function<void(void)> callback, int64_t wait) override;
 
-  void schedule_repeated(std::function<void(void)> callback, long period) override;
+  void schedule_repeated(std::function<void(void)> callback, int64_t period) override;
 
-  void schedule_repeated_finite(std::function<void(void)> callback, long period, int tries) override;
+  void schedule_repeated_finite(std::function<void(void)> callback, int64_t period, int32_t tries) override;
 
  private:
   boost::asio::io_context& _io_context;

@@ -34,7 +34,7 @@ crnd_t SinglePaxosHandler::next_proposal_number() {
   return _proposer_state.latest + 10; // TODO: pick this randomly.
 }
 
-unsigned SinglePaxosHandler::majority_threshold() {
+uint32_t SinglePaxosHandler::majority_threshold() {
   return std::floor(_constants.num_slave_servers / 2) + 1;
 }
 
@@ -93,9 +93,9 @@ void SinglePaxosHandler::promise(
       // If a promising Slaves has already accepted a value, we ignore that original value we
       // were trying to propose at this node. Instead, take the value returned from the Slaves
       // with the highest proposal number, and use that. This is part of the Paxos algorithm.
-      unsigned max_vrnd = 0;
+      auto max_vrnd = 0;
       for (auto promise : promises) {
-        unsigned vrnd = std::get<0>(promise);
+        auto vrnd = std::get<0>(promise);
         if (vrnd > 0) {
           // The Slave that send this promise already accepted a value.
           if (vrnd > max_vrnd) {

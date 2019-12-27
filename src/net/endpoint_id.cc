@@ -5,7 +5,7 @@
 namespace uni {
 namespace net {
 
-endpoint_id::endpoint_id(std::string const& ip_string, int const& port)
+endpoint_id::endpoint_id(std::string const& ip_string, int32_t const& port)
   : ip_string(ip_string),
     port(port) {}
 

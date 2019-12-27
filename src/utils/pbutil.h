@@ -3,6 +3,8 @@
 
 #include <google/protobuf/wrappers.pb.h>
 
+#include <common/common.h>
+
 namespace uni {
 namespace utils {
 namespace pb {
@@ -11,7 +13,7 @@ google::protobuf::StringValue* string(std::string const& value);
 
 google::protobuf::StringValue* string(google::protobuf::StringValue const& value);
 
-google::protobuf::UInt64Value* uint64(long const& value);
+google::protobuf::UInt64Value* uint64(int64_t const& value);
 
 google::protobuf::UInt64Value* uint64(google::protobuf::UInt64Value const& value);
 

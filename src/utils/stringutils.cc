@@ -4,7 +4,7 @@ namespace uni {
 namespace utils {
 namespace string {
 
-std::string indent(std::string s, int indent) {
+std::string indent(std::string s, int32_t indent) {
   auto ss = std::stringstream();
   auto i = 0;
   for (auto j = 0; j < s.length(); j++) {

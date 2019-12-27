@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 
+#include <common/common.h>
 #include <net/endpoint_id.h>
 #include <paxos/PaxosLog.h>
 #include <paxos/PaxosTypes.h>

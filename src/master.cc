@@ -3,6 +3,7 @@
 
 #include <boost/asio.hpp>
 
+#include <common/common.h>
 #include <logging/log.h>
 #include <net/impl/ChannelImpl.h>
 #include <proto/master.pb.h>

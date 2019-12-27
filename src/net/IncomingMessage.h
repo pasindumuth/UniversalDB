@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include <common/common.h>
 #include <net/endpoint_id.h>
 
 namespace uni {

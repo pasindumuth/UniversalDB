@@ -4,6 +4,8 @@
 #include <exception>
 #include <string>
 
+#include <common/common.h>
+
 namespace uni {
 namespace assert {
 

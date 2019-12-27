@@ -18,7 +18,7 @@ void ProposerQueue::add_task(std::function<int(void)> callback) {
 
 void ProposerQueue::run_task() {
   auto const& callback = _callbacks.front();
-  int wait = callback();
+  auto wait = callback();
   if (wait < 0) {
     _callbacks.pop();
     if (_callbacks.size() > 0) {

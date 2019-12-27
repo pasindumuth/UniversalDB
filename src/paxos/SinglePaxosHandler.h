@@ -1,6 +1,7 @@
 #ifndef UNI_PAXOS_SINGLEPAXOSHANDLER_H
 #define UNI_PAXOS_SINGLEPAXOSHANDLER_H
 
+#include <common/common.h>
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
 #include <paxos/PaxosAcceptorState.h>
@@ -38,7 +39,7 @@ class SinglePaxosHandler {
   // Computes the size of the smallest majority in the Paxos Group. The size of
   // a Paxos Group is uni::constants::num_slave_serves, so the size of the smallest
   // majority is simply floor(uni::constants::num_slave_serves) + 1.
-  unsigned majority_threshold();
+  uint32_t majority_threshold();
 
   // Initiates a proposal for this Paxos Instance.
   void propose(

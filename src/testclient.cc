@@ -6,6 +6,7 @@
 #include <boost/system/error_code.hpp>
 #include <google/protobuf/wrappers.pb.h>
 
+#include <common/common.h>
 #include <logging/log.h>
 #include <net/impl/ChannelImpl.h>
 #include <proto/client.pb.h>
@@ -35,7 +36,7 @@ int main(int argc, char* argv[]) {
   boost::asio::connect(socket, endpoints);
   uni::net::ChannelImpl channel(std::move(socket));
 
-  for (int request_id = 0;; request_id++) {
+  for (auto request_id = 0;; request_id++) {
     char message_array[50];
     std::cin >> message_array;
     std::string message(message_array);

@@ -5,6 +5,7 @@
 #include <queue>
 
 #include <async/TimerAsyncScheduler.h>
+#include <common/common.h>
 
 namespace uni {
 namespace slave {

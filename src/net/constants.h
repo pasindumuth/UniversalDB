@@ -1,6 +1,8 @@
 #ifndef UNI_NET_CONSTANTS_H
 #define UNI_NET_CONSTANTS_H
 
+#include <common/common.h>
+
 namespace uni {
 namespace net {
 namespace constants {

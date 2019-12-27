@@ -3,14 +3,16 @@
 
 #include <string>
 
+#include <common/common.h>
+
 namespace uni {
 namespace net {
 
 struct endpoint_id {
   std::string const ip_string;
-  int const port;
+  int32_t const port;
 
-  endpoint_id(std::string const& ip_string, int const& port);
+  endpoint_id(std::string const& ip_string, int32_t const& port);
 
   bool operator==(const endpoint_id& other) const;
 

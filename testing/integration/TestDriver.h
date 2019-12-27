@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+#include <common/common.h>
 #include <constants/constants.h>
 #include <net/testing/ChannelTesting.h>
 #include <integration/SlaveTesting.h>

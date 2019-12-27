@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <common/common.h>
+
 namespace uni {
 namespace logging {
 

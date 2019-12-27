@@ -5,6 +5,7 @@
 
 #include <async/testing/AsyncSchedulerTesting.h>
 #include <async/testing/TimerAsyncSchedulerTesting.h>
+#include <common/common.h>
 #include <net/ConnectionsOut.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosLog.h>

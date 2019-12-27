@@ -7,6 +7,7 @@
 #include <boost/optional.hpp>
 
 #include <async/TimerAsyncScheduler.h>
+#include <common/common.h>
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
 #include <net/endpoint_id.h>
@@ -58,7 +59,7 @@ class FailureDetector {
   boost::optional<uni::net::endpoint_id> leader_endpoint_id();
 
  private:
-  std::map<uni::net::endpoint_id, unsigned> _heartbeat_count;
+  std::map<uni::net::endpoint_id, uint32_t> _heartbeat_count;
   uni::constants::Constants const& _constants;
   uni::net::ConnectionsOut& _connections_out;
   uni::async::TimerAsyncScheduler& _timer_scheduler;

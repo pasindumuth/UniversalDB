@@ -4,6 +4,7 @@
 #include <functional>
 
 #include <async/AsyncScheduler.h>
+#include <common/common.h>
 #include <net/IncomingMessage.h>
 
 namespace uni {

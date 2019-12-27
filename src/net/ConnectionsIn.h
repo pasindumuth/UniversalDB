@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include <async/AsyncScheduler.h>
+#include <common/common.h>
 #include <net/Channel.h>
 #include <net/endpoint_id.h>
 

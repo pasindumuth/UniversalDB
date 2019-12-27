@@ -5,6 +5,7 @@
 
 #include <async/TimerAsyncScheduler.h>
 #include <async/testing/ClockTesting.h>
+#include <common/common.h>
 
 namespace uni {
 namespace async {
@@ -24,11 +25,11 @@ class TimerAsyncSchedulerTesting : public uni::async::TimerAsyncScheduler {
    */
   TimerAsyncSchedulerTesting(uni::async::ClockTesting& clock);
 
-  void schedule_once(std::function<void(void)> callback, long wait) override;
+  void schedule_once(std::function<void(void)> callback, int64_t wait) override;
 
-  void schedule_repeated(std::function<void(void)> callback, long period) override;
+  void schedule_repeated(std::function<void(void)> callback, int64_t period) override;
 
-  void schedule_repeated_finite(std::function<void(void)> callback, long period, int tries) override;
+  void schedule_repeated_finite(std::function<void(void)> callback, int64_t period, int32_t tries) override;
 
  private:
   uni::async::ClockTesting& _clock;

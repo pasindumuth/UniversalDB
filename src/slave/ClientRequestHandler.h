@@ -4,12 +4,13 @@
 #include <functional>
 #include <unordered_map>
 
+#include <common/common.h>
 #include <net/endpoint_id.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosLog.h>
+#include <paxos/PaxosTypes.h>
 #include <proto/client.pb.h>
 #include <slave/ProposerQueue.h>
-#include <paxos/PaxosTypes.h>
 
 namespace uni {
 namespace slave {

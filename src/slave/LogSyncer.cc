@@ -41,7 +41,7 @@ void LogSyncer::schedule_syncing() {
     auto available_indices = _paxos_log.get_available_indices();
     auto available_index_subarrays = std::vector<std::tuple<uni::paxos::index_t, uni::paxos::index_t>>();
     auto cur_subarray = std::tuple<uni::paxos::index_t, uni::paxos::index_t>(available_indices[0], available_indices[0]);
-    for (int i = 1; i < available_indices.size(); i++) {
+    for (auto i = 1; i < available_indices.size(); i++) {
       if (available_indices[i-1] + 1 == available_indices[i]) {
         std::get<1>(cur_subarray)++;
       } else {
@@ -80,7 +80,7 @@ void LogSyncer::handle_sync_request(uni::net::endpoint_id endpoint_id, proto::sl
       break;
     }
     end = std::min(cur_last_index, uni::paxos::index_t(end));
-    for (int i = start; i <= end; i++) {
+    for (auto i = start; i <= end; i++) {
       auto const entry = _paxos_log.get_entry(i);
       if (entry) {
         auto entry_with_index = new proto::slave::SyncResponse_PaxosLogEntryWithIndex;
@@ -94,7 +94,7 @@ void LogSyncer::handle_sync_request(uni::net::endpoint_id endpoint_id, proto::sl
   // If the current node has PaxosLog entries that go beyond that of the sender's
   // then send these extra entries too.
   if (cur_last_index > request.last_index()) {
-    for (int i = request.last_index(); i < cur_last_index; i++) {
+    for (auto i = request.last_index(); i < cur_last_index; i++) {
       auto const entry = _paxos_log.get_entry(i);
       if (entry) {
         auto entry_with_index = new proto::slave::SyncResponse_PaxosLogEntryWithIndex;

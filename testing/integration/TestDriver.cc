@@ -43,13 +43,13 @@ void TestDriver::run_test(TestFunction test) {
 
   // The ip addresses of all Universal Servers
   auto ip_strings = std::vector<std::string>();
-  for (int i = 0; i < constants.num_slave_servers; i++) {
+  for (auto i = 0; i < constants.num_slave_servers; i++) {
     ip_strings.push_back(std::to_string(i));
   }
 
   // Create mock AsyncScheduler.
   auto slaves = std::vector<std::unique_ptr<SlaveTesting>>();
-  for (int i = 0; i < constants.num_slave_servers; i++) {
+  for (auto i = 0; i < constants.num_slave_servers; i++) {
     auto slave = std::make_unique<SlaveTesting>();
     slave->scheduler = std::make_unique<AsyncSchedulerTesting>();
     slaves.push_back(std::move(slave));
@@ -60,7 +60,7 @@ void TestDriver::run_test(TestFunction test) {
 
   // Create the IncomingMessageHandler for each universal server
   auto all_channels = std::vector<std::vector<ChannelTesting*>>();
-  for (int i = 0; i < constants.num_slave_servers; i++) {
+  for (auto i = 0; i < constants.num_slave_servers; i++) {
     auto& slave = *slaves[i];
     slave.connections_out = std::make_unique<ConnectionsOut>(constants);
     all_channels.push_back(std::vector<ChannelTesting*>());
@@ -68,7 +68,7 @@ void TestDriver::run_test(TestFunction test) {
     // Populate connections_out with ChannelTesting objects. We iterate over
     // the other Slaves, take their Aysnc Schedulers (which receive messages relative
     // to the current Slave), and create the ChannelTesting object with that.
-    for (int j = 0; j < constants.num_slave_servers; j++) {
+    for (auto j = 0; j < constants.num_slave_servers; j++) {
       auto& receiver_async_sheduler = *slaves[j]->scheduler;
       auto channel = std::make_shared<ChannelTesting>(
           constants, receiver_async_sheduler, ip_strings[i], ip_strings[j], nonempty_channels);

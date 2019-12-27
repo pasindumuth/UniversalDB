@@ -4,6 +4,8 @@
 #include <functional>
 #include <map>
 
+#include <common/common.h>
+
 namespace uni {
 namespace async {
 
@@ -21,7 +23,7 @@ class ClockTesting {
    * executed. Note that as a callback executes, it may schedule a new task that
    * is before the new clock's time as well. This too will be executed.
    */
-  void increment_time(long increment);
+  void increment_time(int64_t increment);
 
   /**
    * @brief Schedules a callback to run @p wait milliseconds into the future.
@@ -29,7 +31,7 @@ class ClockTesting {
    * If there are already callbacks that need to be run at that time in the future,
    * this new callback will run after all those finish running.
    */
-  void schedule_async(std::function<void(void)> callback, long wait);
+  void schedule_async(std::function<void(void)> callback, int64_t wait);
 
  private:
   long _time; // time in milliseconds

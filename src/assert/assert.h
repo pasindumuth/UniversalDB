@@ -5,6 +5,7 @@
 #include <string>
 
 #include <assert/UniversalException.h>
+#include <common/common.h>
 
 namespace uni {
 namespace assert {

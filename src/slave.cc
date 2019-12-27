@@ -11,6 +11,7 @@
 
 #include <async/impl/AsyncSchedulerImpl.h>
 #include <async/impl/TimerAsyncSchedulerImpl.h>
+#include <common/common.h>
 #include <constants/constants.h>
 #include <logging/log.h>
 #include <net/ConnectionsIn.h>
@@ -87,7 +88,7 @@ int main(int argc, char* argv[]) {
       message_wrapper.ParseFromString(message);
       auto slave_list = message_wrapper.master_message().request().slave_list();
       // Iterate through each slave hostname
-      for (int i = 0; i < slave_list.slave_hostnames_size(); i++) {
+      for (auto i = 0; i < slave_list.slave_hostnames_size(); i++) {
         auto hostname = slave_list.slave_hostnames(i);
         auto endpoints = resolver.resolve(hostname, std::to_string(constants.slave_port));
         auto socket = std::make_shared<tcp::socket>(background_io_context);

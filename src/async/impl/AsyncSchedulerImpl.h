@@ -9,6 +9,7 @@
 #include <boost/asio.hpp>
 
 #include <async/AsyncScheduler.h>
+#include <common/common.h>
 #include <net/IncomingMessage.h>
 
 namespace uni {

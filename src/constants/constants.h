@@ -1,26 +1,28 @@
 #ifndef UNI_CONSTANTS_CONSTANTS_H
 #define UNI_CONSTANTS_CONSTANTS_H
 
+#include <common/common.h>
+
 namespace uni {
 namespace constants {
 
 struct Constants {
-  unsigned const num_slave_servers;
-  unsigned const slave_port; // Slaves communicates with slaves through this port.
-  unsigned const client_port; // Client communicates with slaves through this port.
-  unsigned const master_port; // Master communicates with slaves through this port.
-  long const heartbeat_period; // The period in which heartbeats are sent in milliseconds.
-  unsigned const heartbeat_failure_threshold; // The number of heartbeat cycles that must pass before a node is marked as failed.
-  long const log_syncer_period; // The period in which the Syncer syncs the PaxosLog with the leader's PaxosLog
+  uint32_t const num_slave_servers;
+  uint32_t const slave_port; // Slaves communicates with slaves through this port.
+  uint32_t const client_port; // Client communicates with slaves through this port.
+  uint32_t const master_port; // Master communicates with slaves through this port.
+  int64_t const heartbeat_period; // The period in which heartbeats are sent in milliseconds.
+  uint32_t const heartbeat_failure_threshold; // The number of heartbeat cycles that must pass before a node is marked as failed.
+  int64_t const log_syncer_period; // The period in which the Syncer syncs the PaxosLog with the leader's PaxosLog
 
   Constants(
-      unsigned const& num_slave_servers,
-      unsigned const& slave_port,
-      unsigned const& client_port,
-      unsigned const& master_port,
-      long const& heartbeat_period,
-      unsigned const heartbeat_failure_threshold,
-      long const log_syncer_period)
+      uint32_t const& num_slave_servers,
+      uint32_t const& slave_port,
+      uint32_t const& client_port,
+      uint32_t const& master_port,
+      int64_t const& heartbeat_period,
+      uint32_t const heartbeat_failure_threshold,
+      int64_t const log_syncer_period)
         : num_slave_servers(num_slave_servers),
           slave_port(slave_port),
           client_port(client_port),
