@@ -40,7 +40,7 @@ class Tests {
   // is left to do it's job and even out the PaxosLogs across all nodes.
   TestFunction test4();
 
-  // Makes sure that KVStore updates as expected. We must insert requsts in there in a
+  // Makes sure that KVStore updates as expected. We must insert requests in there in a
   // controlled way.
   // TestFunction test5();
 
@@ -80,7 +80,7 @@ class Tests {
   // Checks if 2 paxos logs are equal. This simply compares the maps.
   bool equals(uni::paxos::PaxosLog& paxos_log1, uni::paxos::PaxosLog& paxos_log2);
 
-  // Simulates a node as unresponsive (due to node faiure or a network partition)
+  // Simulates a node as unresponsive (due to node failure or a network partition)
   void mark_node_as_unresponsive(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, unsigned node);
 
   // Simulates a node as responsive

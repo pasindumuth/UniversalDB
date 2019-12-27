@@ -14,7 +14,7 @@ ConnectionsIn::ConnectionsIn(
 
 void ConnectionsIn::add_channel(std::shared_ptr<Channel> channel) {
   auto endpoint_id = channel->endpoint_id();
-  channel->set_recieve_callback([endpoint_id, this](std::string message) {
+  channel->set_receive_callback([endpoint_id, this](std::string message) {
     _scheduler.queue_message({endpoint_id, message});
     return true;
   });

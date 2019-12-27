@@ -77,7 +77,7 @@ void ChannelTesting::set_connection_state(bool connection_state) {
 
 void ChannelTesting::check_empty() {
   if (_message_queue.size() == 0) {
-    // This channel just became empty, so remove it from the nonempty_channels vetor.
+    // This channel just became empty, so remove it from the nonempty_channels vector.
     auto it = std::find(_nonempty_channels.begin(), _nonempty_channels.end(), this);
     UNIVERSAL_ASSERT_MESSAGE(it !=  _nonempty_channels.end(),
         "This channel should have been in the nonempty_channels vectors, since it was indeed nonempty")

@@ -25,7 +25,7 @@ void ClientConnectionHandler::async_accept() {
       std::unique_lock<std::mutex> lock(_channel_lock);
       auto channel = std::make_shared<uni::net::ChannelImpl>(std::move(socket));
       auto endpoint_id = channel->endpoint_id();
-      channel->set_recieve_callback([endpoint_id, this](std::string message) {
+      channel->set_receive_callback([endpoint_id, this](std::string message) {
         _scheduler.queue_message({endpoint_id, message});
         return true;
       });

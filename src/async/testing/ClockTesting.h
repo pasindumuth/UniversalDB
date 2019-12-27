@@ -18,7 +18,7 @@ class ClockTesting {
    * @brief Increments the time and executes callbacks upto and including the new time.
    * 
    * All callbacks whose deadlines which are less than or equal to the new time are
-   * exeucted. Note that as a callback executes, it may schedule a new task that
+   * executed. Note that as a callback executes, it may schedule a new task that
    * is before the new clock's time as well. This too will be executed.
    */
   void increment_time(long increment);

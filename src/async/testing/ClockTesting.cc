@@ -21,7 +21,7 @@ void ClockTesting::increment_time(long increment) {
     // and execute the ones which are scheduled to run before the new _time.
     while (it != _scheduled_callbacks.end() && it->first <= _time) {
       // Note that _scheduled_callbacks might dynamically change as this iteration
-      // is happening. That's why we immediately erase the last etry
+      // is happening. That's why we immediately erase the last entry
       it->second();
       // We have to call this again to get back the first element _scheduled_callbacks,
       // since _scheduled_callbacks might have changed while the first callback was running.

@@ -29,7 +29,7 @@ TEST_F(KVStoreTest, FirstWriteTest) {
 
 /**
  * Tests that after a value is written for a key, that another value
- * cannot be writtein to the same key with an (non-strictly) earlier timestamp.
+ * cannot be written to the same key with an (non-strictly) earlier timestamp.
  */
 TEST_F(KVStoreTest, WriteToThePastAfterWrite) {
   _kvstore.write("k1", "v1", 10);
@@ -67,7 +67,7 @@ TEST_F(KVStoreTest, WriteWithIncreasingTimestampCorrect) {
 
 /**
  * Tests that after a value is written for a key, and it's read with a higher timestamp,
- * that another value cannot be writtein to the same key with an earlier timestamp.
+ * that another value cannot be written to the same key with an earlier timestamp.
  */
 TEST_F(KVStoreTest, WriteToThePastAfterRead) {
   _kvstore.write("k1", "v1", 10);

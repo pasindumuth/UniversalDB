@@ -25,7 +25,7 @@ class ChannelImpl
 
   void start_listening() override;
 
-  void set_recieve_callback(std::function<bool(std::string)> callback) override;
+  void set_receive_callback(std::function<bool(std::string)> callback) override;
 
   void set_close_callback(std::function<void(void)> callback) override;
 
@@ -37,7 +37,7 @@ class ChannelImpl
   boost::asio::ip::tcp::socket _socket;
   std::queue<std::string> _message_queue;
   std::mutex _queue_lock;
-  std::function<bool(std::string)> _recieve_callback;
+  std::function<bool(std::string)> _receive_callback;
   std::function<void(void)> _close_callback;
 };
 

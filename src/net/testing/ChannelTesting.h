@@ -37,7 +37,7 @@ class ChannelTesting
   // Add a new message to the queue
   void queue_send(std::string message) override;
 
-  // Pops the first message in the _message_queue and runs it through the _recieve_callback.
+  // Pops the first message in the _message_queue and runs it through the _receive_callback.
   void deliver_message();
 
   // Drops the message the next message (simulating a temporary loss in connectivity).
@@ -53,7 +53,7 @@ class ChannelTesting
   std::string const _sender_ip_string;
   std::string const _receiver_ip_string;
   // FIFO queue which contains messages at the sender that are yet to be
-  // recieved and processed by the reciever.
+  // received and processed by the receiver.
   std::queue<std::string> _message_queue;
   // This channel is responsible for maintaining its place in this vectors when
   // a call to queue_send and deliver_message is made.

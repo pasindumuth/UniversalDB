@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
   master_acceptor.accept(master_socket);
   auto master_channel = uni::net::ChannelImpl(std::move(master_socket));
   // Set callback to execute when the master sends data
-  master_channel.set_recieve_callback(
+  master_channel.set_receive_callback(
     [&resolver, &constants, &background_io_context, &connections_out](std::string message) {
       auto message_wrapper = proto::message::MessageWrapper();
       message_wrapper.ParseFromString(message);

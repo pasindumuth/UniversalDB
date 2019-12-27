@@ -52,7 +52,7 @@ class PaxosLog {
 
   // Callbacks to invoke everytime a new entry is entered into the PaxosLog.
   // Note that we don't invoke these for entries that aren't yet connected to
-  // all continuguously received entries.
+  // all contiguously received entries.
   std::vector<std::function<void(index_t, proto::paxos::PaxosLogEntry)>> _callbacks;
 };
 

@@ -18,8 +18,8 @@ ConnectionsOut::ConnectionsOut(
 void ConnectionsOut::add_channel(std::shared_ptr<Channel> channel) {
   std::unique_lock<std::mutex> lock(_channel_lock);
   auto endpoint_id = channel->endpoint_id();
-  channel->set_recieve_callback([endpoint_id, this](std::string message) {
-    UNIVERSAL_TERMINATE("A Channel in an OutConnections object should never recieve data.");
+  channel->set_receive_callback([endpoint_id, this](std::string message) {
+    UNIVERSAL_TERMINATE("A Channel in an OutConnections object should never receive data.");
     return true;
   });
   channel->set_close_callback([endpoint_id, this]() {

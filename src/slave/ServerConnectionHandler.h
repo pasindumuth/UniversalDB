@@ -10,7 +10,7 @@
 namespace uni {
 namespace slave {
 
-// Responsible for scheduling accept handler and data recieve handlers for
+// Responsible for scheduling accept handler and data receive handlers for
 // other server connections.
 class ServerConnectionHandler {
  public:

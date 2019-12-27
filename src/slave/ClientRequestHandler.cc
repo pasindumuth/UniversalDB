@@ -36,7 +36,8 @@ ClientRequestHandler::ClientRequestHandler(
   });
 }
 
-// TODO finish this
+// TODO finish this. We have to actually update the KVStore. We have to actually
+// check if a write is valid.
 void ClientRequestHandler::handle_request(
     std::function<void(ClientResponse*)> response_callback,
     ClientRequest const& message) {

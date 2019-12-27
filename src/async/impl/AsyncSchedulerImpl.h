@@ -33,7 +33,7 @@ class AsyncSchedulerImpl
   boost::asio::io_context& _io_context;
   std::function<void(uni::net::IncomingMessage)> _callback;
   // We use a queue to make sure that the incoming messages are handled in FIFO order
-  // (boost::asio::post has no guartanee to executed posted tasks in order)
+  // (boost::asio::post has no guarantee to executed posted tasks in order)
   std::queue<uni::net::IncomingMessage> _message_queue;
   std::mutex _queue_lock;
 };

@@ -71,7 +71,7 @@ TEST_F(TimerAsyncSchedulerTestingTest, ScheduleOnceZeroWait) {
 
 /**
  * Ensures that when a task schedules another task, the second task is scheduled from
- * the time the scheduling task is scheduled to run (meaning it's indepedent of 
+ * the time the scheduling task is scheduled to run (meaning it's independent of 
  * the increment time of the clock).
  */
 TEST_F(TimerAsyncSchedulerTestingTest, ScheduleWithChaining) {

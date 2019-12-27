@@ -37,7 +37,7 @@ class TimerAsyncScheduler {
   /**
    * @brief Schedule a callback to run several times, each time running after a certain period.
    * 
-   * Tehid method behaves as if #schedule_once was called @p tries number of times, each time
+   * This method behaves as if #schedule_once was called @p tries number of times, each time
    * waiting @p period . This is useful for retrying requests, for instance.
    */
   virtual void schedule_repeated_finite(std::function<void(void)> callback, long period, int tries) = 0;

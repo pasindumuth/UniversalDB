@@ -37,7 +37,7 @@ class FailureDetector {
   // Schedule heartbeat to be sent periodically
   void schedule_heartbeat();
 
-  // Handle an incoming heartbeat message. Since we only care about whot the
+  // Handle an incoming heartbeat message. Since we only care about who the
   // hearbeat came from, we don't actually pass the heartbest protobuf
   // message into this function.
   void handle_heartbeat(uni::net::endpoint_id endpoint_id);

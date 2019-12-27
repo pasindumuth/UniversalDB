@@ -14,7 +14,7 @@
 namespace uni {
 namespace slave {
 
-// Responsible for scheduling accept handler and data recieve handlers for
+// Responsible for scheduling accept handler and data receive handlers for
 // client connections.
 class ClientConnectionHandler {
  public:
@@ -23,7 +23,7 @@ class ClientConnectionHandler {
       boost::asio::ip::tcp::acceptor& acceptor);
 
   // This method is primarily used by the background thread to listen to accept new connections
-  // from the acceptor, add callbacks to send their data to the AsyncScheduler when they recieve
+  // from the acceptor, add callbacks to send their data to the AsyncScheduler when they receive
   // data, and keep track of those connections until they close.
   void async_accept();
 
