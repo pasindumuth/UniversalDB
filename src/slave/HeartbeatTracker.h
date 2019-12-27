@@ -14,12 +14,10 @@ namespace slave {
 
 class HeartbeatTracker {
  public:
-  static uint32_t const HEARTBEAT_FAILURE_COUNT = 4; // The number of heartbeat cycles that must pass before a node is marked as failed.
-  static uint32_t const HEARTBEAT_SEND_PERIOD = 1000; // The period in which heartbeats are sent in milliseconds.
+  static uint32_t const HEARTBEAT_FAILURE_COUNT; // The number of heartbeat cycles that must pass before a node is marked as failed.
+  static uint32_t const HEARTBEAT_SEND_PERIOD; // The period in which heartbeats are sent in milliseconds.
 
   HeartbeatTracker();
-
-  HeartbeatTracker(std::map<uni::net::endpoint_id, uint32_t> heartbeat_count);
 
   void increment_counts();
 
@@ -45,7 +43,7 @@ class HeartbeatTracker {
 
   void debug_print();
 
-  private:
+  protected:
     std::map<uni::net::endpoint_id, uint32_t> _heartbeat_count;
 };
 

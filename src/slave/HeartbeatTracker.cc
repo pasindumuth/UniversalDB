@@ -5,11 +5,10 @@
 namespace uni {
 namespace slave {
 
-HeartbeatTracker::HeartbeatTracker() {}
+uint32_t const HeartbeatTracker::HEARTBEAT_FAILURE_COUNT = 4;
+uint32_t const HeartbeatTracker::HEARTBEAT_SEND_PERIOD = 1000;
 
-HeartbeatTracker::HeartbeatTracker(
-  std::map<uni::net::endpoint_id, uint32_t> heartbeat_count)
-    : _heartbeat_count(heartbeat_count) {}
+HeartbeatTracker::HeartbeatTracker() {}
 
 void HeartbeatTracker::increment_counts() {
   for (auto& [endpoint, count] : _heartbeat_count) {

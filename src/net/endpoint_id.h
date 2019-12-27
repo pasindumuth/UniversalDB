@@ -9,8 +9,8 @@ namespace uni {
 namespace net {
 
 struct endpoint_id {
-  std::string const ip_string;
-  int32_t const port;
+  std::string ip_string;
+  int32_t port;
 
   endpoint_id(std::string const& ip_string, int32_t const& port);
 
