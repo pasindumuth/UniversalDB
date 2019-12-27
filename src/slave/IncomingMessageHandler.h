@@ -5,7 +5,7 @@
 #include <net/IncomingMessage.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <slave/ClientRequestHandler.h>
-#include <slave/FailureDetector.h>
+#include <slave/HeartbeatTracker.h>
 #include <slave/LogSyncer.h>
 
 namespace uni {
@@ -15,7 +15,7 @@ class IncomingMessageHandler {
  public:
   IncomingMessageHandler(
       uni::slave::ClientRequestHandler& request_handler,
-      uni::slave::FailureDetector& failure_detector,
+      uni::slave::HeartbeatTracker& heartbeat_tracker,
       uni::slave::LogSyncer& log_syncer,
       uni::paxos::MultiPaxosHandler& multi_paxos_handler);
 
@@ -23,7 +23,7 @@ class IncomingMessageHandler {
 
  private:
   uni::slave::ClientRequestHandler& _client_request_handler;
-  uni::slave::FailureDetector& _failure_detector;
+  uni::slave::HeartbeatTracker& _heartbeat_tracker;
   uni::slave::LogSyncer& _log_syncer;
   uni::paxos::MultiPaxosHandler& _multi_paxos_handler;
 };

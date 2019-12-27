@@ -6,6 +6,7 @@
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosTypes.h>
 #include <slave/ClientRequestHandler.h>
+#include <slave/HeartbeatTracker.h>
 #include <slave/FailureDetector.h>
 #include <slave/IncomingMessageHandler.h>
 #include <slave/KVStore.h>
@@ -25,6 +26,7 @@ using uni::net::ConnectionsOut;
 using uni::paxos::MultiPaxosHandler;
 using uni::paxos::PaxosLog;
 using uni::slave::ClientRequestHandler;
+using uni::slave::HeartbeatTracker;
 using uni::slave::FailureDetector;
 using uni::slave::IncomingMessageHandler;
 using uni::slave::KVStore;
@@ -84,9 +86,10 @@ void TestDriver::run_test(TestFunction test) {
     slave.multipaxos_handler = std::make_unique<MultiPaxosHandler>(*slave.paxos_log, paxos_instance_provider);
     slave.proposer_queue = std::make_unique<ProposerQueue>(*slave.timer_scheduler);
     slave.client_request_handler = std::make_unique<ClientRequestHandler>(*slave.multipaxos_handler, *slave.paxos_log, *slave.proposer_queue);
-    slave.failure_detector = std::make_unique<FailureDetector>(constants, *slave.connections_out, *slave.timer_scheduler);
+    slave.heartbeat_tracker = std::make_unique<HeartbeatTracker>();
+    slave.failure_detector = std::make_unique<FailureDetector>(*slave.heartbeat_tracker, *slave.connections_out, *slave.timer_scheduler);
     slave.log_syncer = std::make_unique<LogSyncer>(constants, *slave.connections_out, *slave.timer_scheduler, *slave.paxos_log, *slave.failure_detector);
-    slave.incoming_message_handler = std::make_unique<IncomingMessageHandler>(*slave.client_request_handler, *slave.failure_detector, *slave.log_syncer, *slave.multipaxos_handler);
+    slave.incoming_message_handler = std::make_unique<IncomingMessageHandler>(*slave.client_request_handler, *slave.heartbeat_tracker, *slave.log_syncer, *slave.multipaxos_handler);
     slave.scheduler->set_callback([&slave](uni::net::IncomingMessage message) {
       slave.incoming_message_handler->handle(message);
     });

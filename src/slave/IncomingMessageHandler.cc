@@ -12,16 +12,16 @@ using proto::message::MessageWrapper;
 using uni::net::IncomingMessage;
 using uni::paxos::MultiPaxosHandler;
 using uni::slave::ClientRequestHandler;
-using uni::slave::FailureDetector;
+using uni::slave::HeartbeatTracker;
 using uni::slave::LogSyncer;
 
 IncomingMessageHandler::IncomingMessageHandler(
     ClientRequestHandler& request_handler,
-    FailureDetector& failure_detector,
+    HeartbeatTracker& heartbeat_tracker,
     LogSyncer& log_syncer,
     MultiPaxosHandler& multi_paxos_handler)
       : _client_request_handler(request_handler),
-        _failure_detector(failure_detector),
+        _heartbeat_tracker(heartbeat_tracker),
         _log_syncer(log_syncer),
         _multi_paxos_handler(multi_paxos_handler) {}
 
@@ -47,7 +47,7 @@ void IncomingMessageHandler::handle(IncomingMessage incoming_message) {
     auto const& slave_message = message_wrapper.slave_message();
     if (slave_message.has_heartbeat()) {
       LOG(uni::logging::Level::TRACE2, "Heartbeat gotten.")
-      _failure_detector.handle_heartbeat(endpoint_id);
+      _heartbeat_tracker.handle_heartbeat(endpoint_id);
     } else if (slave_message.has_sync_request()) {
       LOG(uni::logging::Level::TRACE2, "Sync Request gotten.")
       _log_syncer.handle_sync_request(endpoint_id, slave_message.sync_request());

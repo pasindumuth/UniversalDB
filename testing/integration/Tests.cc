@@ -116,7 +116,7 @@ TestFunction Tests::test3() {
     // All failure detectors should report that all of the slaves are still alive.
     for (auto const& slave : slaves) {
       UNIVERSAL_ASSERT_MESSAGE(
-        slave->failure_detector->alive_endpoints().size() == slaves.size(),
+        slave->heartbeat_tracker->alive_endpoints().size() == slaves.size(),
         "The Paxos Logs should agree with one another.")
     }
     // Now kill one of the slaves
@@ -134,7 +134,7 @@ TestFunction Tests::test3() {
     }
     for (auto i = 1; i < slaves.size(); i++) {
       UNIVERSAL_ASSERT_MESSAGE(
-        slaves[i]->failure_detector->alive_endpoints().size() == slaves.size() - 1,
+        slaves[i]->heartbeat_tracker->alive_endpoints().size() == slaves.size() - 1,
         "All failure detectors should report that one slave is dead.")
     }
   };

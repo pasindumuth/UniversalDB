@@ -10,6 +10,7 @@
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosLog.h>
 #include <slave/ClientRequestHandler.h>
+#include <slave/HeartbeatTracker.h>
 #include <slave/FailureDetector.h>
 #include <slave/IncomingMessageHandler.h>
 #include <slave/KVStore.h>
@@ -29,6 +30,7 @@ struct SlaveTesting {
   std::unique_ptr<uni::paxos::PaxosLog> paxos_log;
   std::unique_ptr<uni::slave::ProposerQueue> proposer_queue;
   std::unique_ptr<uni::slave::ClientRequestHandler> client_request_handler;
+  std::unique_ptr<uni::slave::HeartbeatTracker> heartbeat_tracker;
   std::unique_ptr<uni::slave::FailureDetector> failure_detector;
   std::unique_ptr<uni::slave::IncomingMessageHandler> incoming_message_handler;
   std::unique_ptr<uni::slave::KVStore> kvstore;

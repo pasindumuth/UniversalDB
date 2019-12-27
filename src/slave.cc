@@ -26,6 +26,7 @@
 #include <paxos/SinglePaxosHandler.h>
 #include <slave/ClientConnectionHandler.h>
 #include <slave/ClientRequestHandler.h>
+#include <slave/HeartbeatTracker.h>
 #include <slave/FailureDetector.h>
 #include <slave/IncomingMessageHandler.h>
 #include <slave/KVStore.h>
@@ -118,9 +119,10 @@ int main(int argc, char* argv[]) {
   auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor);
   auto proposer_queue = uni::slave::ProposerQueue(timer_scheduler);
   auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler, paxos_log, proposer_queue);
-  auto failure_detector = uni::slave::FailureDetector(constants, connections_out, timer_scheduler);
+  auto heartbeat_tracker = uni::slave::HeartbeatTracker();
+  auto failure_detector = uni::slave::FailureDetector(heartbeat_tracker, connections_out, timer_scheduler);
   auto log_syncer = uni::slave::LogSyncer(constants, connections_out, timer_scheduler, paxos_log, failure_detector);
-  auto incoming_message_handler = uni::slave::IncomingMessageHandler(client_request_handler, failure_detector, log_syncer, multipaxos_handler);
+  auto incoming_message_handler = uni::slave::IncomingMessageHandler(client_request_handler, heartbeat_tracker, log_syncer, multipaxos_handler);
 
   // Setup the PaxosLog's callbacks.
   auto mvkvs = uni::slave::KVStore();
