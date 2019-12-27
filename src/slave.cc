@@ -13,7 +13,6 @@
 #include <async/impl/TimerAsyncSchedulerImpl.h>
 #include <common/common.h>
 #include <constants/constants.h>
-#include <logging/log.h>
 #include <net/ConnectionsIn.h>
 #include <net/ConnectionsOut.h>
 #include <net/endpoint_id.h>

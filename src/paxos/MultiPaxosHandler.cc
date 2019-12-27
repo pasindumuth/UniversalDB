@@ -1,6 +1,5 @@
 #include "MultiPaxosHandler.h"
 
-#include <logging/log.h>
 #include <proto/message.pb.h>
 
 namespace uni {

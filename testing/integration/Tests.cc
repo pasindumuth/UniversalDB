@@ -9,7 +9,6 @@
 #include <assert/assert.h>
 #include <async/testing/AsyncSchedulerTesting.h>
 #include <constants/constants.h>
-#include <logging/log.h>
 #include <net/IncomingMessage.h>
 #include <net/testing/ChannelTesting.h>
 #include <proto/paxos.pb.h>

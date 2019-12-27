@@ -3,7 +3,6 @@
 #include <sstream>
 
 #include <assert/assert.h>
-#include <logging/log.h>
 #include <utils/stringutils.h>
 
 namespace uni {

@@ -1,6 +1,5 @@
 #include "IncomingMessageHandler.h"
 
-#include <logging/log.h>
 #include <proto/client.pb.h>
 #include <proto/message.pb.h>
 

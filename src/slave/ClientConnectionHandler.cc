@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include <assert/assert.h>
-#include <logging/log.h>
 #include <net/impl/ChannelImpl.h>
 
 namespace uni {

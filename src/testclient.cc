@@ -7,7 +7,6 @@
 #include <google/protobuf/wrappers.pb.h>
 
 #include <common/common.h>
-#include <logging/log.h>
 #include <net/impl/ChannelImpl.h>
 #include <proto/client.pb.h>
 #include <proto/message.pb.h>

@@ -2,7 +2,6 @@
 
 #include <assert/assert.h>
 #include <chrono>
-#include <logging/log.h>
 
 namespace uni {
 namespace async {

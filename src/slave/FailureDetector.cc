@@ -3,7 +3,6 @@
 #include <sstream>
 #include <memory>
 
-#include <logging/log.h>
 #include <proto/slave.pb.h>
 
 namespace uni {

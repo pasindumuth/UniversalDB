@@ -4,7 +4,6 @@
 #include <vector>
 
 #include <assert/assert.h>
-#include <logging/log.h>
 
 namespace uni {
 namespace paxos {

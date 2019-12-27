@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <vector>
 
-#include <logging/log.h>
 #include <net/constants.h>
 
 namespace uni {

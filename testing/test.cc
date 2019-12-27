@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
 
 #include <assert/assert.h>
-#include <logging/log.h>
 #include <integration/TestDriver.h>
 #include <integration/Tests.h>
 

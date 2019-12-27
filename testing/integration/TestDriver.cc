@@ -2,7 +2,6 @@
 
 #include <assert/UniversalException.h>
 #include <async/testing/TimerAsyncSchedulerTesting.h>
-#include <logging/log.h>
 #include <net/ConnectionsOut.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosTypes.h>
