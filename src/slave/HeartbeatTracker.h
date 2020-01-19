@@ -3,6 +3,7 @@
 
 #include <map>
 #include <vector>
+#include <sstream>
 
 #include <boost/optional.hpp>
 
@@ -19,6 +20,9 @@ class HeartbeatTracker {
 
   HeartbeatTracker();
 
+  // Every Heartbeat send period, we send out a heartbeat, but we also
+  // increment the time since the last heartbeat for all endpoints that
+  // are currently considered alive. This method doesn' trim off newly dead nodes.
   void increment_counts();
 
   // Handle an incoming heartbeat message. Since we only care about who the
@@ -41,12 +45,22 @@ class HeartbeatTracker {
   // be empty, and there would be no leader.
   boost::optional<uni::net::endpoint_id> leader_endpoint_id();
 
-  void debug_print();
+  // Creates a debug string representing this class.
+  std::string debug_string();
 
-  protected:
+  private:
     std::map<uni::net::endpoint_id, uint32_t> _heartbeat_count;
 };
 
+namespace _inner {
+
+void increment_counts(std::map<uni::net::endpoint_id, uint32_t>& heartbeat_count);
+void handle_heartbeat(std::map<uni::net::endpoint_id, uint32_t>& heartbeat_count, uni::net::endpoint_id endpoint_id);
+std::vector<uni::net::endpoint_id> alive_endpoints(std::map<uni::net::endpoint_id, uint32_t>& heartbeat_count);
+boost::optional<uni::net::endpoint_id> leader_endpoint_id(std::map<uni::net::endpoint_id, uint32_t>& heartbeat_count);
+std::string debug_string(std::map<uni::net::endpoint_id, uint32_t>& heartbeat_count);
+
+} // namespace _inner
 } // namespace slave
 } // namespace uni
 
