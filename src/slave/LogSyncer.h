@@ -1,12 +1,15 @@
 #ifndef UNI_SLAVE_LOGSYNCER
 #define UNI_SLAVE_LOGSYNCER
 
+#include <vector>
+
 #include <async/TimerAsyncScheduler.h>
 #include <common/common.h>
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
 #include <net/endpoint_id.h>
 #include <paxos/PaxosLog.h>
+#include <paxos/PaxosTypes.h>
 #include <proto/message.pb.h>
 #include <proto/slave.pb.h>
 #include <slave/FailureDetector.h>
@@ -37,6 +40,12 @@ class LogSyncer {
   uni::slave::FailureDetector& _failure_detector;
 };
 
+namespace _inner {
+
+proto::slave::SyncRequest* build_sync_request(std::vector<uni::paxos::index_t> available_indices);
+proto::slave::SyncResponse* build_sync_response(uni::paxos::PaxosLog& paxos_log, proto::slave::SyncRequest* request);
+
+} // namespace _inner
 } // namespace slave
 } // namespace uni
 

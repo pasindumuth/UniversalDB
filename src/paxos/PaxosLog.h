@@ -34,7 +34,7 @@ class PaxosLog {
 
   std::vector<index_t> get_available_indices() const;
 
-  std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> get_log() const;
+  std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> const& get_log()  const;
 
   std::string debug_string() const;
 
@@ -43,7 +43,7 @@ class PaxosLog {
   // from the PaxosLearnedState by inserting a key-value pair if it has been learned.
   // We keep this as a map because entries don't have to be learned contiguously per
   // node (although recall that the Global Paxos Log cannot/won't have holes).
-  std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> _log;
+  std::unordered_map<index_t, proto::paxos::PaxosLogEntry const>  _log;
 
   // Next available indices (in increasing order) in the Paxos Log. This vector contains
   // all missing indices from the _log, plus on index after the greatest populted index (or 0

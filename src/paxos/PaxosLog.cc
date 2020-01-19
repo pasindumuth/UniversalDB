@@ -74,7 +74,7 @@ std::vector<index_t> PaxosLog::get_available_indices() const {
   return _available_indices;
 }
 
-std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> PaxosLog::get_log() const {
+std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> const& PaxosLog::get_log() const {
   return _log;
 }
 
