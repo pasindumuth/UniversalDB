@@ -88,7 +88,7 @@ proto::slave::SyncRequest* build_sync_request(
     index_subarray->set_end(std::get<1>(subarray));
     sync_request->mutable_missing_indices()->AddAllocated(index_subarray);
   }
-  sync_request->set_last_index(*available_indices.begin());
+  sync_request->set_last_index(available_indices.back());
   return sync_request;
 }
 
@@ -121,7 +121,9 @@ proto::slave::SyncResponse* build_sync_response(
   // If the current node has PaxosLog entries that go beyond that of the sender's
   // then send these extra entries too.
   if (cur_last_index > request->last_index()) {
-    for (auto i = request->last_index(); i < cur_last_index; i++) {
+    // We add 1 below, since the entry at request->last_index() should
+    // have been added in the last loop.
+    for (auto i = request->last_index() + 1; i < cur_last_index; i++) {
       auto const entry = paxos_log.get_entry(i);
       if (entry) {
         auto entry_with_index = new proto::slave::SyncResponse_PaxosLogEntryWithIndex;

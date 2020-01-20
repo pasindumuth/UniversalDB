@@ -14,6 +14,13 @@ PaxosLog::PaxosLog() {
   _available_indices.push_back(0);
 }
 
+PaxosLog::PaxosLog(std::unordered_map<index_t, proto::paxos::PaxosLogEntry> log) {
+  _available_indices.push_back(0);
+  for (auto [index, entry]: log) {
+    set_entry(index, entry);
+  }
+}
+
 boost::optional<PaxosLogEntry const> PaxosLog::get_entry(index_t index) const {
   auto const it = _log.find(index);
   if (it != _log.end()) {

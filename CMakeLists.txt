@@ -61,6 +61,7 @@ add_executable(UniversalTest
   testing/test.cc
   testing/unit/slave/HeartbeatTrackerTest.cc
   testing/unit/slave/KVStoreTest.cc
+  testing/unit/slave/LogSyncerTest.cc
   testing/unit/slave/ProposerQueueTest.cc
   testing/unit/async/testing/TimerAsyncSchedulerTestingTest.cc
 )

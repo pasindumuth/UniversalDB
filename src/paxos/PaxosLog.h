@@ -14,10 +14,12 @@ namespace uni {
 namespace paxos {
 
 // The log of values that an instance of the MultiPaxos algorithms tries to add
-// values to http://localhost:3000/projects/universaldb/multipaxos.
 class PaxosLog {
  public:
   PaxosLog();
+
+  // Builds a complete PaxosLog, given a log.
+  PaxosLog(std::unordered_map<index_t, proto::paxos::PaxosLogEntry> log);
 
   // Returns the entry at the index if it exists, otherwise returns an empty optional
   boost::optional<proto::paxos::PaxosLogEntry const> get_entry(index_t index) const;
