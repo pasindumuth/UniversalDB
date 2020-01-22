@@ -16,7 +16,6 @@ ConnectionsOut::ConnectionsOut(
       : _constants(constants) {}
 
 void ConnectionsOut::add_channel(std::shared_ptr<Channel> channel) {
-  std::unique_lock<std::mutex> lock(_channel_lock);
   auto endpoint_id = channel->endpoint_id();
   channel->set_receive_callback([endpoint_id, this](std::string message) {
     UNIVERSAL_TERMINATE("A Channel in an OutConnections object should never receive data.");
@@ -32,21 +31,25 @@ void ConnectionsOut::add_channel(std::shared_ptr<Channel> channel) {
     }
   });
   channel->start_listening();
+  std::unique_lock<std::mutex> lock(_channel_lock);
   _channels.insert({endpoint_id, channel});
 }
 
 void ConnectionsOut::broadcast(std::string message) {
+  std::unique_lock<std::mutex> lock(_channel_lock);
   for (auto const& channel : _channels) {
     channel.second->queue_send(message);
   }
 }
 
 bool ConnectionsOut::has(uni::net::endpoint_id endpoint_id) {
+  std::unique_lock<std::mutex> lock(_channel_lock);
   return _channels.find(endpoint_id) != _channels.end();
 }
 
 void ConnectionsOut::send(uni::net::endpoint_id const& endpoint_id, std::string message) {
   uni::net::endpoint_id id(endpoint_id.ip_string, _constants.slave_port);
+  std::unique_lock<std::mutex> lock(_channel_lock);
   auto it = _channels.find(id);
   if (it != _channels.end()) {
     auto channel = it->second;

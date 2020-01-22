@@ -1,5 +1,6 @@
 #include "ClientConnectionHandler.h"
 
+#include <memory>
 #include <iostream>
 
 #include <assert/assert.h>
@@ -10,51 +11,27 @@ namespace slave {
 
 using uni::async::AsyncScheduler;
 using uni::net::Channel;
+using uni::net::ConnectionsIn;
 using boost::asio::ip::tcp;
 
 ClientConnectionHandler::ClientConnectionHandler(
     AsyncScheduler& scheduler,
-    tcp::acceptor& acceptor)
+    tcp::acceptor& acceptor,
+    uni::net::ConnectionsIn& connections_in)
       : _scheduler(scheduler),
-        _acceptor(acceptor) {}
+        _acceptor(acceptor),
+        _connections_in(connections_in) {}
 
 void ClientConnectionHandler::async_accept() {
   _acceptor.async_accept([this](const boost::system::error_code &ec, tcp::socket socket) {
     if (!ec) {
-      std::unique_lock<std::mutex> lock(_channel_lock);
       auto channel = std::make_shared<uni::net::ChannelImpl>(std::move(socket));
-      auto endpoint_id = channel->endpoint_id();
-      channel->set_receive_callback([endpoint_id, this](std::string message) {
-        _scheduler.queue_message({endpoint_id, message});
-        return true;
-      });
-      channel->set_close_callback([endpoint_id, this]() {
-        std::unique_lock<std::mutex> lock(_channel_lock);
-        auto it = _channels.find(endpoint_id);
-        if (it != _channels.end()) {
-          _channels.erase(it);
-        } else {
-          UNIVERSAL_TERMINATE("Channel cannot/should not be deleted whenever this callback is run");
-        }
-      });
-      channel->start_listening();
-      _channels.insert({ endpoint_id, channel });
+      _connections_in.add_channel(channel);
       async_accept();
     } else {
       LOG(uni::logging::Level::ERROR, "Error accepting client connection: " + ec.message())
     }
   });
-}
-
-boost::optional<std::shared_ptr<Channel>> ClientConnectionHandler::get_channel(
-    uni::net::endpoint_id endpoint_id) {
-  std::unique_lock<std::mutex> lock(_channel_lock);
-  auto it = _channels.find(endpoint_id);
-  if (it != _channels.end()) {
-    return boost::optional<std::shared_ptr<Channel>>(it->second);
-  } else {
-    return boost::optional<std::shared_ptr<Channel>>();
-  }
 }
 
 } // slave

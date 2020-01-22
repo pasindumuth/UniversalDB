@@ -19,6 +19,7 @@ void ConnectionsIn::add_channel(std::shared_ptr<Channel> channel) {
     return true;
   });
   channel->set_close_callback([endpoint_id, this]() {
+    std::unique_lock<std::mutex> lock(_channel_lock);
     auto it = _channels.find(endpoint_id);
     if (it != _channels.end()) {
       _channels.erase(it);
@@ -27,7 +28,19 @@ void ConnectionsIn::add_channel(std::shared_ptr<Channel> channel) {
     }
   });
   channel->start_listening();
+  std::unique_lock<std::mutex> lock(_channel_lock);
   _channels.insert({endpoint_id, channel});
+}
+
+boost::optional<std::shared_ptr<Channel>> ConnectionsIn::get_channel(
+    uni::net::endpoint_id endpoint_id) {
+  std::unique_lock<std::mutex> lock(_channel_lock);
+  auto it = _channels.find(endpoint_id);
+  if (it != _channels.end()) {
+    return boost::optional<std::shared_ptr<Channel>>(it->second);
+  } else {
+    return boost::optional<std::shared_ptr<Channel>>();
+  }
 }
 
 } // net

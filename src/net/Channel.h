@@ -11,8 +11,7 @@ namespace uni {
 namespace net {
 
 /**
- * This class provides a simple interface to the network. Recall from
- * http://localhost:3000/projects/universaldb/networkmodel that we use the
+ * This class provides a simple interface to the network. We use the
  * Semi-FIFO Network model. This class represents an interface for both the
  * In-Semi-FIFO Channel as well as the Out-Semi-FIFO Channel.
  */

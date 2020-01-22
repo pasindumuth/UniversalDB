@@ -116,7 +116,8 @@ int main(int argc, char* argv[]) {
   };
   auto multipaxos_handler = uni::paxos::MultiPaxosHandler(paxos_log, paxos_instance_provider);
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
-  auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor);
+  auto client_connections_in = uni::net::ConnectionsIn(server_async_scheduler);
+  auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor, client_connections_in);
   auto proposer_queue = uni::slave::ProposerQueue(timer_scheduler);
   auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler, paxos_log, proposer_queue);
   auto heartbeat_tracker = uni::slave::HeartbeatTracker();
