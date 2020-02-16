@@ -7,8 +7,9 @@ package proto.client;
 // Message sent from client applications to the Universal slaves.
 message ClientRequest {
   enum Type {
-    READ = 0;
-    WRITE = 1;
+    UNSET = 0;
+    READ = 1;
+    WRITE = 2;
   }
 
   string request_id = 1;
@@ -21,8 +22,9 @@ message ClientRequest {
 // Response sent to a client from the Universal slaves.
 message ClientResponse {
   enum Code {
-    SUCCESS = 0;
-    ERROR = 1;
+    UNSET = 0;
+    SUCCESS = 1;
+    ERROR = 2;
   }
 
   google.protobuf.StringValue value = 1;

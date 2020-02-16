@@ -24,8 +24,9 @@ message Write {
 // The values that appear in the Paxos log.
 message PaxosLogEntry {
   enum EntryType {
-    READ = 0;
-    WRITE = 1;
+    UNSET = 0;
+    READ = 1;
+    WRITE = 2;
   }
 
   google.protobuf.StringValue request_id = 1;

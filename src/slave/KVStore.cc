@@ -61,7 +61,6 @@ std::function<void(uni::paxos::index_t, PaxosLogEntry)> KVStore::get_paxos_callb
         // No-op
         break;
     }
-    // LOG(uni::logging::Level::DEBUG, debug_string()); // Only useful 
   };
 }
 

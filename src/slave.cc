@@ -119,7 +119,19 @@ int main(int argc, char* argv[]) {
   auto client_connections_in = uni::net::ConnectionsIn(server_async_scheduler);
   auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor, client_connections_in);
   auto proposer_queue = uni::slave::ProposerQueue(timer_scheduler);
-  auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler, paxos_log, proposer_queue);
+  auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler, paxos_log, proposer_queue,
+    [&client_connections_in](uni::net::endpoint_id endpoint_id, proto::client::ClientResponse* client_response) {
+      auto client_message = new proto::client::ClientMessage();
+      client_message->set_allocated_response(client_response);
+      auto message_wrapper = std::make_unique<proto::message::MessageWrapper>();
+      message_wrapper->set_allocated_client_message(client_message);
+      auto channel = client_connections_in.get_channel(endpoint_id);
+      if (channel) {
+        channel.get()->queue_send(message_wrapper->SerializeAsString());
+      } else {
+        LOG(uni::logging::Level::WARN, "Client Channel to reply to no longer exists.");
+      }
+    });
   auto heartbeat_tracker = uni::slave::HeartbeatTracker();
   auto failure_detector = uni::slave::FailureDetector(heartbeat_tracker, connections_out, timer_scheduler);
   auto log_syncer = uni::slave::LogSyncer(constants, connections_out, timer_scheduler, paxos_log, failure_detector);

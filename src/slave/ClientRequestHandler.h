@@ -9,8 +9,9 @@
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosLog.h>
 #include <paxos/PaxosTypes.h>
-#include <proto/client.pb.h>
 #include <slave/ProposerQueue.h>
+
+#include <proto/client.pb.h>
 
 namespace uni {
 namespace slave {
@@ -20,16 +21,19 @@ class ClientRequestHandler {
   ClientRequestHandler(
       uni::paxos::MultiPaxosHandler& multi_paxos_handler,
       uni::paxos::PaxosLog& paxos_log,
-      uni::slave::ProposerQueue& proposer_queue);
+      uni::slave::ProposerQueue& proposer_queue,
+      std::function<void(uni::net::endpoint_id, proto::client::ClientResponse*)> respond);
 
   void handle_request(
-    std::function<void(proto::client::ClientResponse*)> response_callback,
+    uni::net::endpoint_id endpoint_id,
     proto::client::ClientRequest const& message);
 
  private:
   uni::paxos::MultiPaxosHandler& _multi_paxos_handler;
   uni::paxos::PaxosLog& _paxos_log;
   uni::slave::ProposerQueue& _proposer_queue;
+  // This function consumes the ClientResponse; it deletes it from memory
+  std::function<void(uni::net::endpoint_id, proto::client::ClientResponse*)> _respond;
 
   // Another thing to maintain, another thing that could result in a memory leak.
   std::unordered_map<std::string, uni::paxos::index_t> _request_id_map;

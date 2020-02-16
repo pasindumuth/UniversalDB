@@ -17,8 +17,9 @@ message MasterRequest {
 // Response sent from Slave to Master.
 message MasterResponse {
   enum Code {
-    SUCCESS = 0;
-    ERROR = 1;
+    UNSET = 0;
+    SUCCESS = 1;
+    ERROR = 2;
   }
 
   Code error_code = 1;

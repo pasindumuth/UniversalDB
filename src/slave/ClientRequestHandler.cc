@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include <assert/assert.h>
-#include <proto/client.pb.h>
 #include <proto/message.pb.h>
 #include <proto/paxos.pb.h>
 #include <utils/pbutil.h>
@@ -24,10 +23,12 @@ using uni::slave::ProposerQueue;
 ClientRequestHandler::ClientRequestHandler(
     MultiPaxosHandler& multi_paxos_handler,
     PaxosLog& paxos_log,
-    ProposerQueue& proposer_queue)
+    ProposerQueue& proposer_queue,
+    std::function<void(uni::net::endpoint_id, ClientResponse*)> respond)
       : _multi_paxos_handler(multi_paxos_handler),
         _paxos_log(paxos_log),
-        _proposer_queue(proposer_queue) {
+        _proposer_queue(proposer_queue),
+        _respond(respond) {
   _paxos_log.add_callback([this](index_t index, PaxosLogEntry entry){
     if (entry.request_id().value().length() > 0) {
       _request_id_map.insert({ entry.request_id().value(), index });
@@ -38,10 +39,10 @@ ClientRequestHandler::ClientRequestHandler(
 // TODO finish this. We have to actually update the KVStore. We have to actually
 // check if a write is valid.
 void ClientRequestHandler::handle_request(
-    std::function<void(ClientResponse*)> response_callback,
+    uni::net::endpoint_id endpoint_id,
     ClientRequest const& message) {
   auto retry_count = std::make_shared<int>(0);
-  _proposer_queue.add_task([this, retry_count, response_callback, message](){
+  _proposer_queue.add_task([this, retry_count, message, endpoint_id](){
     auto entry_index = _request_id_map.find(message.request_id());
     if (entry_index != _request_id_map.end()) { // Is this correct?
       // The request was fullfilled in the last retry
@@ -52,16 +53,16 @@ void ClientRequestHandler::handle_request(
         auto entry = _paxos_log.get_entry(entry_index->second);
         client_response->set_allocated_value(uni::utils::pb::string(entry.get().value()));
       }
-      response_callback(client_response);
+      _respond(endpoint_id, client_response);
       return -1;
     } else if (*retry_count == 3) { // TODO make this into a constant
       // Maximum number of retries have been reached
       auto client_response = new ClientResponse();
       client_response->set_error_code(ClientResponse::ERROR);
-      response_callback(client_response);
+      _respond(endpoint_id, client_response);
       return -1;
     }
-    
+
     auto log_entry = PaxosLogEntry();
     log_entry.set_allocated_request_id(uni::utils::pb::string(message.request_id()));
     switch (message.request_type()) {
@@ -78,7 +79,7 @@ void ClientRequestHandler::handle_request(
     log_entry.set_allocated_value(uni::utils::pb::string(message.value()));
     log_entry.set_allocated_timestamp(uni::utils::pb::uint64(message.timestamp()));
     _multi_paxos_handler.propose(log_entry);
-    return -1; // Change so that ProposerQueue will actually retry
+    return 100; // TODO make this into a constant
   });
 }
 

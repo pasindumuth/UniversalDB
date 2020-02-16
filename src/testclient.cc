@@ -20,6 +20,7 @@ int main(int argc, char* argv[]) {
   auto hostname = hostnames[0];
 
   auto const constants = initialize_constants();
+  uni::logging::get_log_level() = uni::logging::Level::INFO;
   LOG(uni::logging::Level::INFO, "Starting client on: " + hostname + ":" + std::to_string(constants.client_port))
 
   boost::asio::io_context io_context;
@@ -34,6 +35,13 @@ int main(int argc, char* argv[]) {
   tcp::socket socket(io_context);
   boost::asio::connect(socket, endpoints);
   uni::net::ChannelImpl channel(std::move(socket));
+  channel.add_receive_callback([](std::string serialized_message) {
+    auto message_wrapper = proto::message::MessageWrapper();
+    message_wrapper.ParseFromString(serialized_message);
+    LOG(uni::logging::Level::INFO, message_wrapper.DebugString());
+    return true;
+  });
+  channel.start_listening();
 
   for (auto request_id = 0;; request_id++) {
     char message_array[50];
