@@ -5,6 +5,7 @@
 #include <mutex>
 #include <queue>
 #include <string>
+#include <vector>
 
 #include <boost/asio.hpp>
 
@@ -26,9 +27,9 @@ class ChannelImpl
 
   void start_listening() override;
 
-  void set_receive_callback(std::function<bool(std::string)> callback) override;
+  void add_receive_callback(std::function<bool(std::string)> callback) override;
 
-  void set_close_callback(std::function<void(void)> callback) override;
+  void add_close_callback(std::function<void(void)> callback) override;
 
  private:
   void send(std::string);
@@ -38,8 +39,8 @@ class ChannelImpl
   boost::asio::ip::tcp::socket _socket;
   std::queue<std::string> _message_queue;
   std::mutex _queue_lock;
-  std::function<bool(std::string)> _receive_callback;
-  std::function<void(void)> _close_callback;
+  std::vector<std::function<bool(std::string)>> _receive_callbacks;
+  std::vector<std::function<void(void)>> _close_callbacks;
 };
 
 } // namespace net

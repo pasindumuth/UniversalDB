@@ -14,11 +14,11 @@ ConnectionsIn::ConnectionsIn(
 
 void ConnectionsIn::add_channel(std::shared_ptr<Channel> channel) {
   auto endpoint_id = channel->endpoint_id();
-  channel->set_receive_callback([endpoint_id, this](std::string message) {
+  channel->add_receive_callback([endpoint_id, this](std::string message) {
     _scheduler.queue_message({endpoint_id, message});
     return true;
   });
-  channel->set_close_callback([endpoint_id, this]() {
+  channel->add_close_callback([endpoint_id, this]() {
     std::unique_lock<std::mutex> lock(_channel_lock);
     auto it = _channels.find(endpoint_id);
     if (it != _channels.end()) {

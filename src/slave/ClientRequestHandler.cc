@@ -78,7 +78,7 @@ void ClientRequestHandler::handle_request(
     log_entry.set_allocated_value(uni::utils::pb::string(message.value()));
     log_entry.set_allocated_timestamp(uni::utils::pb::uint64(message.timestamp()));
     _multi_paxos_handler.propose(log_entry);
-    return -1;
+    return -1; // Change so that ProposerQueue will actually retry
   });
 }
 

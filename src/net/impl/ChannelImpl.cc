@@ -35,13 +35,13 @@ void ChannelImpl::start_listening() {
 }
 
 // Only meant to be called once before start_listening()
-void ChannelImpl::set_receive_callback(std::function<bool(std::string)> callback) {
-  _receive_callback = callback;
+void ChannelImpl::add_receive_callback(std::function<bool(std::string)> callback) {
+  _receive_callbacks.push_back(callback);
 }
 
 // Only meant to be called once before start_listening()
-void ChannelImpl::set_close_callback(std::function<void(void)> callback) {
-  _close_callback = callback;
+void ChannelImpl::add_close_callback(std::function<void(void)> callback) {
+  _close_callbacks.push_back(callback);
 }
 
 // Implement timeouts, retries, and safety on remote socket closure.
@@ -70,7 +70,9 @@ void ChannelImpl::recv() {
     if (bytes_transferred == 0) {
      LOG(uni::logging::TRACE2, "Remove socket closed")
       free(header_buf);
-      _close_callback();
+      for (auto callback: _close_callbacks) {
+        callback();
+      }
     } else {
       auto length = *((int*) header_buf);
       free(header_buf);
@@ -80,9 +82,15 @@ void ChannelImpl::recv() {
        LOG(uni::logging::TRACE2, "Body bytes received: " + std::to_string(bytes_transferred))
         std::string serialized((char*) buf, length);
         free(buf);
-        if (_receive_callback(serialized)) {
-          recv();
+        for (auto callback: _receive_callbacks) {
+          if (!callback(serialized)) {
+            // If even one callback returns false, we use that as an indication to
+            // stop running the rest of the callbacks and to stop listening for
+            // more data in the socket.
+            return;
+          }
         }
+        recv();
       });
     }
   });
