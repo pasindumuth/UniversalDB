@@ -60,9 +60,9 @@ int main(int argc, char* argv[]) {
     auto client_message = new proto::client::ClientMessage();
     client_message->set_allocated_request(request_message);
 
-    auto message_wrapper = new proto::message::MessageWrapper();
-    message_wrapper->set_allocated_client_message(client_message);
+    auto message_wrapper = proto::message::MessageWrapper();
+    message_wrapper.set_allocated_client_message(client_message);
 
-    channel.queue_send(message_wrapper->SerializeAsString());
+    channel.queue_send(message_wrapper.SerializeAsString());
   }
 }

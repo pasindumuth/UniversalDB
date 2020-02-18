@@ -17,7 +17,8 @@ class LogSyncerTest
 /////////////// build_sync_request ///////////////
 
 TEST_F(LogSyncerTest, BuildSyncRequestTest) {
-  auto request = uni::slave::_inner::build_sync_request({0, 1, 2, 3, 5, 7, 8, 9, 11});
+  auto request = std::unique_ptr<proto::slave::SyncRequest>(
+    uni::slave::_inner::build_sync_request({0, 1, 2, 3, 5, 7, 8, 9, 11}));
   EXPECT_EQ(request->missing_indices().size(), 4);
   EXPECT_EQ(request->missing_indices().at(0).start(), 0);
   EXPECT_EQ(request->missing_indices().at(0).end(), 3);
@@ -33,16 +34,16 @@ TEST_F(LogSyncerTest, BuildSyncRequestTest) {
 /////////////// build_sync_response ///////////////
 
 TEST_F(LogSyncerTest, BuildSyncResponseShortLogTest) {
-  auto request = new proto::slave::SyncRequest;
+  auto request = proto::slave::SyncRequest();
   auto i1 = new proto::slave::SyncRequest_IndexSubArray;
   i1->set_start(0);
   i1->set_end(1);
-  request->mutable_missing_indices()->AddAllocated(i1);
+  request.mutable_missing_indices()->AddAllocated(i1);
   auto i2 = new proto::slave::SyncRequest_IndexSubArray;
   i2->set_start(3);
   i2->set_end(3);
-  request->mutable_missing_indices()->AddAllocated(i2);
-  request->set_last_index(3);
+  request.mutable_missing_indices()->AddAllocated(i2);
+  request.set_last_index(3);
 
   // First, consider a PaxosLog whose last index is less than
   // the last_index of the request
@@ -51,23 +52,24 @@ TEST_F(LogSyncerTest, BuildSyncResponseShortLogTest) {
     {1, proto::paxos::PaxosLogEntry()},
     {2, proto::paxos::PaxosLogEntry()},
   });
-  auto response = uni::slave::_inner::build_sync_response(paxos_log, request);
+  auto response = std::unique_ptr<proto::slave::SyncResponse>(
+    uni::slave::_inner::build_sync_response(paxos_log, request));
   EXPECT_EQ(response->missing_entries().size(), 2);
   EXPECT_EQ(response->missing_entries().at(0).index(), 0);
   EXPECT_EQ(response->missing_entries().at(1).index(), 1);
 }
 
 TEST_F(LogSyncerTest, BuildSyncResponseLongLogTest) {
-  auto request = new proto::slave::SyncRequest;
+  auto request = proto::slave::SyncRequest();
   auto i1 = new proto::slave::SyncRequest_IndexSubArray;
   i1->set_start(0);
   i1->set_end(1);
-  request->mutable_missing_indices()->AddAllocated(i1);
+  request.mutable_missing_indices()->AddAllocated(i1);
   auto i2 = new proto::slave::SyncRequest_IndexSubArray;
   i2->set_start(3);
   i2->set_end(3);
-  request->mutable_missing_indices()->AddAllocated(i2);
-  request->set_last_index(3);
+  request.mutable_missing_indices()->AddAllocated(i2);
+  request.set_last_index(3);
 
   // Then, consider a PaxosLog whose last index is greater than
   // the last_index of the request
@@ -78,7 +80,8 @@ TEST_F(LogSyncerTest, BuildSyncResponseLongLogTest) {
     {3, proto::paxos::PaxosLogEntry()},
     {4, proto::paxos::PaxosLogEntry()},
   });
-  auto response = uni::slave::_inner::build_sync_response(paxos_log, request);
+  auto response = std::unique_ptr<proto::slave::SyncResponse>(
+    uni::slave::_inner::build_sync_response(paxos_log, request));
   EXPECT_EQ(response->missing_entries().size(), 4);
   EXPECT_EQ(response->missing_entries().at(0).index(), 0);
   EXPECT_EQ(response->missing_entries().at(1).index(), 1);

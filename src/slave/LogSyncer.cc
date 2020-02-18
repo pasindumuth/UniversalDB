@@ -33,26 +33,28 @@ LogSyncer::LogSyncer(
 
 void LogSyncer::schedule_syncing() {
   _timer_scheduler.schedule_repeated([this]() {
-    auto message_wrapper = std::make_unique<proto::message::MessageWrapper>();
     auto slave_message = new proto::slave::SlaveMessage;
-    auto sync_request = _inner::build_sync_request(_paxos_log.get_available_indices());
-    slave_message->set_allocated_sync_request(sync_request);
-    message_wrapper->set_allocated_slave_message(slave_message);
+    slave_message->set_allocated_sync_request(
+      _inner::build_sync_request(_paxos_log.get_available_indices()));
+
+    auto message_wrapper = proto::message::MessageWrapper();
+    message_wrapper.set_allocated_slave_message(slave_message);
 
     // Send the sync_request to the leader.
-    _connections_out.broadcast(message_wrapper->SerializeAsString());
+    _connections_out.broadcast(message_wrapper.SerializeAsString());
   }, _constants.log_syncer_period);
 }
 
 void LogSyncer::handle_sync_request(uni::net::endpoint_id endpoint_id, proto::slave::SyncRequest request) {
-  auto message_wrapper = std::make_unique<proto::message::MessageWrapper>();
   auto slave_message = new proto::slave::SlaveMessage;
-  auto sync_response = _inner::build_sync_response(_paxos_log, &request);
-  slave_message->set_allocated_sync_response(sync_response);
-  message_wrapper->set_allocated_slave_message(slave_message);
+  slave_message->set_allocated_sync_response(
+    _inner::build_sync_response(_paxos_log, request));
+
+  auto message_wrapper = proto::message::MessageWrapper();
+  message_wrapper.set_allocated_slave_message(slave_message);
 
   // Send the response to the sender.
-  _connections_out.send(endpoint_id, message_wrapper->SerializeAsString());
+  _connections_out.send(endpoint_id, message_wrapper.SerializeAsString());
 }
 
 // TODO: test right
@@ -94,13 +96,13 @@ proto::slave::SyncRequest* build_sync_request(
 
 proto::slave::SyncResponse* build_sync_response(
   uni::paxos::PaxosLog& paxos_log,
-  proto::slave::SyncRequest* request
+  proto::slave::SyncRequest& request
 ) {
   auto sync_response = new proto::slave::SyncResponse;
 
   // Handle the "holes" in the sender's PaxosLog.
   auto cur_last_index = paxos_log.next_available_index();
-  for (auto const& index_subarray : request->missing_indices()) {
+  for (auto const& index_subarray : request.missing_indices()) {
     auto start = index_subarray.start();
     auto end = index_subarray.end();
     if (start >= cur_last_index) {
@@ -120,10 +122,10 @@ proto::slave::SyncResponse* build_sync_response(
 
   // If the current node has PaxosLog entries that go beyond that of the sender's
   // then send these extra entries too.
-  if (cur_last_index > request->last_index()) {
-    // We add 1 below, since the entry at request->last_index() should
+  if (cur_last_index > request.last_index()) {
+    // We add 1 below, since the entry at request.last_index() should
     // have been added in the last loop.
-    for (auto i = request->last_index() + 1; i < cur_last_index; i++) {
+    for (auto i = request.last_index() + 1; i < cur_last_index; i++) {
       auto const entry = paxos_log.get_entry(i);
       if (entry) {
         auto entry_with_index = new proto::slave::SyncResponse_PaxosLogEntryWithIndex;

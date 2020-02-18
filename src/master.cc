@@ -35,14 +35,14 @@ int main(int argc, char* argv[]) {
     boost::asio::async_connect(*socket, endpoints,
       [socket, &slave_list, &channels, &hostname](const boost::system::error_code& ec, const tcp::endpoint& endpoint) {
         auto channel = std::make_shared<uni::net::ChannelImpl>(std::move(*socket));
-        auto message_wrapper = new proto::message::MessageWrapper();
+        auto message_wrapper = proto::message::MessageWrapper();
         auto master_message = new proto::master::MasterMessage();
         auto master_request = new proto::master::MasterRequest();
         master_request->set_allocated_slave_list(new proto::master::SlaveList(slave_list));
         master_message->set_allocated_request(master_request);
-        message_wrapper->set_allocated_master_message(master_message);
+        message_wrapper.set_allocated_master_message(master_message);
         // Send the slave the list contains the hostnames of all slaves.
-        channel->queue_send(message_wrapper->SerializeAsString());
+        channel->queue_send(message_wrapper.SerializeAsString());
         channels.push_back(channel);
         LOG(uni::logging::Level::INFO, "Sent SlaveList to Slave: " + hostname)
     });

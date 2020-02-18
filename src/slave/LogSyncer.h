@@ -43,7 +43,7 @@ class LogSyncer {
 namespace _inner {
 
 proto::slave::SyncRequest* build_sync_request(std::vector<uni::paxos::index_t> available_indices);
-proto::slave::SyncResponse* build_sync_response(uni::paxos::PaxosLog& paxos_log, proto::slave::SyncRequest* request);
+proto::slave::SyncResponse* build_sync_response(uni::paxos::PaxosLog& paxos_log, proto::slave::SyncRequest& request);
 
 } // namespace _inner
 } // namespace slave
