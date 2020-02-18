@@ -45,7 +45,7 @@ void LogSyncer::schedule_syncing() {
   }, _constants.log_syncer_period);
 }
 
-void LogSyncer::handle_sync_request(uni::net::endpoint_id endpoint_id, proto::slave::SyncRequest request) {
+void LogSyncer::handle_sync_request(uni::net::endpoint_id endpoint_id, proto::sync::SyncRequest request) {
   auto slave_message = new proto::slave::SlaveMessage;
   slave_message->set_allocated_sync_response(
     _inner::build_sync_response(_paxos_log, request));
@@ -58,7 +58,7 @@ void LogSyncer::handle_sync_request(uni::net::endpoint_id endpoint_id, proto::sl
 }
 
 // TODO: test right
-void LogSyncer::handle_sync_response(proto::slave::SyncResponse response) {
+void LogSyncer::handle_sync_response(proto::sync::SyncResponse response) {
   for (auto const& entry_with_index : response.missing_entries()) {
     _paxos_log.set_entry(entry_with_index.index(), entry_with_index.entry());
   }
@@ -66,11 +66,10 @@ void LogSyncer::handle_sync_response(proto::slave::SyncResponse response) {
 
 namespace _inner {
 
-// TODO: return a unique_ptr?
-proto::slave::SyncRequest* build_sync_request(
+proto::sync::SyncRequest* build_sync_request(
   std::vector<uni::paxos::index_t> available_indices
 ) {
-  auto sync_request = new proto::slave::SyncRequest;
+  auto sync_request = new proto::sync::SyncRequest;
 
   // Process available indices. Split them into sub arrays
   auto available_index_subarrays = std::vector<std::tuple<uni::paxos::index_t, uni::paxos::index_t>>();
@@ -85,7 +84,7 @@ proto::slave::SyncRequest* build_sync_request(
   }
   available_index_subarrays.push_back(cur_subarray);
   for (auto const& subarray : available_index_subarrays) {
-    auto index_subarray = new proto::slave::SyncRequest_IndexSubArray;
+    auto index_subarray = new proto::sync::SyncRequest_IndexSubArray;
     index_subarray->set_start(std::get<0>(subarray));
     index_subarray->set_end(std::get<1>(subarray));
     sync_request->mutable_missing_indices()->AddAllocated(index_subarray);
@@ -94,11 +93,11 @@ proto::slave::SyncRequest* build_sync_request(
   return sync_request;
 }
 
-proto::slave::SyncResponse* build_sync_response(
+proto::sync::SyncResponse* build_sync_response(
   uni::paxos::PaxosLog& paxos_log,
-  proto::slave::SyncRequest& request
+  proto::sync::SyncRequest& request
 ) {
-  auto sync_response = new proto::slave::SyncResponse;
+  auto sync_response = new proto::sync::SyncResponse;
 
   // Handle the "holes" in the sender's PaxosLog.
   auto cur_last_index = paxos_log.next_available_index();
@@ -112,7 +111,7 @@ proto::slave::SyncResponse* build_sync_response(
     for (auto i = start; i <= end; i++) {
       auto const entry = paxos_log.get_entry(i);
       if (entry) {
-        auto entry_with_index = new proto::slave::SyncResponse_PaxosLogEntryWithIndex;
+        auto entry_with_index = new proto::sync::SyncResponse_PaxosLogEntryWithIndex;
         entry_with_index->set_allocated_entry(new proto::paxos::PaxosLogEntry(entry.get()));
         entry_with_index->set_index(i);
         sync_response->mutable_missing_entries()->AddAllocated(entry_with_index);
@@ -128,7 +127,7 @@ proto::slave::SyncResponse* build_sync_response(
     for (auto i = request.last_index() + 1; i < cur_last_index; i++) {
       auto const entry = paxos_log.get_entry(i);
       if (entry) {
-        auto entry_with_index = new proto::slave::SyncResponse_PaxosLogEntryWithIndex;
+        auto entry_with_index = new proto::sync::SyncResponse_PaxosLogEntryWithIndex;
         entry_with_index->set_allocated_entry(new proto::paxos::PaxosLogEntry(entry.get()));
         entry_with_index->set_index(i);
         sync_response->mutable_missing_entries()->AddAllocated(entry_with_index);

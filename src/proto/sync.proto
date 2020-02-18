@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "paxos.proto";
+
+package proto.sync;
+
+message SyncRequest {
+  // Both endpoints are inclusive here.
+  message IndexSubArray {
+    uint64 start = 1;
+    uint64 end = 2;
+  }
+  repeated IndexSubArray missing_indices = 1;
+  uint64 last_index = 2;
+}
+
+message SyncResponse {
+  message PaxosLogEntryWithIndex {
+    uint32 index = 1;
+    proto.paxos.PaxosLogEntry entry = 2;
+  }
+  repeated PaxosLogEntryWithIndex missing_entries = 1;
+}

@@ -12,7 +12,9 @@
 #include <paxos/PaxosTypes.h>
 #include <proto/message.pb.h>
 #include <proto/slave.pb.h>
+#include <proto/sync.pb.h>
 #include <slave/FailureDetector.h>
+
 
 namespace uni {
 namespace slave {
@@ -28,9 +30,9 @@ class LogSyncer {
 
   void schedule_syncing();
 
-  void handle_sync_request(uni::net::endpoint_id endpoint_id, proto::slave::SyncRequest request);
+  void handle_sync_request(uni::net::endpoint_id endpoint_id, proto::sync::SyncRequest request);
 
-  void handle_sync_response(proto::slave::SyncResponse response);
+  void handle_sync_response(proto::sync::SyncResponse response);
 
  private:
   uni::constants::Constants const& _constants;
@@ -42,8 +44,8 @@ class LogSyncer {
 
 namespace _inner {
 
-proto::slave::SyncRequest* build_sync_request(std::vector<uni::paxos::index_t> available_indices);
-proto::slave::SyncResponse* build_sync_response(uni::paxos::PaxosLog& paxos_log, proto::slave::SyncRequest& request);
+proto::sync::SyncRequest* build_sync_request(std::vector<uni::paxos::index_t> available_indices);
+proto::sync::SyncResponse* build_sync_response(uni::paxos::PaxosLog& paxos_log, proto::sync::SyncRequest& request);
 
 } // namespace _inner
 } // namespace slave
