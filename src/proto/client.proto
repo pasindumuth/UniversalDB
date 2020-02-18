@@ -14,9 +14,11 @@ message ClientRequest {
 
   string request_id = 1;
   Type request_type = 2;
-  google.protobuf.StringValue key = 3;
-  google.protobuf.StringValue value = 4;
-  google.protobuf.UInt64Value timestamp = 5;
+  google.protobuf.StringValue database_id = 3;
+  google.protobuf.StringValue table_id = 4;
+  google.protobuf.StringValue key = 5;
+  google.protobuf.StringValue value = 6;
+  google.protobuf.UInt64Value timestamp = 7;
 }
 
 // Response sent to a client from the Universal slaves.

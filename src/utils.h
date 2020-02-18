@@ -1,3 +1,6 @@
+#ifndef UNI_UTILS
+#define UNI_UTILS
+
 #include <string>
 #include <tuple>
 #include <vector>
@@ -16,3 +19,5 @@ std::vector<std::string> parse_hostnames(int32_t argc, char* argv[]) {
   }
   return hostnames;
 }
+
+#endif // UNI_UTILS

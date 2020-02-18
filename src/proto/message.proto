@@ -4,6 +4,7 @@ import "client.proto";
 import "master.proto";
 import "paxos.proto";
 import "slave.proto";
+import "tablet.proto";
 
 package proto.message;
 
@@ -13,5 +14,6 @@ message MessageWrapper {
     proto.master.MasterMessage master_message = 2;
     proto.paxos.PaxosMessage paxos_message = 3;
     proto.slave.SlaveMessage slave_message = 4;
+    proto.tablet.TabletMessage tablet_message = 5;
   }
 }

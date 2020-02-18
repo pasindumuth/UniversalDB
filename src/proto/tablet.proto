@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+import "paxos.proto";
+import "sync.proto";
+
+package proto.tablet;
+
+message TabletMessage {
+  google.protobuf.StringValue database_id = 1;
+  google.protobuf.StringValue table_id = 2;
+  oneof tablet_message {
+    proto.paxos.PaxosMessage paxos_message = 3;
+    proto.sync.SyncRequest sync_request = 4;
+    proto.sync.SyncResponse sync_response = 5;
+  }
+}

@@ -33,6 +33,7 @@
 #include <slave/LogSyncer.h>
 #include <slave/ProposerQueue.h>
 #include <slave/ServerConnectionHandler.h>
+#include <slave/SlaveIncomingMessageHandler.h>
 #include <utils.h>
 
 using boost::asio::ip::tcp;
