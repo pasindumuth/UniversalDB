@@ -87,7 +87,8 @@ void TestDriver::run_test(TestFunction test) {
     };
     slave.multipaxos_handler = std::make_unique<MultiPaxosHandler>(*slave.paxos_log, paxos_instance_provider);
     slave.proposer_queue = std::make_unique<ProposerQueue>(*slave.timer_scheduler);
-    slave.client_request_handler = std::make_unique<ClientRequestHandler>(*slave.multipaxos_handler, *slave.paxos_log, *slave.proposer_queue, [](uni::net::endpoint_id, proto::client::ClientResponse*){});
+    slave.kvstore = std::make_unique<KVStore>();
+    slave.client_request_handler = std::make_unique<ClientRequestHandler>(*slave.multipaxos_handler, *slave.paxos_log, *slave.proposer_queue, *slave.kvstore, [](uni::net::endpoint_id, proto::client::ClientResponse*){});
     slave.heartbeat_tracker = std::make_unique<HeartbeatTracker>();
     slave.failure_detector = std::make_unique<FailureDetector>(*slave.heartbeat_tracker, *slave.connections_out, *slave.timer_scheduler);
     slave.log_syncer = std::make_unique<LogSyncer>(constants, *slave.connections_out, *slave.timer_scheduler, *slave.paxos_log, *slave.failure_detector);
@@ -95,7 +96,6 @@ void TestDriver::run_test(TestFunction test) {
     slave.scheduler->set_callback([&slave](uni::net::IncomingMessage message) {
       slave.incoming_message_handler->handle(message);
     });
-    slave.kvstore = std::make_unique<KVStore>();
     slave.paxos_log->add_callback(slave.kvstore->get_paxos_callback());
   }
 

@@ -48,6 +48,15 @@ boost::optional<std::string> KVStore::read(std::string key, timestamp_t timestam
   }
 }
 
+boost::optional<timestamp_t> KVStore::read_lat(std::string key) {
+  auto it = _mvkvs.find(key);
+  if (it == _mvkvs.end()) {
+    return boost::none;
+  } else {
+    return it->second.lat;
+  }
+}
+
 std::function<void(uni::paxos::index_t, PaxosLogEntry)> KVStore::get_paxos_callback() {
   return [this](uni::paxos::index_t index, PaxosLogEntry entry) {
     switch (entry.type()) {

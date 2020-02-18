@@ -29,7 +29,7 @@ Level& get_log_level();
 
 #define LOG(LEVEL, MESSAGE) \
   if ((LEVEL) <= uni::logging::get_log_level()) { \
-    std::cout << "Log " << uni::logging::LevelNames[(LEVEL)] << ": " << (MESSAGE) << std::endl; \
+    std::cout << "Log " << uni::logging::LevelNames[(LEVEL)] << ": " << MESSAGE << std::endl; \
   }
 
 } // namespace logging

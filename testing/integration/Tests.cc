@@ -185,13 +185,16 @@ TestFunction Tests::test4() {
     mark_node_as_responsive(all_channels, 0);
 
     UNIVERSAL_ASSERT_MESSAGE(verify_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
-    // None of the PaxosLogs should be equal
+    auto initial_equal_logs = 0;
     for (auto i = 0; i < constants.num_slave_servers; i++) {
       for (auto j = i + 1; j < constants.num_slave_servers; j++) {
-        UNIVERSAL_ASSERT_MESSAGE(!equals(*slaves[i]->paxos_log, *slaves[j]->paxos_log),
-          "Not two PaxosLogs should be equal.")
+        if (equals(*slaves[i]->paxos_log, *slaves[j]->paxos_log)) {
+          initial_equal_logs += 1;
+        }
       }
     }
+    UNIVERSAL_ASSERT_MESSAGE(initial_equal_logs < constants.num_slave_servers * (constants.num_slave_servers + 1),
+          "Not all pairs of PaxosLogs should be equal.")
 
     // Make sure that at least one heartbeat is sent to ensure a leader is known
     // (plus an extra 5 milliseconds to make sure all messages are sent).
@@ -202,12 +205,15 @@ TestFunction Tests::test4() {
 
     UNIVERSAL_ASSERT_MESSAGE(verify_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
     // All of the PaxosLogs should now be equal
+    auto final_equal_logs = 0;
     for (auto i = 0; i < constants.num_slave_servers; i++) {
       for (auto j = i + 1; j < constants.num_slave_servers; j++) {
-        UNIVERSAL_ASSERT_MESSAGE(equals(*slaves[i]->paxos_log, *slaves[j]->paxos_log),
-          "Paxos Logs should all be equal.")
+        final_equal_logs += 1;
       }
     }
+
+    UNIVERSAL_ASSERT_MESSAGE(initial_equal_logs < final_equal_logs,
+          "Paxos Logs should all be equal.")
     LOG(uni::logging::Level::DEBUG, slaves[0]->kvstore->debug_string());
   };
 }

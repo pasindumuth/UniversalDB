@@ -119,7 +119,8 @@ int main(int argc, char* argv[]) {
   auto client_connections_in = uni::net::ConnectionsIn(server_async_scheduler);
   auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor, client_connections_in);
   auto proposer_queue = uni::slave::ProposerQueue(timer_scheduler);
-  auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler, paxos_log, proposer_queue,
+  auto mvkvs = uni::slave::KVStore();
+  auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler, paxos_log, proposer_queue, mvkvs,
     [&client_connections_in](uni::net::endpoint_id endpoint_id, proto::client::ClientResponse* client_response) {
       auto client_message = new proto::client::ClientMessage();
       client_message->set_allocated_response(client_response);
@@ -138,7 +139,6 @@ int main(int argc, char* argv[]) {
   auto incoming_message_handler = uni::slave::IncomingMessageHandler(client_request_handler, heartbeat_tracker, log_syncer, multipaxos_handler);
 
   // Setup the PaxosLog's callbacks.
-  auto mvkvs = uni::slave::KVStore();
   paxos_log.add_callback(mvkvs.get_paxos_callback());
   
   server_async_scheduler.set_callback([&incoming_message_handler](uni::net::IncomingMessage message){

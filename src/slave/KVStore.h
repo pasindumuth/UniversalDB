@@ -71,6 +71,11 @@ class KVStore {
   boost::optional<std::string> read(std::string key, timestamp_t timestamp);
 
   /**
+   * @brief Reads the last access time (lat) of the given key if it exist.
+   */
+  boost::optional<timestamp_t> read_lat(std::string key);
+
+  /**
    * @brief Get a callback that can be registered with a uni::paxos::PaxosLog
    * 
    * This callback is used in the uni::paxos::PaxosLog to update the KVStore when

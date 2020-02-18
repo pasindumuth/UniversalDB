@@ -10,6 +10,7 @@
 #include <paxos/PaxosLog.h>
 #include <paxos/PaxosTypes.h>
 #include <slave/ProposerQueue.h>
+#include <slave/KVStore.h>
 
 #include <proto/client.pb.h>
 
@@ -22,6 +23,7 @@ class ClientRequestHandler {
       uni::paxos::MultiPaxosHandler& multi_paxos_handler,
       uni::paxos::PaxosLog& paxos_log,
       uni::slave::ProposerQueue& proposer_queue,
+      uni::slave::KVStore& kvstore,
       std::function<void(uni::net::endpoint_id, proto::client::ClientResponse*)> respond);
 
   void handle_request(
@@ -32,6 +34,7 @@ class ClientRequestHandler {
   uni::paxos::MultiPaxosHandler& _multi_paxos_handler;
   uni::paxos::PaxosLog& _paxos_log;
   uni::slave::ProposerQueue& _proposer_queue;
+  uni::slave::KVStore& _kvstore;
   // This function consumes the ClientResponse; it deletes it from memory
   std::function<void(uni::net::endpoint_id, proto::client::ClientResponse*)> _respond;
 
