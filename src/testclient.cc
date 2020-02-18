@@ -1,11 +1,13 @@
 #include <ctime>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 #include <google/protobuf/wrappers.pb.h>
 
+#include <assert/assert.h>
 #include <common/common.h>
 #include <net/impl/ChannelImpl.h>
 #include <proto/client.pb.h>
@@ -14,6 +16,19 @@
 #include <utils/pbutil.h>
 
 using boost::asio::ip::tcp;
+
+std::vector<std::string> parse_input(std::string&& message) {
+  auto parsed_output = std::vector<std::string>();
+  auto delimiter = std::string(", ");
+  auto pos = 0;
+  while ((pos = message.find(delimiter)) != std::string::npos) {
+      auto token = message.substr(0, pos);
+      parsed_output.push_back(token);
+      message.erase(0, pos + delimiter.length());
+  }
+  parsed_output.push_back(std::string(message));
+  return parsed_output;
+}
 
 int main(int argc, char* argv[]) {
   auto hostnames = parse_hostnames(argc, argv);
@@ -44,17 +59,18 @@ int main(int argc, char* argv[]) {
   channel.start_listening();
 
   for (auto request_id = 0;; request_id++) {
-    char message_array[50];
-    std::cin >> message_array;
-    std::string message(message_array);
-    std::string key = message.substr(0, 2);
-    std::string value = message.substr(2, 2);
+    auto message = std::string();
+    std::getline(std::cin, message);
+    auto parsed_output = parse_input(std::move(message));
+
+    UNIVERSAL_ASSERT_MESSAGE(parsed_output.size() >= 2,
+      "The input must contain a key and value, delimited by a comma and space.");
 
     auto request_message = new proto::client::ClientRequest();
     request_message->set_request_id(std::to_string(request_id));
     request_message->set_request_type(proto::client::ClientRequest::WRITE);
-    request_message->set_allocated_key(uni::utils::pb::string(key));
-    request_message->set_allocated_value(uni::utils::pb::string(value));
+    request_message->set_allocated_key(uni::utils::pb::string(parsed_output[0]));
+    request_message->set_allocated_value(uni::utils::pb::string(parsed_output[1]));
     request_message->set_allocated_timestamp(uni::utils::pb::uint64(std::time(nullptr)));
 
     auto client_message = new proto::client::ClientMessage();
