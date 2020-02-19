@@ -34,7 +34,7 @@ class Tests {
 
   // This is a test that tests the FailureDetector by failing a node, waiting some time
   // and seeing if the remaining nodes have marked that node as deleted.
-  TestFunction test3();
+  // TestFunction test3();
 
   // This is a test where PaxosLogs are made to be populated evenly (by partitioning
   // off some of the nodes and populated the other nodes with message), and the LogSyncer

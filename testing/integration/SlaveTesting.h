@@ -16,12 +16,14 @@
 #include <slave/KVStore.h>
 #include <slave/LogSyncer.h>
 #include <slave/ProposerQueue.h>
+#include <slave/TabletId.h>
 
 namespace uni {
 namespace testing {
 namespace integration {
 
 struct SlaveTesting {
+  std::unique_ptr<uni::slave::TabletId> tablet_id;
   std::unique_ptr<uni::async::AsyncSchedulerTesting> scheduler;
   std::unique_ptr<uni::async::ClockTesting> clock;
   std::unique_ptr<uni::async::TimerAsyncSchedulerTesting> timer_scheduler;

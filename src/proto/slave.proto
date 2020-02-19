@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "sync.proto";
+import "paxos.proto";
 
 package proto.slave;
 
@@ -9,6 +10,7 @@ message Heartbeat {}
 message SlaveMessage {
   oneof slave_message {
     Heartbeat heartbeat = 1;
-    proto.sync.SyncMessage sync_message = 2;
+    proto.paxos.PaxosMessage paxos_message = 2;
+    proto.sync.SyncMessage sync_message = 3;
   }
 }

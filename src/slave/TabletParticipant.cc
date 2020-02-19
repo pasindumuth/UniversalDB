@@ -1,5 +1,8 @@
 #include "TabletParticipant.h"
 
+#include <proto/sync.pb.h>
+#include <utils/pbutil.h>
+
 namespace uni {
 namespace slave {
 
@@ -8,14 +11,29 @@ TabletParticipant::TabletParticipant(
   uni::net::ConnectionsOut& connections_out,
   uni::net::ConnectionsIn& client_connections_in,
   uni::async::TimerAsyncScheduler& timer_scheduler,
-  uni::slave::FailureDetector& failure_detector)
-  : io_context(),
+  uni::slave::FailureDetector& failure_detector,
+  uni::slave::TabletId& tid)
+  : tablet_id(tid),
+    io_context(),
     scheduler(io_context),
     paxos_log(),
     multipaxos_handler(
       paxos_log,
       [this, &constants, &connections_out](uni::paxos::index_t index) {
-        return uni::paxos::SinglePaxosHandler(constants, connections_out, paxos_log, index);
+        return uni::paxos::SinglePaxosHandler(
+          constants,
+          connections_out,
+          paxos_log,
+          index,
+          [this](proto::paxos::PaxosMessage* paxos_message){
+            auto message_wrapper = proto::message::MessageWrapper();
+            auto tablet_message = new proto::tablet::TabletMessage;
+            tablet_message->set_allocated_database_id(uni::utils::pb::string(tablet_id.database_id));
+            tablet_message->set_allocated_table_id(uni::utils::pb::string(tablet_id.table_id));
+            tablet_message->set_allocated_paxos_message(paxos_message);
+            message_wrapper.set_allocated_tablet_message(tablet_message);
+            return message_wrapper;
+          });
       }),
     proposer_queue(timer_scheduler),
     kvstore(),
@@ -28,9 +46,9 @@ TabletParticipant::TabletParticipant(
         uni::net::endpoint_id endpoint_id,
         proto::client::ClientResponse* client_response
       ) {
+        auto message_wrapper = proto::message::MessageWrapper();
         auto client_message = new proto::client::ClientMessage();
         client_message->set_allocated_response(client_response);
-        auto message_wrapper = proto::message::MessageWrapper();
         message_wrapper.set_allocated_client_message(client_message);
         auto channel = client_connections_in.get_channel(endpoint_id);
         if (channel) {
@@ -45,19 +63,32 @@ TabletParticipant::TabletParticipant(
       connections_out,
       timer_scheduler,
       paxos_log,
-      failure_detector),
+      failure_detector,
+      [this](proto::sync::SyncMessage* sync_message){
+        auto message_wrapper = proto::message::MessageWrapper();
+        auto tablet_message = new proto::tablet::TabletMessage;
+        tablet_message->set_allocated_database_id(uni::utils::pb::string(tablet_id.database_id));
+        tablet_message->set_allocated_table_id(uni::utils::pb::string(tablet_id.table_id));
+        tablet_message->set_allocated_sync_message(sync_message);
+        message_wrapper.set_allocated_tablet_message(tablet_message);
+        return message_wrapper;
+      }),
     incoming_message_handler(
       client_request_handler,
       heartbeat_tracker,
       log_syncer,
       multipaxos_handler),
     thread([this](){
+      scheduler.set_callback([this](uni::net::IncomingMessage message){
+        incoming_message_handler.handle(message);
+      });
       auto work_guard = boost::asio::make_work_guard(io_context);
       io_context.run();
     }) {
   scheduler.set_callback([this](uni::net::IncomingMessage message){
     incoming_message_handler.handle(message);
   });
+  paxos_log.add_callback(kvstore.get_paxos_callback());
 }
 
 } // namespace slave

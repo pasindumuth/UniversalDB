@@ -35,16 +35,13 @@ void IncomingMessageHandler::handle(IncomingMessage incoming_message) {
       LOG(uni::logging::Level::TRACE2, "Client Request gotten.")
       _client_request_handler.handle_request(endpoint_id, client_message.request());
     }
-  } else if (message_wrapper.has_paxos_message()) {
-    LOG(uni::logging::Level::TRACE2, "Paxos Message gotten.")
-    _multi_paxos_handler.handle_incoming_message(endpoint_id, message_wrapper.paxos_message());
-  } else if (message_wrapper.has_slave_message()) {
-    auto const& slave_message = message_wrapper.slave_message();
-    if (slave_message.has_heartbeat()) {
-      LOG(uni::logging::Level::TRACE2, "Heartbeat gotten.")
-      _heartbeat_tracker.handle_heartbeat(endpoint_id);
-    } else if (slave_message.has_sync_message()) {
-      auto sync_message = slave_message.sync_message();
+  } else if (message_wrapper.has_tablet_message()) {
+    auto tablet_message = message_wrapper.tablet_message();
+    if (tablet_message.has_paxos_message()) {
+      LOG(uni::logging::Level::TRACE2, "Paxos Message gotten.")
+      _multi_paxos_handler.handle_incoming_message(endpoint_id, tablet_message.paxos_message());
+    } else if (tablet_message.has_sync_message()) {
+      auto sync_message = tablet_message.sync_message();
       if (sync_message.has_sync_request()) {
         LOG(uni::logging::Level::TRACE2, "Sync Request gotten.")
         _log_syncer.handle_sync_request(endpoint_id, sync_message.sync_request());
@@ -53,6 +50,8 @@ void IncomingMessageHandler::handle(IncomingMessage incoming_message) {
         _log_syncer.handle_sync_response(sync_message.sync_response());
       }
     }
+  } else {
+    LOG(uni::logging::Level::WARN, "Unkown message type in IncomingMessageHandler.")
   }
 }
 

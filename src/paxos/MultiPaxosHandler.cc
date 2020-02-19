@@ -1,7 +1,5 @@
 #include "MultiPaxosHandler.h"
 
-#include <proto/message.pb.h>
-
 namespace uni {
 namespace paxos {
 
@@ -20,7 +18,7 @@ MultiPaxosHandler::MultiPaxosHandler(
 void MultiPaxosHandler::propose(PaxosLogEntry const& entry) {
   index_t index = _paxos_log.next_available_index(); // Look for an index that we can propose this new log entry to.
   auto& paxos_instance = get_instance(index);
-  paxos_instance.propose(MessageWrapper(), entry);
+  paxos_instance.propose(entry);
 }
 
 void MultiPaxosHandler::handle_incoming_message(
@@ -28,13 +26,13 @@ void MultiPaxosHandler::handle_incoming_message(
   auto& paxos_instance = get_instance(paxos_message.paxos_index());
   if (paxos_message.has_prepare()) {
     LOG(uni::logging::Level::TRACE2, "Prepare gotten.")
-    paxos_instance.prepare(MessageWrapper(), endpoint_id, paxos_message.prepare());
+    paxos_instance.prepare(endpoint_id, paxos_message.prepare());
   } else if (paxos_message.has_promise()) {
     LOG(uni::logging::Level::TRACE2, "Promise gotten.")
-    paxos_instance.promise(MessageWrapper(), paxos_message.promise());
+    paxos_instance.promise(paxos_message.promise());
   } else if (paxos_message.has_accept()) {
     LOG(uni::logging::Level::TRACE2, "Accept gotten.")
-    paxos_instance.accept(MessageWrapper(), paxos_message.accept());
+    paxos_instance.accept(paxos_message.accept());
   } else if (paxos_message.has_learn()) {
     LOG(uni::logging::Level::TRACE2, "Learn gotten.")
     paxos_instance.learn(paxos_message.learn());

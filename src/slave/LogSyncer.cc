@@ -22,37 +22,33 @@ LogSyncer::LogSyncer(
     ConnectionsOut& connections_out,
     TimerAsyncScheduler& timer_scheduler,
     PaxosLog& paxos_log,
-    FailureDetector& failure_detector)
+    FailureDetector& failure_detector,
+    std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper)
       : _constants(constants),
         _connections_out(connections_out),
         _timer_scheduler(timer_scheduler),
         _paxos_log(paxos_log),
-        _failure_detector(failure_detector) {
+        _failure_detector(failure_detector),
+        _sync_message_to_wrapper(sync_message_to_wrapper) {
   schedule_syncing();
 }
 
 void LogSyncer::schedule_syncing() {
   _timer_scheduler.schedule_repeated([this]() {
-    auto message_wrapper = proto::message::MessageWrapper();
-    auto slave_message = new proto::slave::SlaveMessage;
     auto sync_message = new proto::sync::SyncMessage;
     sync_message->set_allocated_sync_request(
       _inner::build_sync_request(_paxos_log.get_available_indices()));
-    slave_message->set_allocated_sync_message(sync_message);
-    message_wrapper.set_allocated_slave_message(slave_message);
+    auto message_wrapper = _sync_message_to_wrapper(sync_message);
     // TODO only send the sync_request to the leader.
     _connections_out.broadcast(message_wrapper.SerializeAsString());
   }, _constants.log_syncer_period);
 }
 
 void LogSyncer::handle_sync_request(uni::net::endpoint_id endpoint_id, proto::sync::SyncRequest request) {
-  auto message_wrapper = proto::message::MessageWrapper();
-  auto slave_message = new proto::slave::SlaveMessage;
   auto sync_message = new proto::sync::SyncMessage;
   sync_message->set_allocated_sync_response(
     _inner::build_sync_response(_paxos_log, request));
-  slave_message->set_allocated_sync_message(sync_message);
-  message_wrapper.set_allocated_slave_message(slave_message);
+  auto message_wrapper = _sync_message_to_wrapper(sync_message);
   // Send the response to the sender.
   _connections_out.send(endpoint_id, message_wrapper.SerializeAsString());
 }

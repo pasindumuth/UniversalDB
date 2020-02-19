@@ -4,6 +4,8 @@
 #include <vector>
 
 #include <assert/assert.h>
+#include <proto/tablet.pb.h>
+#include <utils/pbutil.h>
 
 namespace uni {
 namespace paxos {
@@ -23,11 +25,13 @@ SinglePaxosHandler::SinglePaxosHandler(
     Constants const& constants,
     ConnectionsOut& connections_out,
     PaxosLog& paxos_log,
-    index_t paxos_log_index)
+    index_t paxos_log_index,
+    std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper)
       : _constants(constants),
         _connections_out(connections_out),
         _paxos_log(paxos_log),
-        _paxos_log_index(paxos_log_index) {}
+        _paxos_log_index(paxos_log_index),
+        _paxos_message_to_wrapper(paxos_message_to_wrapper) {}
 
 crnd_t SinglePaxosHandler::next_proposal_number() {
   return _proposer_state.latest + 10; // TODO: pick this randomly.
@@ -37,8 +41,7 @@ uint32_t SinglePaxosHandler::majority_threshold() {
   return std::floor(_constants.num_slave_servers / 2) + 1;
 }
 
-void SinglePaxosHandler::propose(
-    MessageWrapper message_wrapper, const PaxosLogEntry& entry) {
+void SinglePaxosHandler::propose(const PaxosLogEntry& entry) {
   auto proposal_number = next_proposal_number();
   _proposer_state.latest = proposal_number;
   _proposer_state.proposal.insert({proposal_number, entry});
@@ -48,12 +51,11 @@ void SinglePaxosHandler::propose(
   prepare_message->set_rnd(proposal_number);
   paxos_message->set_allocated_prepare(prepare_message);
   paxos_message->set_paxos_index(_paxos_log_index);
-  message_wrapper.set_allocated_paxos_message(paxos_message);
+  auto message_wrapper = _paxos_message_to_wrapper(paxos_message);
   _connections_out.broadcast(message_wrapper.SerializeAsString());
 }
 
-void SinglePaxosHandler::prepare(
-    MessageWrapper message_wrapper, uni::net::endpoint_id const& endpoint_id, Prepare const& prepare_message) {
+void SinglePaxosHandler::prepare(uni::net::endpoint_id const& endpoint_id, Prepare const& prepare_message) {
   auto latest_proposal_number = std::get<0>(_acceptor_state.accepted_state);
   auto new_proposal_number = prepare_message.rnd();
   if (new_proposal_number > latest_proposal_number) {
@@ -68,13 +70,12 @@ void SinglePaxosHandler::prepare(
     promise->set_vrnd(std::get<1>(_acceptor_state.accepted_state));
     paxos_message->set_allocated_promise(promise);
     paxos_message->set_paxos_index(_paxos_log_index);
-    message_wrapper.set_allocated_paxos_message(paxos_message);
+    auto message_wrapper = _paxos_message_to_wrapper(paxos_message);
     _connections_out.send(endpoint_id, message_wrapper.SerializeAsString());
   }
 }
 
-void SinglePaxosHandler::promise(
-    MessageWrapper message_wrapper, Promise const& promise_message) {
+void SinglePaxosHandler::promise(Promise const& promise_message) {
   auto rnd = promise_message.rnd();
   auto it = _proposer_state.prepare_state.find(rnd);
   UNIVERSAL_ASSERT_MESSAGE(it != _proposer_state.prepare_state.end(),
@@ -110,14 +111,13 @@ void SinglePaxosHandler::promise(
       accept_message->set_allocated_vval(vval);
       paxos_message->set_allocated_accept(accept_message);
       paxos_message->set_paxos_index(_paxos_log_index);
-      message_wrapper.set_allocated_paxos_message(paxos_message);
+      auto message_wrapper = _paxos_message_to_wrapper(paxos_message);
       _connections_out.broadcast(message_wrapper.SerializeAsString());
     }
   }
 }
 
-void SinglePaxosHandler::accept(
-    MessageWrapper message_wrapper, Accept const& accept_message) {
+void SinglePaxosHandler::accept(Accept const& accept_message) {
   auto cur_rnd = std::get<0>(_acceptor_state.accepted_state);
   auto new_rnd = accept_message.vrnd();
   if (new_rnd >= cur_rnd) {
@@ -135,7 +135,7 @@ void SinglePaxosHandler::accept(
     learn_message->set_allocated_vval(vval);
     paxos_message->set_allocated_learn(learn_message);
     paxos_message->set_paxos_index(_paxos_log_index);
-    message_wrapper.set_allocated_paxos_message(paxos_message);
+    auto message_wrapper = _paxos_message_to_wrapper(paxos_message);
     _connections_out.broadcast(message_wrapper.SerializeAsString());
   }
 }

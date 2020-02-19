@@ -96,50 +96,51 @@ TestFunction Tests::test2() {
   };
 }
 
-TestFunction Tests::test3() {
-  return [this](
-      Constants const& constants,
-      std::vector<std::unique_ptr<SlaveTesting>>& slaves,
-      std::vector<std::vector<ChannelTesting*>>& all_channels,
-      std::vector<ChannelTesting*>& nonempty_channels) {
-    bool passed = true;
-    // Wait one heartbeat cycle so that the nodes can send each other a heartbeat
-    for (auto i = 0; i < constants.heartbeat_period; i++) {
-      for (auto j = 0; j < slaves.size(); j++) {
-        slaves[j]->clock->increment_time(1);
-      }
-      // Exchange all the messages that need to be exchanged
-      while (nonempty_channels.size() > 0) {
-        nonempty_channels[0]->deliver_message();
-      }
-    }
-    // All failure detectors should report that all of the slaves are still alive.
-    for (auto const& slave : slaves) {
-      UNIVERSAL_ASSERT_MESSAGE(
-        slave->heartbeat_tracker->alive_endpoints().size() == slaves.size(),
-        "The Paxos Logs should agree with one another.")
-    }
-    // Now kill one of the slaves
-    mark_node_as_unresponsive(all_channels, 0);
-    // Increment the clock on all other slaves an amount such that
-    // they will detect the failure
-    for (auto i = 0; i < constants.heartbeat_failure_threshold * constants.heartbeat_period; i++) {
-      for (auto j = 1; j < slaves.size(); j++) {
-        slaves[j]->clock->increment_time(1);
-      }
-      // Exchange all the messages that need to be exchanged
-      while (nonempty_channels.size() > 0) {
-        nonempty_channels[0]->deliver_message();
-      }
-    }
-    for (auto i = 1; i < slaves.size(); i++) {
-      UNIVERSAL_ASSERT_MESSAGE(
-        slaves[i]->heartbeat_tracker->alive_endpoints().size() == slaves.size() - 1,
-        "All failure detectors should report that one slave is dead.")
-    }
-  };
-}
+// TestFunction Tests::test3() {
+//   return [this](
+//       Constants const& constants,
+//       std::vector<std::unique_ptr<SlaveTesting>>& slaves,
+//       std::vector<std::vector<ChannelTesting*>>& all_channels,
+//       std::vector<ChannelTesting*>& nonempty_channels) {
+//     bool passed = true;
+//     // Wait one heartbeat cycle so that the nodes can send each other a heartbeat
+//     for (auto i = 0; i < constants.heartbeat_period; i++) {
+//       for (auto j = 0; j < slaves.size(); j++) {
+//         slaves[j]->clock->increment_time(1);
+//       }
+//       // Exchange all the messages that need to be exchanged
+//       while (nonempty_channels.size() > 0) {
+//         nonempty_channels[0]->deliver_message();
+//       }
+//     }
+//     // All failure detectors should report that all of the slaves are still alive.
+//     for (auto const& slave : slaves) {
+//       UNIVERSAL_ASSERT_MESSAGE(
+//         slave->heartbeat_tracker->alive_endpoints().size() == slaves.size(),
+//         "The Paxos Logs should agree with one another.")
+//     }
+//     // Now kill one of the slaves
+//     mark_node_as_unresponsive(all_channels, 0);
+//     // Increment the clock on all other slaves an amount such that
+//     // they will detect the failure
+//     for (auto i = 0; i < constants.heartbeat_failure_threshold * constants.heartbeat_period; i++) {
+//       for (auto j = 1; j < slaves.size(); j++) {
+//         slaves[j]->clock->increment_time(1);
+//       }
+//       // Exchange all the messages that need to be exchanged
+//       while (nonempty_channels.size() > 0) {
+//         nonempty_channels[0]->deliver_message();
+//       }
+//     }
+//     for (auto i = 1; i < slaves.size(); i++) {
+//       UNIVERSAL_ASSERT_MESSAGE(
+//         slaves[i]->heartbeat_tracker->alive_endpoints().size() == slaves.size() - 1,
+//         "All failure detectors should report that one slave is dead.")
+//     }
+//   };
+// }
 
+// TODO this test is so bad that we don't even need the LogSyncer running for it to pass.
 TestFunction Tests::test4() {
   return [this](
       Constants const& constants,
@@ -208,7 +209,9 @@ TestFunction Tests::test4() {
     auto final_equal_logs = 0;
     for (auto i = 0; i < constants.num_slave_servers; i++) {
       for (auto j = i + 1; j < constants.num_slave_servers; j++) {
-        final_equal_logs += 1;
+        if (equals(*slaves[i]->paxos_log, *slaves[j]->paxos_log)) {
+          final_equal_logs += 1;
+        }
       }
     }
 
@@ -223,15 +226,15 @@ static int64_t request_id = 0;
 static int64_t timestamp = 0;
 
 MessageWrapper Tests::build_client_request(std::string message) {
+  auto message_wrapper = proto::message::MessageWrapper();
+  auto client_message = new proto::client::ClientMessage();
   auto request_message = new proto::client::ClientRequest();
   request_message->set_request_id(std::to_string(++request_id));
   request_message->set_request_type(proto::client::ClientRequest::WRITE);
   request_message->set_allocated_key(uni::utils::pb::string("key"));
   request_message->set_allocated_value(uni::utils::pb::string(message));
   request_message->set_allocated_timestamp(uni::utils::pb::uint64(++timestamp));
-  auto client_message = new proto::client::ClientMessage();
   client_message->set_allocated_request(request_message);
-  auto message_wrapper = proto::message::MessageWrapper();
   message_wrapper.set_allocated_client_message(client_message);
   return message_wrapper;
 }

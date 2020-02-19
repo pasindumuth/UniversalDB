@@ -1,6 +1,8 @@
 #ifndef UNI_PAXOS_SINGLEPAXOSHANDLER_H
 #define UNI_PAXOS_SINGLEPAXOSHANDLER_H
 
+#include <functional>
+
 #include <common/common.h>
 #include <constants/constants.h>
 #include <net/ConnectionsOut.h>
@@ -11,6 +13,7 @@
 #include <paxos/PaxosTypes.h>
 #include <proto/message.pb.h>
 #include <proto/paxos.pb.h>
+#include <slave/TabletId.h>
 
 namespace uni {
 namespace paxos {
@@ -29,7 +32,8 @@ class SinglePaxosHandler {
       uni::constants::Constants const& constants,
       uni::net::ConnectionsOut& connections_out,
       uni::paxos::PaxosLog& paxos_log,
-      index_t paxos_log_index);
+      index_t paxos_log_index,
+      std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper);
 
   // Returns a value that's strictly greater than the last proposal number in
   // _proposer_state. Since that last proposal number starts out as 0, this
@@ -42,25 +46,16 @@ class SinglePaxosHandler {
   uint32_t majority_threshold();
 
   // Initiates a proposal for this Paxos Instance.
-  void propose(
-      proto::message::MessageWrapper message_wrapper,
-      proto::paxos::PaxosLogEntry const& entry);
+  void propose(proto::paxos::PaxosLogEntry const& entry);
 
   // Handles a Prepare message for this Paxos Instance.
-  void prepare(
-      proto::message::MessageWrapper message_wrapper,
-      uni::net::endpoint_id const& endpoint_id,
-      proto::paxos::Prepare const& prepare_message);
+  void prepare(uni::net::endpoint_id const& endpoint_id, proto::paxos::Prepare const& prepare_message);
 
   // Handles a Promise message for this Paxos Instance.
-  void promise(
-      proto::message::MessageWrapper message_wrapper,
-      proto::paxos::Promise const& promise_message);
+  void promise(proto::paxos::Promise const& promise_message);
 
   // Handles an Accept message for this Paxos Instance.
-  void accept(
-      proto::message::MessageWrapper message_wrapper,
-      proto::paxos::Accept const& accept_messge);
+  void accept(proto::paxos::Accept const& accept_messge);
 
   // Handles a Learn message for this Paxos Instance.
   void learn(proto::paxos::Learn const& accept_messge);
@@ -71,6 +66,7 @@ class SinglePaxosHandler {
   uni::paxos::PaxosLog& _paxos_log;
   // The index of the Paxos Log that this Paxos Instance is trying to populate.
   index_t const _paxos_log_index;
+  std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> _paxos_message_to_wrapper;
 
   PaxosProposerState _proposer_state;
   PaxosAcceptorState _acceptor_state;

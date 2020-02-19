@@ -2,6 +2,7 @@
 #define UNI_SLAVE_LOGSYNCER
 
 #include <vector>
+#include <functional>
 
 #include <async/TimerAsyncScheduler.h>
 #include <common/common.h>
@@ -26,7 +27,8 @@ class LogSyncer {
     uni::net::ConnectionsOut& connections_out,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::paxos::PaxosLog& paxos_log,
-    uni::slave::FailureDetector& failure_detector);
+    uni::slave::FailureDetector& failure_detector,
+    std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper);
 
   void schedule_syncing();
 
@@ -40,6 +42,7 @@ class LogSyncer {
   uni::async::TimerAsyncScheduler& _timer_scheduler;
   uni::paxos::PaxosLog& _paxos_log;
   uni::slave::FailureDetector& _failure_detector;
+  std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> _sync_message_to_wrapper;
 };
 
 namespace _inner {

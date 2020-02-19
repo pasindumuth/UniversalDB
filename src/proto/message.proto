@@ -2,7 +2,6 @@ syntax = "proto3";
 
 import "client.proto";
 import "master.proto";
-import "paxos.proto";
 import "slave.proto";
 import "tablet.proto";
 
@@ -12,7 +11,6 @@ message MessageWrapper {
   oneof message_wrapper {
     proto.client.ClientMessage client_message = 1;
     proto.master.MasterMessage master_message = 2;
-    proto.paxos.PaxosMessage paxos_message = 3;
     proto.slave.SlaveMessage slave_message = 4;
     proto.tablet.TabletMessage tablet_message = 5;
   }

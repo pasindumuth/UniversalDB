@@ -63,22 +63,21 @@ int main(int argc, char* argv[]) {
     std::getline(std::cin, message);
     auto parsed_output = parse_input(std::move(message));
 
-    UNIVERSAL_ASSERT_MESSAGE(parsed_output.size() >= 2,
+    UNIVERSAL_ASSERT_MESSAGE(parsed_output.size() >= 4,
       "The input must contain a key and value, delimited by a comma and space.");
 
+    auto message_wrapper = proto::message::MessageWrapper();
+    auto client_message = new proto::client::ClientMessage();
     auto request_message = new proto::client::ClientRequest();
     request_message->set_request_id(std::to_string(request_id));
     request_message->set_request_type(proto::client::ClientRequest::WRITE);
-    request_message->set_allocated_key(uni::utils::pb::string(parsed_output[0]));
-    request_message->set_allocated_value(uni::utils::pb::string(parsed_output[1]));
+    request_message->set_allocated_database_id(uni::utils::pb::string(parsed_output[0]));
+    request_message->set_allocated_table_id(uni::utils::pb::string(parsed_output[1]));
+    request_message->set_allocated_key(uni::utils::pb::string(parsed_output[2]));
+    request_message->set_allocated_value(uni::utils::pb::string(parsed_output[3]));
     request_message->set_allocated_timestamp(uni::utils::pb::uint64(std::time(nullptr)));
-
-    auto client_message = new proto::client::ClientMessage();
     client_message->set_allocated_request(request_message);
-
-    auto message_wrapper = proto::message::MessageWrapper();
     message_wrapper.set_allocated_client_message(client_message);
-
     channel.queue_send(message_wrapper.SerializeAsString());
   }
 }

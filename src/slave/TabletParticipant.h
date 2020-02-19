@@ -28,11 +28,13 @@
 #include <slave/LogSyncer.h>
 #include <slave/ProposerQueue.h>
 #include <slave/ServerConnectionHandler.h>
+#include <slave/TabletId.h>
 
 namespace uni {
 namespace slave {
 
 struct TabletParticipant {
+  uni::slave::TabletId tablet_id;
   boost::asio::io_context io_context;
   uni::async::AsyncSchedulerImpl scheduler;
   uni::paxos::PaxosLog paxos_log;
@@ -50,7 +52,8 @@ struct TabletParticipant {
     uni::net::ConnectionsOut& connections_out,
     uni::net::ConnectionsIn& client_connections_in,
     uni::async::TimerAsyncScheduler& timer_scheduler,
-    uni::slave::FailureDetector& failure_detector);
+    uni::slave::FailureDetector& failure_detector,
+    uni::slave::TabletId& tid);
 };
 
 } // namespace slave

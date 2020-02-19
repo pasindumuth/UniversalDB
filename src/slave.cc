@@ -20,6 +20,7 @@
 #include <net/impl/ChannelImpl.h>
 #include <proto/master.pb.h>
 #include <proto/message.pb.h>
+#include <proto/slave.pb.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosLog.h>
 #include <paxos/PaxosTypes.h>
@@ -35,6 +36,7 @@
 #include <slave/ServerConnectionHandler.h>
 #include <slave/SlaveIncomingMessageHandler.h>
 #include <utils.h>
+#include <utils/pbutil.h>
 
 using boost::asio::ip::tcp;
 
@@ -113,39 +115,49 @@ int main(int argc, char* argv[]) {
   // Schedule client acceptor
   auto paxos_log = uni::paxos::PaxosLog();
   auto paxos_instance_provider = [&constants, &connections_out, &paxos_log](uni::paxos::index_t index) {
-    return uni::paxos::SinglePaxosHandler(constants, connections_out, paxos_log, index);
+    return uni::paxos::SinglePaxosHandler(
+      constants,
+      connections_out,
+      paxos_log,
+      index,
+      [](proto::paxos::PaxosMessage* paxos_message){
+        auto message_wrapper = proto::message::MessageWrapper();
+        auto slave_message = new proto::slave::SlaveMessage;
+        slave_message->set_allocated_paxos_message(paxos_message);
+        message_wrapper.set_allocated_slave_message(slave_message);
+        return message_wrapper;
+      });
   };
   auto multipaxos_handler = uni::paxos::MultiPaxosHandler(paxos_log, paxos_instance_provider);
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
   auto client_connections_in = uni::net::ConnectionsIn(server_async_scheduler);
   auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor, client_connections_in);
   auto proposer_queue = uni::slave::ProposerQueue(timer_scheduler);
-  auto mvkvs = uni::slave::KVStore();
-  auto client_request_handler = uni::slave::ClientRequestHandler(multipaxos_handler, paxos_log, proposer_queue, mvkvs,
-    [&client_connections_in](uni::net::endpoint_id endpoint_id, proto::client::ClientResponse* client_response) {
-      auto client_message = new proto::client::ClientMessage();
-      client_message->set_allocated_response(client_response);
-
-      auto message_wrapper = proto::message::MessageWrapper();
-      message_wrapper.set_allocated_client_message(client_message);
-
-      auto channel = client_connections_in.get_channel(endpoint_id);
-      if (channel) {
-        channel.get()->queue_send(message_wrapper.SerializeAsString());
-      } else {
-        LOG(uni::logging::Level::WARN, "Client Channel to reply to no longer exists.");
-      }
-    });
   auto heartbeat_tracker = uni::slave::HeartbeatTracker();
   auto failure_detector = uni::slave::FailureDetector(heartbeat_tracker, connections_out, timer_scheduler);
-  auto log_syncer = uni::slave::LogSyncer(constants, connections_out, timer_scheduler, paxos_log, failure_detector);
-  auto incoming_message_handler = uni::slave::IncomingMessageHandler(client_request_handler, heartbeat_tracker, log_syncer, multipaxos_handler);
-
-  // Setup the PaxosLog's callbacks.
-  paxos_log.add_callback(mvkvs.get_paxos_callback());
-  
-  server_async_scheduler.set_callback([&incoming_message_handler](uni::net::IncomingMessage message){
-    incoming_message_handler.handle(message);
+  auto log_syncer = uni::slave::LogSyncer(
+    constants,
+    connections_out,
+    timer_scheduler,
+    paxos_log,
+    failure_detector,
+    [](proto::sync::SyncMessage* sync_message){
+      auto message_wrapper = proto::message::MessageWrapper();
+      auto slave_message = new proto::slave::SlaveMessage;
+      slave_message->set_allocated_sync_message(sync_message);
+      message_wrapper.set_allocated_slave_message(slave_message);
+      return message_wrapper;
+    });
+  auto slave_incoming_message_handler = uni::slave::SlaveIncomingMessageHandler(
+    client_connections_in,
+    connections_out,
+    failure_detector,
+    heartbeat_tracker,
+    log_syncer,
+    constants,
+    timer_scheduler);
+  server_async_scheduler.set_callback([&slave_incoming_message_handler](uni::net::IncomingMessage message){
+    slave_incoming_message_handler.handle(message);
   });
 
   client_connection_handler.async_accept();

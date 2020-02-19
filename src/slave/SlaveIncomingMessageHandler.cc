@@ -97,7 +97,8 @@ void SlaveIncomingMessageHandler::addTablet(TabletId tablet_id) {
       _connections_out,
       _client_connections_in,
       _timer_scheduler,
-      _failure_detector
+      _failure_detector,
+      tablet_id
     )
   });
 }
