@@ -33,26 +33,26 @@ LogSyncer::LogSyncer(
 
 void LogSyncer::schedule_syncing() {
   _timer_scheduler.schedule_repeated([this]() {
-    auto slave_message = new proto::slave::SlaveMessage;
-    slave_message->set_allocated_sync_request(
-      _inner::build_sync_request(_paxos_log.get_available_indices()));
-
     auto message_wrapper = proto::message::MessageWrapper();
+    auto slave_message = new proto::slave::SlaveMessage;
+    auto sync_message = new proto::sync::SyncMessage;
+    sync_message->set_allocated_sync_request(
+      _inner::build_sync_request(_paxos_log.get_available_indices()));
+    slave_message->set_allocated_sync_message(sync_message);
     message_wrapper.set_allocated_slave_message(slave_message);
-
-    // Send the sync_request to the leader.
+    // TODO only send the sync_request to the leader.
     _connections_out.broadcast(message_wrapper.SerializeAsString());
   }, _constants.log_syncer_period);
 }
 
 void LogSyncer::handle_sync_request(uni::net::endpoint_id endpoint_id, proto::sync::SyncRequest request) {
-  auto slave_message = new proto::slave::SlaveMessage;
-  slave_message->set_allocated_sync_response(
-    _inner::build_sync_response(_paxos_log, request));
-
   auto message_wrapper = proto::message::MessageWrapper();
+  auto slave_message = new proto::slave::SlaveMessage;
+  auto sync_message = new proto::sync::SyncMessage;
+  sync_message->set_allocated_sync_response(
+    _inner::build_sync_response(_paxos_log, request));
+  slave_message->set_allocated_sync_message(sync_message);
   message_wrapper.set_allocated_slave_message(slave_message);
-
   // Send the response to the sender.
   _connections_out.send(endpoint_id, message_wrapper.SerializeAsString());
 }

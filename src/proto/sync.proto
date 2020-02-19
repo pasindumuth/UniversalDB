@@ -21,3 +21,10 @@ message SyncResponse {
   }
   repeated PaxosLogEntryWithIndex missing_entries = 1;
 }
+
+message SyncMessage {
+  oneof sync_message {
+    SyncRequest sync_request = 1;
+    SyncResponse sync_response = 2;
+  }
+}

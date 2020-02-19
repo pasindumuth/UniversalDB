@@ -71,12 +71,15 @@ void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mess
     if (slave_message.has_heartbeat()) {
       LOG(uni::logging::Level::TRACE2, "Heartbeat at SlaveIncomingMessageHandler gotten.")
       _heartbeat_tracker.handle_heartbeat(endpoint_id);
-    } else if (slave_message.has_sync_request()) {
-      LOG(uni::logging::Level::TRACE2, "Sync Request at SlaveIncomingMessageHandler gotten.")
-      _log_syncer.handle_sync_request(endpoint_id, slave_message.sync_request());
-    } else if (slave_message.has_sync_response()) {
-      LOG(uni::logging::Level::TRACE2, "Sync Response at SlaveIncomingMessageHandler gotten.")
-      _log_syncer.handle_sync_response(slave_message.sync_response());
+    } else if (slave_message.has_sync_message()) {
+      auto sync_message = slave_message.sync_message();
+      if (sync_message.has_sync_request()) {
+        LOG(uni::logging::Level::TRACE2, "Sync Request at SlaveIncomingMessageHandler gotten.")
+        _log_syncer.handle_sync_request(endpoint_id, sync_message.sync_request());
+      } else if (sync_message.has_sync_response()) {
+        LOG(uni::logging::Level::TRACE2, "Sync Response at SlaveIncomingMessageHandler gotten.")
+        _log_syncer.handle_sync_response(sync_message.sync_response());
+      }
     }
   }
 }

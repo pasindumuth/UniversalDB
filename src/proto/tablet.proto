@@ -12,7 +12,6 @@ message TabletMessage {
   google.protobuf.StringValue table_id = 2;
   oneof tablet_message {
     proto.paxos.PaxosMessage paxos_message = 3;
-    proto.sync.SyncRequest sync_request = 4;
-    proto.sync.SyncResponse sync_response = 5;
+    proto.sync.SyncMessage sync_message = 4;
   }
 }

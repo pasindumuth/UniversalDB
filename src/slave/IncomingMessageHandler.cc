@@ -43,12 +43,15 @@ void IncomingMessageHandler::handle(IncomingMessage incoming_message) {
     if (slave_message.has_heartbeat()) {
       LOG(uni::logging::Level::TRACE2, "Heartbeat gotten.")
       _heartbeat_tracker.handle_heartbeat(endpoint_id);
-    } else if (slave_message.has_sync_request()) {
-      LOG(uni::logging::Level::TRACE2, "Sync Request gotten.")
-      _log_syncer.handle_sync_request(endpoint_id, slave_message.sync_request());
-    } else if (slave_message.has_sync_response()) {
-      LOG(uni::logging::Level::TRACE2, "Sync Response gotten.")
-      _log_syncer.handle_sync_response(slave_message.sync_response());
+    } else if (slave_message.has_sync_message()) {
+      auto sync_message = slave_message.sync_message();
+      if (sync_message.has_sync_request()) {
+        LOG(uni::logging::Level::TRACE2, "Sync Request gotten.")
+        _log_syncer.handle_sync_request(endpoint_id, sync_message.sync_request());
+      } else if (sync_message.has_sync_response()) {
+        LOG(uni::logging::Level::TRACE2, "Sync Response gotten.")
+        _log_syncer.handle_sync_response(sync_message.sync_response());
+      }
     }
   }
 }
