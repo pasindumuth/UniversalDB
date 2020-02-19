@@ -41,13 +41,13 @@ TestFunction Tests::test1() {
       // chosen randomly.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[std::rand() % slaves.size()]->scheduler->queue_message(incoming_message);
+      slaves[std::rand() % slaves.size()]->scheduler.queue_message(incoming_message);
       // Run the nodes and network for 1ms.
       run_for_milliseconds(slaves, nonempty_channels, 1);
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
     for (auto i = 0; i < 5; i++) {
-      LOG(uni::logging::Level::DEBUG, slaves[i]->paxos_log->debug_string())
+      LOG(uni::logging::Level::DEBUG, slaves[i]->paxos_log.debug_string())
     }
 
     UNIVERSAL_ASSERT_MESSAGE(
@@ -70,7 +70,7 @@ TestFunction Tests::test2() {
       // chosen randomly.
       auto incoming_message = IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[std::rand() % slaves.size()]->scheduler->queue_message(incoming_message);
+      slaves[std::rand() % slaves.size()]->scheduler.queue_message(incoming_message);
       // Run the nodes and network for 1ms.
       run_for_milliseconds(slaves, nonempty_channels, 1);
       // Fail a node if there isn't already a failed node.
@@ -87,7 +87,7 @@ TestFunction Tests::test2() {
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
     for (auto i = 0; i < 5; i++) {
-      LOG(uni::logging::Level::DEBUG, slaves[i]->paxos_log->debug_string())
+      LOG(uni::logging::Level::DEBUG, slaves[i]->paxos_log.debug_string())
     }
 
     UNIVERSAL_ASSERT_MESSAGE(
@@ -157,7 +157,7 @@ TestFunction Tests::test4() {
         // chosen randomly.
         auto incoming_message = IncomingMessage(client_endpoint_id,
             build_client_request("m" + std::to_string(client_request_id)).SerializeAsString());
-        slaves[target_slave]->scheduler->queue_message(incoming_message);
+        slaves[target_slave]->scheduler.queue_message(incoming_message);
         run_for_milliseconds(slaves, nonempty_channels, 5);
       }
     };
@@ -189,7 +189,7 @@ TestFunction Tests::test4() {
     auto initial_equal_logs = 0;
     for (auto i = 0; i < constants.num_slave_servers; i++) {
       for (auto j = i + 1; j < constants.num_slave_servers; j++) {
-        if (equals(*slaves[i]->paxos_log, *slaves[j]->paxos_log)) {
+        if (equals(slaves[i]->paxos_log, slaves[j]->paxos_log)) {
           initial_equal_logs += 1;
         }
       }
@@ -209,7 +209,7 @@ TestFunction Tests::test4() {
     auto final_equal_logs = 0;
     for (auto i = 0; i < constants.num_slave_servers; i++) {
       for (auto j = i + 1; j < constants.num_slave_servers; j++) {
-        if (equals(*slaves[i]->paxos_log, *slaves[j]->paxos_log)) {
+        if (equals(slaves[i]->paxos_log, slaves[j]->paxos_log)) {
           final_equal_logs += 1;
         }
       }
@@ -217,7 +217,7 @@ TestFunction Tests::test4() {
 
     UNIVERSAL_ASSERT_MESSAGE(initial_equal_logs < final_equal_logs,
           "Paxos Logs should all be equal.")
-    LOG(uni::logging::Level::DEBUG, slaves[0]->kvstore->debug_string());
+    LOG(uni::logging::Level::DEBUG, slaves[0]->kvstore.debug_string());
   };
 }
 
@@ -243,7 +243,7 @@ MessageWrapper Tests::build_client_request(std::string message) {
 bool Tests::some_proposer_queue_nonempty(
   std::vector<std::unique_ptr<SlaveTesting>>& slaves) {
     for (auto const& slave: slaves) {
-      if (!slave->proposer_queue->empty()) {
+      if (!slave->proposer_queue.empty()) {
         return true;
       }
     }
@@ -270,7 +270,7 @@ void Tests::run_for_milliseconds(
         if (std::rand() % 100 < 99) {
           // This if statement helps simulate unsynchronized clocks. This is a fairly
           // naive method; it doesn't simulate clocks that have slightly different speeds.
-          slave->clock->increment_time(1); 
+          slave->clock.increment_time(1); 
         }
       }
       auto channels_sent = std::unordered_set<ChannelTesting*>();
@@ -308,7 +308,7 @@ bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<SlaveTesting>>& slaves
   // that the Paxos Logs aren't consistent. Otherwise, they are consistent.
   std::unordered_map<uni::paxos::index_t, proto::paxos::PaxosLogEntry const> global_log;
   for (auto const& slave : slaves) {
-    for (auto const& [index, entry] : slave->paxos_log->get_log()) {
+    for (auto const& [index, entry] : slave->paxos_log.get_log()) {
       auto it = global_log.find(index);
       if (it == global_log.end()) {
         global_log.insert({index, entry});

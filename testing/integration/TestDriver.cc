@@ -1,49 +1,15 @@
 #include "TestDriver.h"
 
 #include <assert/UniversalException.h>
-#include <async/testing/TimerAsyncSchedulerTesting.h>
-#include <net/ConnectionsOut.h>
-#include <paxos/MultiPaxosHandler.h>
-#include <paxos/PaxosTypes.h>
-#include <slave/ClientRequestHandler.h>
-#include <slave/HeartbeatTracker.h>
-#include <slave/FailureDetector.h>
-#include <slave/IncomingMessageHandler.h>
-#include <slave/KVStore.h>
-#include <slave/LogSyncer.h>
-#include <slave/ProposerQueue.h>
 
-#include <proto/client.pb.h>
-#include <proto/message.pb.h>
 #include <proto/slave.pb.h>
-#include <proto/sync.pb.h>
-#include <proto/tablet.pb.h>
-
-#include <utils/pbutil.h>
 
 namespace uni {
 namespace testing {
 namespace integration {
 
-using uni::async::ClockTesting;
-using uni::async::AsyncSchedulerTesting;
-using uni::async::TimerAsyncSchedulerTesting;
-using uni::constants::Constants;
-using uni::net::ChannelTesting;
-using uni::net::ConnectionsOut;
-using uni::paxos::MultiPaxosHandler;
-using uni::paxos::PaxosLog;
-using uni::slave::ClientRequestHandler;
-using uni::slave::HeartbeatTracker;
-using uni::slave::FailureDetector;
-using uni::slave::IncomingMessageHandler;
-using uni::slave::KVStore;
-using uni::slave::LogSyncer;
-using uni::slave::ProposerQueue;
-using uni::testing::integration::SlaveTesting;
-
-Constants initialize_constants() {
-  return Constants(5, 1610, 1710, 1810, 1000, 4, 1000);
+uni::constants::Constants initialize_constants() {
+  return uni::constants::Constants(5, 1610, 1710, 1810, 1000, 4, 1000);
 }
 
 void TestDriver::run_test(TestFunction test) {
@@ -56,75 +22,34 @@ void TestDriver::run_test(TestFunction test) {
     ip_strings.push_back(std::to_string(i));
   }
 
+  // TabletId to use throughout
+  auto tablet_id = uni::slave::TabletId{"database_id", "table_id", "", ""};
+
   // Create mock AsyncScheduler.
-  auto slaves = std::vector<std::unique_ptr<SlaveTesting>>();
+  auto slaves = std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>();
   for (auto i = 0; i < constants.num_slave_servers; i++) {
-    auto slave = std::make_unique<SlaveTesting>();
-    slave->scheduler = std::make_unique<AsyncSchedulerTesting>();
-    slaves.push_back(std::move(slave));
+    slaves.push_back(std::make_unique<uni::testing::integration::SlaveTesting>(tablet_id, constants));
   }
 
   // Holds onto Channels that aren't empty.
-  auto nonempty_channels = std::vector<ChannelTesting*>();
+  auto nonempty_channels = std::vector<uni::net::ChannelTesting*>();
 
   // Create the IncomingMessageHandler for each universal server
-  auto all_channels = std::vector<std::vector<ChannelTesting*>>();
+  auto all_channels = std::vector<std::vector<uni::net::ChannelTesting*>>();
   for (auto i = 0; i < constants.num_slave_servers; i++) {
     auto& slave = *slaves[i];
-    slave.tablet_id = std::make_unique<uni::slave::TabletId>(uni::slave::TabletId{"database_id", "table_id", "", ""});
-    slave.connections_out = std::make_unique<ConnectionsOut>(constants);
-    all_channels.push_back(std::vector<ChannelTesting*>());
+    all_channels.push_back(std::vector<uni::net::ChannelTesting*>());
     auto& channels = all_channels.back();
-    // Populate connections_out with ChannelTesting objects. We iterate over
+    // Populate connections_out with uni::net::ChannelTesting objects. We iterate over
     // the other Slaves, take their Aysnc Schedulers (which receive messages relative
-    // to the current Slave), and create the ChannelTesting object with that.
+    // to the current Slave), and create the uni::net::ChannelTesting object with that.
     for (auto j = 0; j < constants.num_slave_servers; j++) {
-      auto& receiver_async_sheduler = *slaves[j]->scheduler;
-      auto channel = std::make_shared<ChannelTesting>(
+      auto& receiver_async_sheduler = slaves[j]->scheduler;
+      auto channel = std::make_shared<uni::net::ChannelTesting>(
           constants, receiver_async_sheduler, ip_strings[i], ip_strings[j], nonempty_channels);
-      slave.connections_out->add_channel(channel);
+      slave.connections_out.add_channel(channel);
       channels.push_back(channel.get());
     }
-
-    slave.clock = std::make_unique<ClockTesting>();
-    slave.timer_scheduler = std::make_unique<TimerAsyncSchedulerTesting>(*slave.clock);
-    slave.paxos_log = std::make_unique<PaxosLog>();
-    auto paxos_instance_provider = [&slave, &constants](uni::paxos::index_t index) {
-      return uni::paxos::SinglePaxosHandler(
-        constants,
-        *slave.connections_out,
-        *slave.paxos_log,
-        index,
-        [&slave](proto::paxos::PaxosMessage* paxos_message){
-          auto message_wrapper = proto::message::MessageWrapper();
-          auto tablet_message = new proto::tablet::TabletMessage;
-          tablet_message->set_allocated_database_id(uni::utils::pb::string((*slave.tablet_id).database_id));
-          tablet_message->set_allocated_table_id(uni::utils::pb::string((*slave.tablet_id).table_id));
-          tablet_message->set_allocated_paxos_message(paxos_message);
-          message_wrapper.set_allocated_tablet_message(tablet_message);
-          return message_wrapper;
-        });
-    };
-    slave.multipaxos_handler = std::make_unique<MultiPaxosHandler>(*slave.paxos_log, paxos_instance_provider);
-    slave.proposer_queue = std::make_unique<ProposerQueue>(*slave.timer_scheduler);
-    slave.kvstore = std::make_unique<KVStore>();
-    slave.client_request_handler = std::make_unique<ClientRequestHandler>(*slave.multipaxos_handler, *slave.paxos_log, *slave.proposer_queue, *slave.kvstore, [](uni::net::endpoint_id, proto::client::ClientResponse*){});
-    slave.heartbeat_tracker = std::make_unique<HeartbeatTracker>();
-    slave.failure_detector = std::make_unique<FailureDetector>(*slave.heartbeat_tracker, *slave.connections_out, *slave.timer_scheduler);
-    slave.log_syncer = std::make_unique<LogSyncer>(constants, *slave.connections_out, *slave.timer_scheduler, *slave.paxos_log, *slave.failure_detector, [&slave](proto::sync::SyncMessage* sync_message){
-      auto message_wrapper = proto::message::MessageWrapper();
-      auto tablet_message = new proto::tablet::TabletMessage;
-      tablet_message->set_allocated_database_id(uni::utils::pb::string((*slave.tablet_id).database_id));
-      tablet_message->set_allocated_table_id(uni::utils::pb::string((*slave.tablet_id).table_id));
-      tablet_message->set_allocated_sync_message(sync_message);
-      message_wrapper.set_allocated_tablet_message(tablet_message);
-      return message_wrapper;
-    });
-    slave.incoming_message_handler = std::make_unique<IncomingMessageHandler>(*slave.client_request_handler, *slave.heartbeat_tracker, *slave.log_syncer, *slave.multipaxos_handler);
-    slave.scheduler->set_callback([&slave](uni::net::IncomingMessage message) {
-      slave.incoming_message_handler->handle(message);
-    });
-    slave.paxos_log->add_callback(slave.kvstore->get_paxos_callback());
   }
 
   try {

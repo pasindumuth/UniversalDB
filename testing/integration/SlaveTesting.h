@@ -23,20 +23,24 @@ namespace testing {
 namespace integration {
 
 struct SlaveTesting {
-  std::unique_ptr<uni::slave::TabletId> tablet_id;
-  std::unique_ptr<uni::async::AsyncSchedulerTesting> scheduler;
-  std::unique_ptr<uni::async::ClockTesting> clock;
-  std::unique_ptr<uni::async::TimerAsyncSchedulerTesting> timer_scheduler;
-  std::unique_ptr<uni::net::ConnectionsOut> connections_out;
-  std::unique_ptr<uni::paxos::MultiPaxosHandler> multipaxos_handler;
-  std::unique_ptr<uni::paxos::PaxosLog> paxos_log;
-  std::unique_ptr<uni::slave::ProposerQueue> proposer_queue;
-  std::unique_ptr<uni::slave::ClientRequestHandler> client_request_handler;
-  std::unique_ptr<uni::slave::HeartbeatTracker> heartbeat_tracker;
-  std::unique_ptr<uni::slave::FailureDetector> failure_detector;
-  std::unique_ptr<uni::slave::IncomingMessageHandler> incoming_message_handler;
-  std::unique_ptr<uni::slave::KVStore> kvstore;
-  std::unique_ptr<uni::slave::LogSyncer> log_syncer;
+  uni::slave::TabletId tablet_id;
+  uni::async::AsyncSchedulerTesting scheduler;
+  uni::async::ClockTesting clock;
+  uni::async::TimerAsyncSchedulerTesting timer_scheduler;
+  uni::net::ConnectionsOut connections_out;
+  uni::paxos::PaxosLog paxos_log;
+  uni::paxos::MultiPaxosHandler multipaxos_handler;
+  uni::slave::ProposerQueue proposer_queue;
+  uni::slave::KVStore kvstore;
+  uni::slave::ClientRequestHandler client_request_handler;
+  uni::slave::HeartbeatTracker heartbeat_tracker;
+  uni::slave::FailureDetector failure_detector;
+  uni::slave::LogSyncer log_syncer;
+  uni::slave::IncomingMessageHandler incoming_message_handler;
+
+  SlaveTesting(
+    uni::slave::TabletId& tid,
+    uni::constants::Constants const& constants);
 };
 
 } // integration
