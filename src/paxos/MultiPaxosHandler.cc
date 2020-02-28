@@ -3,26 +3,20 @@
 namespace uni {
 namespace paxos {
 
-using proto::message::MessageWrapper;
-using proto::paxos::PaxosLogEntry;
-using proto::paxos::PaxosMessage;
-using uni::paxos::PaxosLog;
-using uni::paxos::SinglePaxosHandler;
-
 MultiPaxosHandler::MultiPaxosHandler(
-    PaxosLog& paxos_log,
-    std::function<SinglePaxosHandler(index_t)> instance_provider)
+    uni::paxos::PaxosLog& paxos_log,
+    std::function<uni::paxos::SinglePaxosHandler(index_t)> instance_provider)
     : _paxos_log(paxos_log),
       _instance_provider(instance_provider) {}
 
-void MultiPaxosHandler::propose(PaxosLogEntry const& entry) {
+void MultiPaxosHandler::propose(proto::paxos::PaxosLogEntry const& entry) {
   index_t index = _paxos_log.next_available_index(); // Look for an index that we can propose this new log entry to.
   auto& paxos_instance = get_instance(index);
   paxos_instance.propose(entry);
 }
 
 void MultiPaxosHandler::handle_incoming_message(
-    uni::net::endpoint_id const& endpoint_id, PaxosMessage const& paxos_message) {
+    uni::net::endpoint_id const& endpoint_id, proto::paxos::PaxosMessage const& paxos_message) {
   auto& paxos_instance = get_instance(paxos_message.paxos_index());
   if (paxos_message.has_prepare()) {
     LOG(uni::logging::Level::TRACE2, "Prepare gotten.")
@@ -39,7 +33,7 @@ void MultiPaxosHandler::handle_incoming_message(
   }
 }
 
-SinglePaxosHandler& MultiPaxosHandler::get_instance(index_t index) {
+uni::paxos::SinglePaxosHandler& MultiPaxosHandler::get_instance(index_t index) {
   if (_paxos_instances.find(index) == _paxos_instances.end()) {
     _paxos_instances.insert({index, _instance_provider(index)});
   }

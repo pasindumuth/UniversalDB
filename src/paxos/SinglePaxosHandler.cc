@@ -10,21 +10,10 @@
 namespace uni {
 namespace paxos {
 
-using proto::message::MessageWrapper;
-using proto::paxos::Accept;
-using proto::paxos::Learn;
-using proto::paxos::PaxosLogEntry;
-using proto::paxos::PaxosMessage;
-using proto::paxos::Prepare;
-using proto::paxos::Promise;
-using uni::constants::Constants;
-using uni::net::ConnectionsOut;
-using uni::paxos::PaxosLog;
-
 SinglePaxosHandler::SinglePaxosHandler(
-    Constants const& constants,
-    ConnectionsOut& connections_out,
-    PaxosLog& paxos_log,
+    uni::constants::Constants const& constants,
+    uni::net::ConnectionsOut& connections_out,
+    uni::paxos::PaxosLog& paxos_log,
     index_t paxos_log_index,
     std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper)
       : _constants(constants),
@@ -41,13 +30,13 @@ uint32_t SinglePaxosHandler::majority_threshold() {
   return std::floor(_constants.num_slave_servers / 2) + 1;
 }
 
-void SinglePaxosHandler::propose(const PaxosLogEntry& entry) {
+void SinglePaxosHandler::propose(const proto::paxos::PaxosLogEntry& entry) {
   auto proposal_number = next_proposal_number();
   _proposer_state.latest = proposal_number;
   _proposer_state.proposal.insert({proposal_number, entry});
   _proposer_state.prepare_state.insert({proposal_number, {}});
-  auto paxos_message = new PaxosMessage; // message_wrapper takes ownership and handles deleting this
-  auto prepare_message = new Prepare; // paxos_message takes ownership and handles deleting this
+  auto paxos_message = new proto::paxos::PaxosMessage; // message_wrapper takes ownership and handles deleting this
+  auto prepare_message = new proto::paxos::Prepare; // paxos_message takes ownership and handles deleting this
   prepare_message->set_rnd(proposal_number);
   paxos_message->set_allocated_prepare(prepare_message);
   paxos_message->set_paxos_index(_paxos_log_index);
@@ -55,16 +44,16 @@ void SinglePaxosHandler::propose(const PaxosLogEntry& entry) {
   _connections_out.broadcast(message_wrapper.SerializeAsString());
 }
 
-void SinglePaxosHandler::prepare(uni::net::endpoint_id const& endpoint_id, Prepare const& prepare_message) {
+void SinglePaxosHandler::prepare(uni::net::endpoint_id const& endpoint_id, proto::paxos::Prepare const& prepare_message) {
   auto latest_proposal_number = std::get<0>(_acceptor_state.accepted_state);
   auto new_proposal_number = prepare_message.rnd();
   if (new_proposal_number > latest_proposal_number) {
     // The incoming proposal number is higher than the current proposal number,
     // which means a promise can be sent back.
     std::get<0>(_acceptor_state.accepted_state) = new_proposal_number;
-    auto paxos_message = new PaxosMessage; // message_wrapper takes ownership and handles deleting this
-    auto promise = new Promise; // paxos_message takes ownership and handles deleting this
-    auto vval = new PaxosLogEntry(std::get<2>(_acceptor_state.accepted_state)); // promise takes ownership and handles deleting this
+    auto paxos_message = new proto::paxos::PaxosMessage; // message_wrapper takes ownership and handles deleting this
+    auto promise = new proto::paxos::Promise; // paxos_message takes ownership and handles deleting this
+    auto vval = new proto::paxos::PaxosLogEntry(std::get<2>(_acceptor_state.accepted_state)); // promise takes ownership and handles deleting this
     promise->set_allocated_vval(vval);
     promise->set_rnd(std::get<0>(_acceptor_state.accepted_state));
     promise->set_vrnd(std::get<1>(_acceptor_state.accepted_state));
@@ -75,7 +64,7 @@ void SinglePaxosHandler::prepare(uni::net::endpoint_id const& endpoint_id, Prepa
   }
 }
 
-void SinglePaxosHandler::promise(Promise const& promise_message) {
+void SinglePaxosHandler::promise(proto::paxos::Promise const& promise_message) {
   auto rnd = promise_message.rnd();
   auto it = _proposer_state.prepare_state.find(rnd);
   UNIVERSAL_ASSERT_MESSAGE(it != _proposer_state.prepare_state.end(),
@@ -104,9 +93,9 @@ void SinglePaxosHandler::promise(Promise const& promise_message) {
         }
       }
 
-      auto paxos_message = new PaxosMessage; // message_wrapper takes ownership and handles deleting this
-      auto accept_message = new Accept; // paxos_message takes ownership and handles deleting this
-      auto vval = new PaxosLogEntry(proposal_value); // accept_message takes ownership and handles deleting this
+      auto paxos_message = new proto::paxos::PaxosMessage; // message_wrapper takes ownership and handles deleting this
+      auto accept_message = new proto::paxos::Accept; // paxos_message takes ownership and handles deleting this
+      auto vval = new proto::paxos::PaxosLogEntry(proposal_value); // accept_message takes ownership and handles deleting this
       accept_message->set_vrnd(rnd);
       accept_message->set_allocated_vval(vval);
       paxos_message->set_allocated_accept(accept_message);
@@ -117,7 +106,7 @@ void SinglePaxosHandler::promise(Promise const& promise_message) {
   }
 }
 
-void SinglePaxosHandler::accept(Accept const& accept_message) {
+void SinglePaxosHandler::accept(proto::paxos::Accept const& accept_message) {
   auto cur_rnd = std::get<0>(_acceptor_state.accepted_state);
   auto new_rnd = accept_message.vrnd();
   if (new_rnd >= cur_rnd) {
@@ -128,9 +117,9 @@ void SinglePaxosHandler::accept(Accept const& accept_message) {
     std::get<1>(_acceptor_state.accepted_state) = new_rnd;
     std::get<2>(_acceptor_state.accepted_state) = accept_message.vval();
 
-    auto paxos_message = new PaxosMessage; // message_wrapper takes ownership and handles deleting this
-    auto learn_message = new Learn; // paxos_message takes ownership and handles deleting this
-    auto vval = new PaxosLogEntry(accept_message.vval()); // learn_message takes ownership and handles deleting this
+    auto paxos_message = new proto::paxos::PaxosMessage; // message_wrapper takes ownership and handles deleting this
+    auto learn_message = new proto::paxos::Learn; // paxos_message takes ownership and handles deleting this
+    auto vval = new proto::paxos::PaxosLogEntry(accept_message.vval()); // learn_message takes ownership and handles deleting this
     learn_message->set_vrnd(new_rnd);
     learn_message->set_allocated_vval(vval);
     paxos_message->set_allocated_learn(learn_message);
@@ -140,7 +129,7 @@ void SinglePaxosHandler::accept(Accept const& accept_message) {
   }
 }
 
-void SinglePaxosHandler::learn(Learn const& learn_message) {
+void SinglePaxosHandler::learn(proto::paxos::Learn const& learn_message) {
   if (_learner_state.learned) return; // If there is already a learned value, ignore this Learn message.
   auto rnd = learn_message.vrnd();
   auto it = _learner_state.learned_value.find(rnd);

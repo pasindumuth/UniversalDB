@@ -6,19 +6,13 @@
 
 #include <assert/assert.h>
 #include <net/constants.h>
-#include <net/IncomingMessage.h>
 
 namespace uni {
 namespace net {
 
-using uni::async::AsyncSchedulerTesting;
-using uni::constants::Constants;
-using uni::net::Channel;
-using uni::net::IncomingMessage;
-
 ChannelTesting::ChannelTesting(
-    Constants const& constants,
-    AsyncSchedulerTesting& async_scheduler,
+    uni::constants::Constants const& constants,
+    uni::async::AsyncSchedulerTesting& async_scheduler,
     std::string const& sender_ip_string,
     std::string const& receiver_ip_string,
     std::vector<ChannelTesting*>& nonempty_channels)

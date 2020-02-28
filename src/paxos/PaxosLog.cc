@@ -8,29 +8,27 @@
 namespace uni {
 namespace paxos {
 
-using proto::paxos::PaxosLogEntry;
-
 PaxosLog::PaxosLog() {
   _available_indices.push_back(0);
 }
 
-PaxosLog::PaxosLog(std::unordered_map<index_t, proto::paxos::PaxosLogEntry> log) {
+PaxosLog::PaxosLog(std::unordered_map<uni::paxos::index_t, proto::paxos::PaxosLogEntry> log) {
   _available_indices.push_back(0);
   for (auto [index, entry]: log) {
     set_entry(index, entry);
   }
 }
 
-boost::optional<PaxosLogEntry const> PaxosLog::get_entry(index_t index) const {
+boost::optional<proto::paxos::PaxosLogEntry const> PaxosLog::get_entry(uni::paxos::index_t index) const {
   auto const it = _log.find(index);
   if (it != _log.end()) {
-    return boost::optional<PaxosLogEntry const>(_log.at(index));
+    return boost::optional<proto::paxos::PaxosLogEntry const>(_log.at(index));
   } else {
-    return boost::optional<PaxosLogEntry const>();
+    return boost::optional<proto::paxos::PaxosLogEntry const>();
   }
 }
 
-void PaxosLog::set_entry(index_t index, PaxosLogEntry const entry) {
+void PaxosLog::set_entry(uni::paxos::index_t index, proto::paxos::PaxosLogEntry const entry) {
   UNIVERSAL_ASSERT_MESSAGE(_available_indices.size() > 0, "Set of available indices should never be 0")
   auto const last_index = _available_indices.back();
   auto const it = std::find(_available_indices.begin(), _available_indices.end(), index);
@@ -48,7 +46,7 @@ void PaxosLog::set_entry(index_t index, PaxosLogEntry const entry) {
     _available_indices.push_back(index + 1);
   } else {
     // index must not be in _available_indices
-    for (index_t i = last_index + 1; i < index; i++) {
+    for (uni::paxos::index_t i = last_index + 1; i < index; i++) {
       _available_indices.push_back(i);
     }
     _available_indices.push_back(index + 1);
@@ -66,22 +64,22 @@ void PaxosLog::set_entry(index_t index, PaxosLogEntry const entry) {
   }
 }
 
-void PaxosLog::add_callback(std::function<void(index_t, PaxosLogEntry)> callback) {
+void PaxosLog::add_callback(std::function<void(uni::paxos::index_t, proto::paxos::PaxosLogEntry)> callback) {
   _callbacks.push_back(callback);
 }
 
-index_t PaxosLog::next_available_index() const {
+uni::paxos::index_t PaxosLog::next_available_index() const {
   UNIVERSAL_ASSERT_MESSAGE(_available_indices.size() > 0, "Set of available indices should never be 0")
   UNIVERSAL_ASSERT_MESSAGE(_log.find(*_available_indices.begin()) == _log.end(),
       "The index that is going to be returned as available must actually be available.")
   return *_available_indices.begin();
 }
 
-std::vector<index_t> PaxosLog::get_available_indices() const {
+std::vector<uni::paxos::index_t> PaxosLog::get_available_indices() const {
   return _available_indices;
 }
 
-std::unordered_map<index_t, proto::paxos::PaxosLogEntry const> const& PaxosLog::get_log() const {
+std::unordered_map<uni::paxos::index_t, proto::paxos::PaxosLogEntry const> const& PaxosLog::get_log() const {
   return _log;
 }
 

@@ -5,8 +5,6 @@
 namespace uni {
 namespace slave {
 
-using proto::paxos::PaxosLogEntry;
-
 void KVStore::write(std::string key, std::string value, timestamp_t timestamp) {
   auto it = _mvkvs.find(key);
   if (it == _mvkvs.end()) {
@@ -57,13 +55,13 @@ boost::optional<timestamp_t> KVStore::read_lat(std::string key) {
   }
 }
 
-std::function<void(uni::paxos::index_t, PaxosLogEntry)> KVStore::get_paxos_callback() {
-  return [this](uni::paxos::index_t index, PaxosLogEntry entry) {
+std::function<void(uni::paxos::index_t, proto::paxos::PaxosLogEntry)> KVStore::get_paxos_callback() {
+  return [this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry) {
     switch (entry.type()) {
-      case PaxosLogEntry::WRITE:
+      case proto::paxos::PaxosLogEntry::WRITE:
         write(entry.key().value(), entry.value().value(), entry.timestamp().value());
         break;
-      case PaxosLogEntry::READ:
+      case proto::paxos::PaxosLogEntry::READ:
         read(entry.key().value(), entry.timestamp().value());
         break;
       default:

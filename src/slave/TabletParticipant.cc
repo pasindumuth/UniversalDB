@@ -79,9 +79,6 @@ TabletParticipant::TabletParticipant(
       log_syncer,
       multipaxos_handler),
     thread([this](){
-      scheduler.set_callback([this](uni::net::IncomingMessage message){
-        incoming_message_handler.handle(message);
-      });
       auto work_guard = boost::asio::make_work_guard(io_context);
       io_context.run();
     }) {

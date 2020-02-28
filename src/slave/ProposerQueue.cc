@@ -3,10 +3,8 @@
 namespace uni {
 namespace slave {
 
-using uni::async::TimerAsyncScheduler;
-
 ProposerQueue::ProposerQueue(
-    TimerAsyncScheduler& timer_scheduler)
+    uni::async::TimerAsyncScheduler& timer_scheduler)
       : _timer_scheduler(timer_scheduler) {}
 
 void ProposerQueue::add_task(std::function<int(void)> callback) {

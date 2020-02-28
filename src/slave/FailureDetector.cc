@@ -5,14 +5,10 @@
 namespace uni {
 namespace slave {
 
-using uni::async::TimerAsyncScheduler;
-using uni::net::ConnectionsOut;
-using uni::slave::HeartbeatTracker;
-
 FailureDetector::FailureDetector(
-    HeartbeatTracker& heartbeat_tracker,
-    ConnectionsOut& connections_out,
-    TimerAsyncScheduler& timer_scheduler)
+    uni::slave::HeartbeatTracker& heartbeat_tracker,
+    uni::net::ConnectionsOut& connections_out,
+    uni::async::TimerAsyncScheduler& timer_scheduler)
       : _heartbeat_tracker(heartbeat_tracker),
         _connections_out(connections_out),
         _timer_scheduler(timer_scheduler) {
@@ -28,7 +24,7 @@ void FailureDetector::schedule_heartbeat() {
   _timer_scheduler.schedule_repeated([this](){
     _connections_out.broadcast(_message.SerializeAsString());
     _heartbeat_tracker.increment_counts();
-  }, HeartbeatTracker::HEARTBEAT_SEND_PERIOD);
+  }, uni::slave::HeartbeatTracker::HEARTBEAT_SEND_PERIOD);
 }
 
 } // namespace slave

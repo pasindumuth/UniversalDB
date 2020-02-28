@@ -7,7 +7,6 @@
 #include <google/protobuf/util/message_differencer.h>
 
 #include <assert/assert.h>
-#include <async/testing/AsyncSchedulerTesting.h>
 #include <constants/constants.h>
 #include <net/IncomingMessage.h>
 #include <net/testing/ChannelTesting.h>
@@ -19,27 +18,18 @@ namespace uni {
 namespace testing {
 namespace integration {
 
-using google::protobuf::util::MessageDifferencer;
-using proto::message::MessageWrapper;
-using uni::constants::Constants;
-using uni::async::AsyncSchedulerTesting;
-using uni::net::ChannelTesting;
-using uni::paxos::PaxosLog;
-using uni::net::IncomingMessage;
-using uni::testing::integration::SlaveTesting;
-
 TestFunction Tests::test1() {
   return [this](
-      Constants const& constants,
-      std::vector<std::unique_ptr<SlaveTesting>>& slaves,
-      std::vector<std::vector<ChannelTesting*>>& all_channels,
-      std::vector<ChannelTesting*>& nonempty_channels) {
+      uni::constants::Constants const& constants,
+      std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+      std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
+      std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
     // Send the client message to the first Universal Slave
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
     for (auto i = 0; i < 300; i++) {
       // Send a client message to some node in the Paxos Group. The node is
       // chosen randomly.
-      auto incoming_message = IncomingMessage(client_endpoint_id,
+      auto incoming_message = uni::net::IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
       slaves[std::rand() % slaves.size()]->scheduler.queue_message(incoming_message);
       // Run the nodes and network for 1ms.
@@ -58,17 +48,17 @@ TestFunction Tests::test1() {
 
 TestFunction Tests::test2() {
   return [this](
-      Constants const& constants,
-      std::vector<std::unique_ptr<SlaveTesting>>& slaves,
-      std::vector<std::vector<ChannelTesting*>>& all_channels,
-      std::vector<ChannelTesting*>& nonempty_channels) {
+      uni::constants::Constants const& constants,
+      std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+      std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
+      std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
     auto nodes_failed = 0;
     // Send the client message to the first Universal Slave
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
     for (auto i = 0; i < 300; i++) {
       // Send a client message to some node in the Paxos Group. The node is
       // chosen randomly.
-      auto incoming_message = IncomingMessage(client_endpoint_id,
+      auto incoming_message = uni::net::IncomingMessage(client_endpoint_id,
           build_client_request("m" + std::to_string(i)).SerializeAsString());
       slaves[std::rand() % slaves.size()]->scheduler.queue_message(incoming_message);
       // Run the nodes and network for 1ms.
@@ -98,10 +88,10 @@ TestFunction Tests::test2() {
 
 // TestFunction Tests::test3() {
 //   return [this](
-//       Constants const& constants,
-//       std::vector<std::unique_ptr<SlaveTesting>>& slaves,
-//       std::vector<std::vector<ChannelTesting*>>& all_channels,
-//       std::vector<ChannelTesting*>& nonempty_channels) {
+//       uni::constants::Constants const& constants,
+//       std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+//       std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
+//       std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
 //     bool passed = true;
 //     // Wait one heartbeat cycle so that the nodes can send each other a heartbeat
 //     for (auto i = 0; i < constants.heartbeat_period; i++) {
@@ -143,10 +133,10 @@ TestFunction Tests::test2() {
 // TODO this test is so bad that we don't even need the LogSyncer running for it to pass.
 TestFunction Tests::test4() {
   return [this](
-      Constants const& constants,
-      std::vector<std::unique_ptr<SlaveTesting>>& slaves,
-      std::vector<std::vector<ChannelTesting*>>& all_channels,
-      std::vector<ChannelTesting*>& nonempty_channels) {
+      uni::constants::Constants const& constants,
+      std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+      std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
+      std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
     auto client_request_id = 0;
     auto simulate_client_requests = [&](int32_t request_count, int32_t target_slave) {
@@ -155,7 +145,7 @@ TestFunction Tests::test4() {
       for (; client_request_id < final_request_id; client_request_id++) {
         // Send a client message to some node in the Paxos Group. The node is
         // chosen randomly.
-        auto incoming_message = IncomingMessage(client_endpoint_id,
+        auto incoming_message = uni::net::IncomingMessage(client_endpoint_id,
             build_client_request("m" + std::to_string(client_request_id)).SerializeAsString());
         slaves[target_slave]->scheduler.queue_message(incoming_message);
         run_for_milliseconds(slaves, nonempty_channels, 5);
@@ -225,7 +215,7 @@ TestFunction Tests::test4() {
 static int64_t request_id = 0;
 static int64_t timestamp = 0;
 
-MessageWrapper Tests::build_client_request(std::string message) {
+proto::message::MessageWrapper Tests::build_client_request(std::string message) {
   auto message_wrapper = proto::message::MessageWrapper();
   auto client_message = new proto::client::ClientMessage();
   auto request_message = new proto::client::ClientRequest();
@@ -241,7 +231,7 @@ MessageWrapper Tests::build_client_request(std::string message) {
 
 // Looks at the proposer queues and returns true iff there is a task scheduled in one.
 bool Tests::some_proposer_queue_nonempty(
-  std::vector<std::unique_ptr<SlaveTesting>>& slaves) {
+  std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves) {
     for (auto const& slave: slaves) {
       if (!slave->proposer_queue.empty()) {
         return true;
@@ -251,16 +241,16 @@ bool Tests::some_proposer_queue_nonempty(
 }
 
 void Tests::run_until_completion(
-  std::vector<std::unique_ptr<SlaveTesting>>& slaves,
-  std::vector<ChannelTesting*>& nonempty_channels) {
+  std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+  std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
     while (some_proposer_queue_nonempty(slaves) || nonempty_channels.size() > 0) {
       run_for_milliseconds(slaves, nonempty_channels, 1);
     }
 }
 
 void Tests::run_for_milliseconds(
-  std::vector<std::unique_ptr<SlaveTesting>>& slaves,
-  std::vector<ChannelTesting*>& nonempty_channels,
+  std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+  std::vector<uni::net::ChannelTesting*>& nonempty_channels,
   int32_t milliseconds) {
     // Since we increase the clocks by 1ms, we assume one message is passed along a
     // channel on average (remember there 2 channels between 2 nodes, one for each direction).
@@ -273,12 +263,12 @@ void Tests::run_for_milliseconds(
           slave->clock.increment_time(1); 
         }
       }
-      auto channels_sent = std::unordered_set<ChannelTesting*>();
+      auto channels_sent = std::unordered_set<uni::net::ChannelTesting*>();
       for (auto i = 0; i < n; i++) {
         if (std::rand() % 10 < 9) {
           // This if statement helps prevent the exact same number of
           // of messages being exchanged everytime.
-          auto channels_not_sent = std::vector<ChannelTesting*>();
+          auto channels_not_sent = std::vector<uni::net::ChannelTesting*>();
           for (auto const& channel : nonempty_channels) {
             if (channels_sent.find(channel) == channels_sent.end()) {
               channels_not_sent.push_back(channel);
@@ -302,7 +292,7 @@ void Tests::run_for_milliseconds(
     }
 }
 
-bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<SlaveTesting>>& slaves) {
+bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves) {
   // To verify the logs, we iterate through each one, adding each entry into a
   // Global Paxos Log. If there is an inconsistency in this process, this means
   // that the Paxos Logs aren't consistent. Otherwise, they are consistent.
@@ -322,7 +312,7 @@ bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<SlaveTesting>>& slaves
   return true;
 }
 
-bool Tests::equals(PaxosLog& paxos_log1, PaxosLog& paxos_log2) {
+bool Tests::equals(uni::paxos::PaxosLog& paxos_log1, uni::paxos::PaxosLog& paxos_log2) {
   auto log1 = paxos_log1.get_log();
   auto log2 = paxos_log2.get_log();
   if (log1.size() != log2.size()) {
@@ -330,21 +320,21 @@ bool Tests::equals(PaxosLog& paxos_log1, PaxosLog& paxos_log2) {
   }
   for (auto const& [index, entry] : log1) {
     auto it = log2.find(index);
-    if (it == log2.end() || !MessageDifferencer::Equivalent(it->second, entry)) {
+    if (it == log2.end() || !google::protobuf::util::MessageDifferencer::Equivalent(it->second, entry)) {
       return false;
     }
   }
   return true;
 }
 
-void Tests::mark_node_as_unresponsive(std::vector<std::vector<ChannelTesting*>>& channels, uint32_t node) {
+void Tests::mark_node_as_unresponsive(std::vector<std::vector<uni::net::ChannelTesting*>>& channels, uint32_t node) {
   for (auto i = 0; i < channels.size(); i++) {
     channels[node][i]->set_connection_state(false);
     channels[i][node]->set_connection_state(false);
   }
 }
 
-void Tests::mark_node_as_responsive(std::vector<std::vector<ChannelTesting*>>& channels, uint32_t node) {
+void Tests::mark_node_as_responsive(std::vector<std::vector<uni::net::ChannelTesting*>>& channels, uint32_t node) {
   for (auto i = 0; i < channels.size(); i++) {
     channels[node][i]->set_connection_state(true);
     channels[i][node]->set_connection_state(true);

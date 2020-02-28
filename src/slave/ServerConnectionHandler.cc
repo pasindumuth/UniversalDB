@@ -5,15 +5,12 @@
 namespace uni {
 namespace slave {
 
-using uni::constants::Constants;
-using uni::net::ConnectionsIn;
-using uni::net::ConnectionsOut;
 using boost::asio::ip::tcp;
 
 ServerConnectionHandler::ServerConnectionHandler(
-    Constants const& constants,
-    ConnectionsIn& connections_in,
-    ConnectionsOut& connections_out,
+    uni::constants::Constants const& constants,
+    uni::net::ConnectionsIn& connections_in,
+    uni::net::ConnectionsOut& connections_out,
     tcp::acceptor& acceptor,
     boost::asio::io_context& io_context)
     : _constants(constants),

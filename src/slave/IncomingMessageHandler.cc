@@ -6,28 +6,19 @@
 namespace uni {
 namespace slave {
 
-using proto::client::ClientMessage;
-using proto::client::ClientResponse;
-using proto::message::MessageWrapper;
-using uni::net::IncomingMessage;
-using uni::paxos::MultiPaxosHandler;
-using uni::slave::ClientRequestHandler;
-using uni::slave::HeartbeatTracker;
-using uni::slave::LogSyncer;
-
 IncomingMessageHandler::IncomingMessageHandler(
-    ClientRequestHandler& request_handler,
-    HeartbeatTracker& heartbeat_tracker,
-    LogSyncer& log_syncer,
-    MultiPaxosHandler& multi_paxos_handler)
+    uni::slave::ClientRequestHandler& request_handler,
+    uni::slave::HeartbeatTracker& heartbeat_tracker,
+    uni::slave::LogSyncer& log_syncer,
+    uni::paxos::MultiPaxosHandler& multi_paxos_handler)
       : _client_request_handler(request_handler),
         _heartbeat_tracker(heartbeat_tracker),
         _log_syncer(log_syncer),
         _multi_paxos_handler(multi_paxos_handler) {}
 
-void IncomingMessageHandler::handle(IncomingMessage incoming_message) {
+void IncomingMessageHandler::handle(uni::net::IncomingMessage incoming_message) {
   auto endpoint_id = incoming_message.endpoint_id;
-  auto message_wrapper = MessageWrapper();
+  auto message_wrapper = proto::message::MessageWrapper();
   message_wrapper.ParseFromString(incoming_message.message);
   if (message_wrapper.has_client_message()) {
     auto const& client_message = message_wrapper.client_message();

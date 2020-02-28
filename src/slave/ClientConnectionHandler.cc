@@ -9,13 +9,10 @@
 namespace uni {
 namespace slave {
 
-using uni::async::AsyncScheduler;
-using uni::net::Channel;
-using uni::net::ConnectionsIn;
 using boost::asio::ip::tcp;
 
 ClientConnectionHandler::ClientConnectionHandler(
-    AsyncScheduler& scheduler,
+    uni::async::AsyncScheduler& scheduler,
     tcp::acceptor& acceptor,
     uni::net::ConnectionsIn& connections_in)
       : _scheduler(scheduler),

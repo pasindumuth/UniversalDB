@@ -8,14 +8,11 @@
 namespace uni {
 namespace net {
 
-using uni::constants::Constants;
-using uni::net::Channel;
-
 ConnectionsOut::ConnectionsOut(
     uni::constants::Constants const &constants)
       : _constants(constants) {}
 
-void ConnectionsOut::add_channel(std::shared_ptr<Channel> channel) {
+void ConnectionsOut::add_channel(std::shared_ptr<uni::net::Channel> channel) {
   auto endpoint_id = channel->endpoint_id();
   channel->add_receive_callback([endpoint_id, this](std::string message) {
     UNIVERSAL_TERMINATE("A Channel in an OutConnections object should never receive data.");

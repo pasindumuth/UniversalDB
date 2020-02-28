@@ -11,18 +11,12 @@
 namespace uni {
 namespace slave {
 
-using uni::async::TimerAsyncScheduler;
-using uni::constants::Constants;
-using uni::net::ConnectionsOut;
-using uni::paxos::PaxosLog;
-using uni::slave::FailureDetector;
-
 LogSyncer::LogSyncer(
-    Constants const& constants,
-    ConnectionsOut& connections_out,
-    TimerAsyncScheduler& timer_scheduler,
-    PaxosLog& paxos_log,
-    FailureDetector& failure_detector,
+    uni::constants::Constants const& constants,
+    uni::net::ConnectionsOut& connections_out,
+    uni::async::TimerAsyncScheduler& timer_scheduler,
+    uni::paxos::PaxosLog& paxos_log,
+    uni::slave::FailureDetector& failure_detector,
     std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper)
       : _constants(constants),
         _connections_out(connections_out),

@@ -15,10 +15,8 @@
 #include <constants/constants.h>
 #include <net/ConnectionsIn.h>
 #include <net/ConnectionsOut.h>
-#include <net/endpoint_id.h>
 #include <net/IncomingMessage.h>
 #include <net/impl/ChannelImpl.h>
-#include <proto/master.pb.h>
 #include <proto/message.pb.h>
 #include <proto/slave.pb.h>
 #include <paxos/MultiPaxosHandler.h>
@@ -26,11 +24,8 @@
 #include <paxos/PaxosTypes.h>
 #include <paxos/SinglePaxosHandler.h>
 #include <slave/ClientConnectionHandler.h>
-#include <slave/ClientRequestHandler.h>
 #include <slave/HeartbeatTracker.h>
 #include <slave/FailureDetector.h>
-#include <slave/IncomingMessageHandler.h>
-#include <slave/KVStore.h>
 #include <slave/LogSyncer.h>
 #include <slave/ProposerQueue.h>
 #include <slave/ServerConnectionHandler.h>
