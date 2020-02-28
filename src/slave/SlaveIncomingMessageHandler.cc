@@ -3,48 +3,27 @@
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 
-#include <async/impl/AsyncSchedulerImpl.h>
-#include <async/impl/TimerAsyncSchedulerImpl.h>
 #include <common/common.h>
-#include <constants/constants.h>
-#include <net/ConnectionsIn.h>
 #include <net/endpoint_id.h>
 #include <net/IncomingMessage.h>
-#include <net/impl/ChannelImpl.h>
 #include <proto/client.pb.h>
 #include <proto/master.pb.h>
 #include <proto/message.pb.h>
 #include <proto/tablet.pb.h>
-#include <paxos/MultiPaxosHandler.h>
-#include <paxos/PaxosLog.h>
-#include <paxos/PaxosTypes.h>
-#include <paxos/SinglePaxosHandler.h>
-#include <slave/ClientConnectionHandler.h>
-#include <slave/ClientRequestHandler.h>
-#include <slave/IncomingMessageHandler.h>
-#include <slave/KVStore.h>
 #include <slave/LogSyncer.h>
-#include <slave/ProposerQueue.h>
-#include <slave/ServerConnectionHandler.h>
+#include <slave/TabletId.h>
+#include <slave/TabletParticipant.h>
 
 namespace uni {
 namespace slave {
 
 SlaveIncomingMessageHandler::SlaveIncomingMessageHandler(
-  uni::net::ConnectionsIn& client_connections_in,
-  uni::net::ConnectionsOut& connections_out,
-  uni::slave::FailureDetector& failure_detector,
+  uni::slave::TabletParticipantManager& participant_manager,
   uni::slave::HeartbeatTracker& heartbeat_tracker,
-  uni::slave::LogSyncer& log_syncer,
-  uni::constants::Constants const& constants,
-  uni::async::TimerAsyncScheduler& timer_scheduler)
-  : _client_connections_in(client_connections_in),
-    _connections_out(connections_out),
-    _failure_detector(failure_detector),
+  uni::slave::LogSyncer& log_syncer)
+  : _participant_manager(participant_manager),
     _heartbeat_tracker(heartbeat_tracker),
-    _log_syncer(log_syncer),
-    _constants(constants),
-    _timer_scheduler(timer_scheduler) {}
+    _log_syncer(log_syncer) {}
 
 void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_message) {
   auto endpoint_id = incoming_message.endpoint_id;
@@ -84,37 +63,13 @@ void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mess
   }
 }
 
-// TODO move all this to another class so that the dependencies (fd, ci, cci, co) can all
-// be isolated from the request routing logic this class is meant to only handle.
-// Also, don't construct the TP on the stack, since thread stacks and TPs need to be 
-// decoupled going forward. Instantiate everything below by valud in a struct, where
-// all the code below is in the constructor.
-void SlaveIncomingMessageHandler::addTablet(TabletId tablet_id) {
-  _tp_map.insert({
-    tablet_id,
-    std::make_unique<uni::slave::TabletParticipant>(
-      _constants,
-      _connections_out,
-      _client_connections_in,
-      _timer_scheduler,
-      _failure_detector,
-      tablet_id
-    )
-  });
-}
-
 void SlaveIncomingMessageHandler::forward_message(
   std::string database_id,
   std::string table_id,
   uni::net::IncomingMessage incoming_message
 ) {
-  TabletId tabletId = { database_id, table_id, "", ""};
-  if (_tp_map.find(tabletId) == _tp_map.end()) {
-    // We have to add a Tablet with the given tabletId
-    addTablet(tabletId);
-  }
-
-  auto& tp = _tp_map[tabletId];
+  TabletId tablet_id = { database_id, table_id, "", ""};
+  auto& tp = _participant_manager.getTablet(tablet_id);
   tp->scheduler.queue_message(incoming_message);
 }
 

@@ -1,5 +1,13 @@
 #include "TabletParticipant.h"
 
+#include <net/endpoint_id.h>
+#include <net/IncomingMessage.h>
+#include <paxos/PaxosTypes.h>
+#include <paxos/SinglePaxosHandler.h>
+#include <proto/client.pb.h>
+#include <proto/master.pb.h>
+#include <proto/message.pb.h>
+#include <proto/tablet.pb.h>
 #include <proto/sync.pb.h>
 #include <utils/pbutil.h>
 
@@ -7,6 +15,8 @@ namespace uni {
 namespace slave {
 
 TabletParticipant::TabletParticipant(
+  boost::asio::io_context& io_context,
+  std::thread& thread,
   uni::constants::Constants const& constants,
   uni::net::ConnectionsOut& connections_out,
   uni::net::ConnectionsIn& client_connections_in,
@@ -14,7 +24,6 @@ TabletParticipant::TabletParticipant(
   uni::slave::FailureDetector& failure_detector,
   uni::slave::TabletId& tid)
   : tablet_id(tid),
-    io_context(),
     scheduler(io_context),
     paxos_log(),
     multipaxos_handler(
@@ -77,11 +86,7 @@ TabletParticipant::TabletParticipant(
       client_request_handler,
       heartbeat_tracker,
       log_syncer,
-      multipaxos_handler),
-    thread([this](){
-      auto work_guard = boost::asio::make_work_guard(io_context);
-      io_context.run();
-    }) {
+      multipaxos_handler) {
   scheduler.set_callback([this](uni::net::IncomingMessage message){
     incoming_message_handler.handle(message);
   });

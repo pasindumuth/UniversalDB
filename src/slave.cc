@@ -25,6 +25,8 @@
 #include <paxos/SinglePaxosHandler.h>
 #include <slave/ClientConnectionHandler.h>
 #include <slave/HeartbeatTracker.h>
+#include <slave/TabletParticipantManager.h>
+#include <slave/ThreadPool.h>
 #include <slave/FailureDetector.h>
 #include <slave/LogSyncer.h>
 #include <slave/ProposerQueue.h>
@@ -143,7 +145,9 @@ int main(int argc, char* argv[]) {
       message_wrapper.set_allocated_slave_message(slave_message);
       return message_wrapper;
     });
-  auto slave_incoming_message_handler = uni::slave::SlaveIncomingMessageHandler(
+  auto thread_pool = uni::slave::ThreadPool();
+  auto tablet_participant_manager = uni::slave::TabletParticipantManager(
+    thread_pool,
     client_connections_in,
     connections_out,
     failure_detector,
@@ -151,6 +155,10 @@ int main(int argc, char* argv[]) {
     log_syncer,
     constants,
     timer_scheduler);
+  auto slave_incoming_message_handler = uni::slave::SlaveIncomingMessageHandler(
+    tablet_participant_manager,
+    heartbeat_tracker,
+    log_syncer);
   server_async_scheduler.set_callback([&slave_incoming_message_handler](uni::net::IncomingMessage message){
     slave_incoming_message_handler.handle(message);
   });
