@@ -1,11 +1,14 @@
 #ifndef UNI_SLAVE_TABLETPARTICIPANT_H
 #define UNI_SLAVE_TABLETPARTICIPANT_H
 
+#include <functional>
+#include <memory>
 #include <thread>
 
 #include <boost/asio.hpp>
 
 #include <async/impl/AsyncSchedulerImpl.h>
+#include <async/AsyncScheduler.h>
 #include <common/common.h>
 #include <constants/constants.h>
 #include <net/ConnectionsIn.h>
@@ -23,8 +26,8 @@ namespace uni {
 namespace slave {
 
 struct TabletParticipant {
+  std::unique_ptr<uni::async::AsyncScheduler> scheduler;
   uni::slave::TabletId tablet_id;
-  uni::async::AsyncSchedulerImpl scheduler;
   uni::paxos::PaxosLog paxos_log;
   uni::paxos::MultiPaxosHandler multipaxos_handler;
   uni::slave::ProposerQueue proposer_queue;
@@ -35,8 +38,7 @@ struct TabletParticipant {
   uni::slave::IncomingMessageHandler incoming_message_handler;
 
   TabletParticipant(
-    boost::asio::io_context& io_context,
-    std::thread& thread,
+    std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
     uni::constants::Constants const& constants,
     uni::net::ConnectionsOut& connections_out,
     uni::net::ConnectionsIn& client_connections_in,

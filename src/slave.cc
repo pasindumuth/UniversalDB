@@ -25,10 +25,9 @@
 #include <paxos/SinglePaxosHandler.h>
 #include <slave/ClientConnectionHandler.h>
 #include <slave/HeartbeatTracker.h>
-#include <slave/TabletParticipantManager.h>
-#include <slave/ThreadPool.h>
 #include <slave/FailureDetector.h>
 #include <slave/LogSyncer.h>
+#include <slave/ProductionContext.h>
 #include <slave/ProposerQueue.h>
 #include <slave/ServerConnectionHandler.h>
 #include <slave/SlaveIncomingMessageHandler.h>
@@ -109,58 +108,18 @@ int main(int argc, char* argv[]) {
   server_io_context.run(); // Listen for new messages in the master channel
   server_io_context.restart(); // We must restart before run can be called on the io_context again.
 
-  // Schedule client acceptor
-  auto paxos_log = uni::paxos::PaxosLog();
-  auto paxos_instance_provider = [&constants, &connections_out, &paxos_log](uni::paxos::index_t index) {
-    return uni::paxos::SinglePaxosHandler(
-      constants,
-      connections_out,
-      paxos_log,
-      index,
-      [](proto::paxos::PaxosMessage* paxos_message){
-        auto message_wrapper = proto::message::MessageWrapper();
-        auto slave_message = new proto::slave::SlaveMessage;
-        slave_message->set_allocated_paxos_message(paxos_message);
-        message_wrapper.set_allocated_slave_message(slave_message);
-        return message_wrapper;
-      });
-  };
-  auto multipaxos_handler = uni::paxos::MultiPaxosHandler(paxos_log, paxos_instance_provider);
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
   auto client_connections_in = uni::net::ConnectionsIn(server_async_scheduler);
   auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor, client_connections_in);
-  auto proposer_queue = uni::slave::ProposerQueue(timer_scheduler);
-  auto heartbeat_tracker = uni::slave::HeartbeatTracker();
-  auto failure_detector = uni::slave::FailureDetector(heartbeat_tracker, connections_out, timer_scheduler);
-  auto log_syncer = uni::slave::LogSyncer(
+  
+  auto production_context = uni::slave::ProductionContext(
+    background_io_context,
     constants,
-    connections_out,
-    timer_scheduler,
-    paxos_log,
-    failure_detector,
-    [](proto::sync::SyncMessage* sync_message){
-      auto message_wrapper = proto::message::MessageWrapper();
-      auto slave_message = new proto::slave::SlaveMessage;
-      slave_message->set_allocated_sync_message(sync_message);
-      message_wrapper.set_allocated_slave_message(slave_message);
-      return message_wrapper;
-    });
-  auto thread_pool = uni::slave::ThreadPool();
-  auto tablet_participant_manager = uni::slave::TabletParticipantManager(
-    thread_pool,
     client_connections_in,
-    connections_out,
-    failure_detector,
-    heartbeat_tracker,
-    log_syncer,
-    constants,
-    timer_scheduler);
-  auto slave_incoming_message_handler = uni::slave::SlaveIncomingMessageHandler(
-    tablet_participant_manager,
-    heartbeat_tracker,
-    log_syncer);
-  server_async_scheduler.set_callback([&slave_incoming_message_handler](uni::net::IncomingMessage message){
-    slave_incoming_message_handler.handle(message);
+    connections_in,
+    connections_out);
+  server_async_scheduler.set_callback([&production_context](uni::net::IncomingMessage message){
+    production_context.slave_handler.handle(message);
   });
 
   client_connection_handler.async_accept();

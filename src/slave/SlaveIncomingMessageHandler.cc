@@ -18,10 +18,10 @@ namespace uni {
 namespace slave {
 
 SlaveIncomingMessageHandler::SlaveIncomingMessageHandler(
-  uni::slave::TabletParticipantManager& participant_manager,
+  std::function<uni::custom_unique_ptr<uni::slave::TabletParticipant>(uni::slave::TabletId)> tp_provider,
   uni::slave::HeartbeatTracker& heartbeat_tracker,
   uni::slave::LogSyncer& log_syncer)
-  : _participant_manager(participant_manager),
+  : _tp_provider(tp_provider),
     _heartbeat_tracker(heartbeat_tracker),
     _log_syncer(log_syncer) {}
 
@@ -69,8 +69,10 @@ void SlaveIncomingMessageHandler::forward_message(
   uni::net::IncomingMessage incoming_message
 ) {
   TabletId tablet_id = { database_id, table_id, "", ""};
-  auto& tp = _participant_manager.getTablet(tablet_id);
-  tp->scheduler.queue_message(incoming_message);
+  if (_tp_map.find(tablet_id) == _tp_map.end()) {
+    _tp_map.insert({tablet_id, _tp_provider(tablet_id)});
+  }
+  _tp_map[tablet_id]->scheduler->queue_message(incoming_message);
 }
 
 } // namespace slave

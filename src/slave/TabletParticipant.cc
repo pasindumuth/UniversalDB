@@ -15,16 +15,15 @@ namespace uni {
 namespace slave {
 
 TabletParticipant::TabletParticipant(
-  boost::asio::io_context& io_context,
-  std::thread& thread,
+  std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
   uni::constants::Constants const& constants,
   uni::net::ConnectionsOut& connections_out,
   uni::net::ConnectionsIn& client_connections_in,
   uni::async::TimerAsyncScheduler& timer_scheduler,
   uni::slave::FailureDetector& failure_detector,
   uni::slave::TabletId& tid)
-  : tablet_id(tid),
-    scheduler(io_context),
+  : scheduler(scheduler_provider()),
+    tablet_id(tid),
     paxos_log(),
     multipaxos_handler(
       paxos_log,
@@ -87,7 +86,7 @@ TabletParticipant::TabletParticipant(
       heartbeat_tracker,
       log_syncer,
       multipaxos_handler) {
-  scheduler.set_callback([this](uni::net::IncomingMessage message){
+  scheduler->set_callback([this](uni::net::IncomingMessage message){
     incoming_message_handler.handle(message);
   });
   paxos_log.add_callback(kvstore.get_paxos_callback());
