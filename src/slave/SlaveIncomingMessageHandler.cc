@@ -63,6 +63,10 @@ void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mess
   }
 }
 
+std::unordered_map<TabletId, uni::custom_unique_ptr<uni::slave::TabletParticipant>> const& SlaveIncomingMessageHandler::get_tps() const {
+  return _tp_map;
+}
+
 void SlaveIncomingMessageHandler::forward_message(
   std::string database_id,
   std::string table_id,

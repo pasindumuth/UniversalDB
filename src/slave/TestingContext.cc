@@ -1,33 +1,28 @@
-#include "ProductionContext.h"
+#include "TestingContext.h"
 
 #include <async/impl/AsyncSchedulerImpl.h>
 
 namespace uni {
 namespace slave {
 
-ProductionContext::ThreadAndContext::ThreadAndContext()
-  : io_context(),
-    thread([this] {
-      auto work_guard = boost::asio::make_work_guard(io_context);
-      io_context.run();
-    }) {}
-
-ProductionContext::ProductionContext(
-  boost::asio::io_context& background_io_context,
-  uni::constants::Constants const& constants,
-  uni::net::ConnectionsIn& client_connections_in,
-  uni::net::ConnectionsIn& connections_in,
-  uni::net::ConnectionsOut& connections_out)
-  : timer_scheduler(background_io_context),
+TestingContext::TestingContext(
+  uni::constants::Constants const& constants)
+  : scheduler(),
+    client_connections_in(scheduler),
+    connections_in(scheduler),
+    connections_out(constants),
+    clock(),
+    timer_scheduler(clock),
     heartbeat_tracker(),
     failure_detector(
       heartbeat_tracker,
       connections_out,
       timer_scheduler),
     paxos_log(),
+    proposer_queue(timer_scheduler),
     multipaxos_handler(
       paxos_log,
-      [this, &constants, &connections_out](uni::paxos::index_t index) {
+      [this, &constants](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
           connections_out,
@@ -55,18 +50,11 @@ ProductionContext::ProductionContext(
         return message_wrapper;
       }),
     slave_handler(
-      [this, &constants, &client_connections_in, &connections_out](uni::slave::TabletId tablet_id) {
-        auto min_index = std::distance(
-          _participants_per_thread.begin(),
-            std::min_element(
-              _participants_per_thread.begin(),
-              _participants_per_thread.end()));
-        _participants_per_thread[min_index]++;
-        auto& thread_and_context = _io_contexts[min_index];
+      [this, &constants](uni::slave::TabletId tablet_id) {
         return uni::custom_unique_ptr<uni::slave::TabletParticipant>(
           new uni::slave::TabletParticipant(
-            [&thread_and_context](){
-              return std::make_unique<uni::async::AsyncSchedulerImpl>(thread_and_context->io_context);
+            [](){
+              return std::make_unique<uni::async::AsyncSchedulerTesting>();
             },
             constants,
             connections_out,
@@ -74,8 +62,7 @@ ProductionContext::ProductionContext(
             timer_scheduler,
             failure_detector,
             tablet_id
-          ), [this, &min_index](uni::slave::TabletParticipant* tp) {
-            _participants_per_thread[min_index]--;
+          ), [this](uni::slave::TabletParticipant* tp) {
             delete tp;
           }
         );
@@ -83,13 +70,9 @@ ProductionContext::ProductionContext(
       heartbeat_tracker,
       log_syncer)
 {
-  // We subtract 2 from the number of supported threads to account for the
-  // LTM thread and background thread are started up manually.
-  auto num_supported_threads = std::thread::hardware_concurrency() - 2; 
-  for (auto i = 0; i < num_supported_threads; i++) {
-    _io_contexts.push_back(std::make_unique<ThreadAndContext>());
-    _participants_per_thread.push_back(0);
-  }
+  scheduler.set_callback([this](uni::net::IncomingMessage message){
+    slave_handler.handle(message);
+  });
 }
 
 } // namespace slave

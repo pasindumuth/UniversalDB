@@ -8,7 +8,7 @@
 #include <common/common.h>
 #include <constants/constants.h>
 #include <net/testing/ChannelTesting.h>
-#include <integration/SlaveTesting.h>
+#include <slave/TestingContext.h>
 
 namespace uni {
 namespace testing {
@@ -16,7 +16,7 @@ namespace integration {
 
 using TestFunction = std::function<void(
     uni::constants::Constants const&,
-    std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>&,
+    std::vector<std::unique_ptr<uni::slave::TestingContext>>&,
     std::vector<std::vector<uni::net::ChannelTesting*>>&,
     std::vector<uni::net::ChannelTesting*>&)>;
 

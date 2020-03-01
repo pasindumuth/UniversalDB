@@ -25,6 +25,8 @@ class SlaveIncomingMessageHandler {
 
   void handle(uni::net::IncomingMessage incoming_message);
 
+  std::unordered_map<TabletId, uni::custom_unique_ptr<uni::slave::TabletParticipant>> const& get_tps() const;
+
  private:
   std::function<uni::custom_unique_ptr<uni::slave::TabletParticipant>(uni::slave::TabletId)> _tp_provider;
   uni::slave::HeartbeatTracker& _heartbeat_tracker;

@@ -22,13 +22,10 @@ void TestDriver::run_test(TestFunction test) {
     ip_strings.push_back(std::to_string(i));
   }
 
-  // TabletId to use throughout
-  auto tablet_id = uni::slave::TabletId{"database_id", "table_id", "", ""};
-
   // Create mock AsyncScheduler.
-  auto slaves = std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>();
+  auto slaves = std::vector<std::unique_ptr<uni::slave::TestingContext>>();
   for (auto i = 0; i < constants.num_slave_servers; i++) {
-    slaves.push_back(std::make_unique<uni::testing::integration::SlaveTesting>(tablet_id, constants));
+    slaves.push_back(std::make_unique<uni::slave::TestingContext>(constants));
   }
 
   // Holds onto Channels that aren't empty.

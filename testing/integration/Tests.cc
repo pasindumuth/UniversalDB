@@ -11,7 +11,7 @@
 #include <net/IncomingMessage.h>
 #include <net/testing/ChannelTesting.h>
 #include <proto/paxos.pb.h>
-#include <integration/SlaveTesting.h>
+#include <slave/TestingContext.h>
 #include <utils/pbutil.h>
 
 namespace uni {
@@ -21,7 +21,7 @@ namespace integration {
 TestFunction Tests::test1() {
   return [this](
       uni::constants::Constants const& constants,
-      std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+      std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
       std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
       std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
     // Send the client message to the first Universal Slave
@@ -36,12 +36,10 @@ TestFunction Tests::test1() {
       run_for_milliseconds(slaves, nonempty_channels, 1);
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
-    for (auto i = 0; i < 5; i++) {
-      LOG(uni::logging::Level::DEBUG, slaves[i]->paxos_log.debug_string())
-    }
+    print_paxos_logs(slaves);
 
     UNIVERSAL_ASSERT_MESSAGE(
-      verify_paxos_logs(slaves),
+      verify_all_paxos_logs(slaves),
       "The Paxos Logs should agree with one another.")
   };
 }
@@ -49,7 +47,7 @@ TestFunction Tests::test1() {
 TestFunction Tests::test2() {
   return [this](
       uni::constants::Constants const& constants,
-      std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+      std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
       std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
       std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
     auto nodes_failed = 0;
@@ -76,12 +74,10 @@ TestFunction Tests::test2() {
       }
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
-    for (auto i = 0; i < 5; i++) {
-      LOG(uni::logging::Level::DEBUG, slaves[i]->paxos_log.debug_string())
-    }
+    print_paxos_logs(slaves);
 
     UNIVERSAL_ASSERT_MESSAGE(
-      verify_paxos_logs(slaves),
+      verify_all_paxos_logs(slaves),
       "The Paxos Logs should agree with one another.")
   };
 }
@@ -89,7 +85,7 @@ TestFunction Tests::test2() {
 // TestFunction Tests::test3() {
 //   return [this](
 //       uni::constants::Constants const& constants,
-//       std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+//       std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
 //       std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
 //       std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
 //     bool passed = true;
@@ -134,7 +130,7 @@ TestFunction Tests::test2() {
 TestFunction Tests::test4() {
   return [this](
       uni::constants::Constants const& constants,
-      std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+      std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
       std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
       std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
     auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
@@ -175,16 +171,26 @@ TestFunction Tests::test4() {
 
     mark_node_as_responsive(all_channels, 0);
 
-    UNIVERSAL_ASSERT_MESSAGE(verify_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
-    auto initial_equal_logs = 0;
-    for (auto i = 0; i < constants.num_slave_servers; i++) {
-      for (auto j = i + 1; j < constants.num_slave_servers; j++) {
-        if (equals(slaves[i]->paxos_log, slaves[j]->paxos_log)) {
-          initial_equal_logs += 1;
+    UNIVERSAL_ASSERT_MESSAGE(verify_all_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
+
+    // The following counts all corresponding pairs of paxos logs across
+    // the slaves that are compatible with each other.
+    auto initial_equal_logs = 0; // The total number of logs that are the same (across different TPs and slave paxos logs)
+    auto possible_equals_logs = 0; // The maximum possible value for the above variable.
+    auto const initial_aligned_logs = get_aligned_logs(slaves);
+    for (auto i = 0; i < initial_aligned_logs.size(); i++) {
+      auto const& logs = get_present_logs(initial_aligned_logs[i]);
+      for (auto j = 0; j < logs.size(); j++) {
+        for (auto k = j + 1; k < logs.size(); k++) {
+          if (equals(*logs[j], *logs[k])) {
+            initial_equal_logs += 1;
+          }
+          possible_equals_logs += 1;
         }
       }
     }
-    UNIVERSAL_ASSERT_MESSAGE(initial_equal_logs < constants.num_slave_servers * (constants.num_slave_servers + 1),
+
+    UNIVERSAL_ASSERT_MESSAGE(initial_equal_logs < possible_equals_logs,
           "Not all pairs of PaxosLogs should be equal.")
 
     // Make sure that at least one heartbeat is sent to ensure a leader is known
@@ -194,20 +200,26 @@ TestFunction Tests::test4() {
     // (plus an extra 5 milliseconds to make sure all messages are sent).
     run_for_milliseconds(slaves, nonempty_channels, constants.log_syncer_period + 5);
 
-    UNIVERSAL_ASSERT_MESSAGE(verify_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
+    UNIVERSAL_ASSERT_MESSAGE(verify_all_paxos_logs(slaves), "The Paxos Logs should agree with one another.")
     // All of the PaxosLogs should now be equal
     auto final_equal_logs = 0;
-    for (auto i = 0; i < constants.num_slave_servers; i++) {
-      for (auto j = i + 1; j < constants.num_slave_servers; j++) {
-        if (equals(slaves[i]->paxos_log, slaves[j]->paxos_log)) {
-          final_equal_logs += 1;
+    auto const final_aligned_logs = get_aligned_logs(slaves);
+    for (auto i = 0; i < final_aligned_logs.size(); i++) {
+      auto const& logs = get_present_logs(final_aligned_logs[i]);
+      for (auto j = 0; j < logs.size(); j++) {
+        for (auto k = j + 1; k < logs.size(); k++) {
+          if (equals(*logs[j], *logs[k])) {
+            final_equal_logs += 1;
+          }
         }
       }
     }
 
     UNIVERSAL_ASSERT_MESSAGE(initial_equal_logs < final_equal_logs,
           "Paxos Logs should all be equal.")
-    LOG(uni::logging::Level::DEBUG, slaves[0]->kvstore.debug_string());
+    for (auto const& [tablet_id, tp] : slaves[0]->slave_handler.get_tps()) {
+      LOG(uni::logging::Level::DEBUG, tp->kvstore.debug_string());
+    }
   };
 }
 
@@ -231,7 +243,7 @@ proto::message::MessageWrapper Tests::build_client_request(std::string message) 
 
 // Looks at the proposer queues and returns true iff there is a task scheduled in one.
 bool Tests::some_proposer_queue_nonempty(
-  std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves) {
+  std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves) {
     for (auto const& slave: slaves) {
       if (!slave->proposer_queue.empty()) {
         return true;
@@ -241,7 +253,7 @@ bool Tests::some_proposer_queue_nonempty(
 }
 
 void Tests::run_until_completion(
-  std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+  std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
   std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
     while (some_proposer_queue_nonempty(slaves) || nonempty_channels.size() > 0) {
       run_for_milliseconds(slaves, nonempty_channels, 1);
@@ -249,7 +261,7 @@ void Tests::run_until_completion(
 }
 
 void Tests::run_for_milliseconds(
-  std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves,
+  std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
   std::vector<uni::net::ChannelTesting*>& nonempty_channels,
   int32_t milliseconds) {
     // Since we increase the clocks by 1ms, we assume one message is passed along a
@@ -292,13 +304,67 @@ void Tests::run_for_milliseconds(
     }
 }
 
-bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<uni::testing::integration::SlaveTesting>>& slaves) {
+std::vector<std::vector<boost::optional<uni::paxos::PaxosLog*>>> Tests::get_aligned_logs(
+  std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves
+) {
+  auto aligned_logs = std::vector<std::vector<boost::optional<uni::paxos::PaxosLog*>>>();
+  auto slave_paxos_logs = std::vector<boost::optional<uni::paxos::PaxosLog*>>();
+  auto tablet_ids = std::vector<uni::slave::TabletId>();
+  for (auto const& slave : slaves) {
+    slave_paxos_logs.push_back(&slave->paxos_log);
+    for (auto const& [tablet_id, tp] : slave->slave_handler.get_tps()) {
+      tablet_ids.push_back(tablet_id);
+    }
+  }
+  aligned_logs.push_back(slave_paxos_logs);
+  for (auto const& tablet_id : tablet_ids) {
+    auto paxos_logs = std::vector<boost::optional<uni::paxos::PaxosLog*>>();
+    for (auto const& slave : slaves) {
+      auto const& tp_map = slave->slave_handler.get_tps();
+      auto const& it = tp_map.find(tablet_id);
+      if (it != tp_map.end()) {
+        paxos_logs.push_back(&it->second->paxos_log);
+      } else {
+        paxos_logs.push_back(boost::none);
+      }
+    }
+    aligned_logs.push_back(paxos_logs);
+  }
+  return aligned_logs;
+}
+
+std::vector<uni::paxos::PaxosLog*> Tests::get_present_logs(
+  std::vector<boost::optional<uni::paxos::PaxosLog*>> logs
+) {
+  auto present_logs = std::vector<uni::paxos::PaxosLog*>();
+  for (auto const& log : logs) {
+    if (log) {
+      present_logs.push_back(log.get());
+    }
+  }
+  return present_logs;
+}
+
+bool Tests::verify_all_paxos_logs(std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves) {
+  // To verify the logs, we iterate through each one, adding each entry into a
+  // Global Paxos Log. If there is an inconsistency in this process, this means
+  // that the Paxos Logs aren't consistent. Otherwise, they are consistent.
+  auto aligned_logs = get_aligned_logs(slaves);
+  for (auto const& logs : aligned_logs) {
+    if (!verify_paxos_logs(get_present_logs(logs))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Tests::verify_paxos_logs(std::vector<uni::paxos::PaxosLog*> paxos_logs) {
   // To verify the logs, we iterate through each one, adding each entry into a
   // Global Paxos Log. If there is an inconsistency in this process, this means
   // that the Paxos Logs aren't consistent. Otherwise, they are consistent.
   std::unordered_map<uni::paxos::index_t, proto::paxos::PaxosLogEntry const> global_log;
-  for (auto const& slave : slaves) {
-    for (auto const& [index, entry] : slave->paxos_log.get_log()) {
+  for (auto const& paxos_log : paxos_logs) {
+    for (auto const& [index, entry] : paxos_log->get_log()) {
       auto it = global_log.find(index);
       if (it == global_log.end()) {
         global_log.insert({index, entry});
@@ -310,6 +376,15 @@ bool Tests::verify_paxos_logs(std::vector<std::unique_ptr<uni::testing::integrat
     }
   }
   return true;
+}
+
+void Tests::print_paxos_logs(std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves) {
+  for (auto const& slave: slaves) {
+    LOG(uni::logging::Level::DEBUG, slave->paxos_log.debug_string())
+    for (auto const& [tablet_id, tp] : slave->slave_handler.get_tps()) {
+      LOG(uni::logging::Level::DEBUG, tp->paxos_log.debug_string())
+    }
+  }
 }
 
 bool Tests::equals(uni::paxos::PaxosLog& paxos_log1, uni::paxos::PaxosLog& paxos_log2) {
