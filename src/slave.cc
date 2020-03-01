@@ -23,13 +23,13 @@
 #include <paxos/PaxosLog.h>
 #include <paxos/PaxosTypes.h>
 #include <paxos/SinglePaxosHandler.h>
-#include <slave/ClientConnectionHandler.h>
+#include <slave/impl/ClientConnectionHandler.h>
 #include <slave/HeartbeatTracker.h>
 #include <slave/FailureDetector.h>
 #include <slave/LogSyncer.h>
-#include <slave/ProductionContext.h>
+#include <slave/impl/ProductionContext.h>
 #include <slave/ProposerQueue.h>
-#include <slave/ServerConnectionHandler.h>
+#include <slave/impl/ServerConnectionHandler.h>
 #include <slave/SlaveIncomingMessageHandler.h>
 #include <utils.h>
 #include <utils/pbutil.h>

@@ -8,7 +8,7 @@
 #include <common/common.h>
 #include <constants/constants.h>
 #include <net/testing/ChannelTesting.h>
-#include <slave/TestingContext.h>
+#include <slave/testing/TestingContext.h>
 
 namespace uni {
 namespace testing {

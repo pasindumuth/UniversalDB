@@ -19,7 +19,6 @@
 #include <slave/KVStore.h>
 #include <slave/LogSyncer.h>
 #include <slave/ProposerQueue.h>
-#include <slave/ServerConnectionHandler.h>
 #include <slave/TabletId.h>
 
 namespace uni {
