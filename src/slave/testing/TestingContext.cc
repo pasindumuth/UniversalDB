@@ -6,8 +6,10 @@ namespace uni {
 namespace slave {
 
 TestingContext::TestingContext(
-  uni::constants::Constants const& constants)
-  : scheduler(),
+  uni::constants::Constants const& constants,
+  std::string ip_string)
+  : ip_string(ip_string),
+    scheduler(),
     client_connections_in(scheduler),
     connections_in(scheduler),
     connections_out(constants),

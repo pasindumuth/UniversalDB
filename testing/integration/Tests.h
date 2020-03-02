@@ -109,7 +109,10 @@ class Tests {
   void mark_node_as_responsive(std::vector<std::vector<uni::net::ChannelTesting*>>& schedulers, uint32_t node);
 
   // Create a client connection with the given TestingContext
-  // std::unique_ptr<uni::net::ChannelTesting>& create_client_connection(uni::slave::TestingContext& slave);
+  std::unique_ptr<uni::net::ChannelTesting> create_client_connection(
+    uni::constants::Constants const& constants,
+    std::vector<uni::net::ChannelTesting*>& nonempty_channels,
+    uni::slave::TestingContext& slave);
 };
 
 } // integration

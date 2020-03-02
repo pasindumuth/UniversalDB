@@ -11,12 +11,12 @@ namespace uni {
 namespace net {
 
 ChannelTesting::ChannelTesting(
-    uni::constants::Constants const& constants,
     std::string const& other_ip_string,
+    unsigned other_ip_port,
     std::vector<ChannelTesting*>& nonempty_channels,
     boost::optional<uni::net::ChannelTesting&> other_channel)
-      : _constants(constants),
-        _other_ip_string(other_ip_string),
+      : _other_ip_string(other_ip_string),
+        _other_ip_port(other_ip_port),
         _nonempty_channels(nonempty_channels),
         _connection_state(true),
         _other_channel(other_channel) {}
@@ -35,7 +35,7 @@ void ChannelTesting::queue_send(std::string message) {
 }
 
 endpoint_id ChannelTesting::endpoint_id() {
-  return uni::net::endpoint_id(_other_ip_string, _constants.slave_port);
+  return uni::net::endpoint_id(_other_ip_string, _other_ip_port);
 }
 
 // Only meant to be called once before start_listening()
@@ -57,7 +57,9 @@ void ChannelTesting::deliver_message() {
   } else {
     auto message = _message_queue.front();
     // Create the Incoming Message and dispatch it to async_scheduler.
-    _other_channel.get().recieve_message(message);
+    if (_other_channel) {
+      _other_channel.get().recieve_message(message);
+    }
     // Remove the message that was just processed.
     _message_queue.pop();
     check_empty();

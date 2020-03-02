@@ -17,16 +17,10 @@ void TestDriver::run_test(TestFunction test) {
   // Initialize constants
   auto const constants = initialize_constants();
 
-  // The ip addresses of all Universal Servers
-  auto ip_strings = std::vector<std::string>();
-  for (auto i = 0; i < constants.num_slave_servers; i++) {
-    ip_strings.push_back(std::to_string(i));
-  }
-
   // Create mock AsyncScheduler.
   auto slaves = std::vector<std::unique_ptr<uni::slave::TestingContext>>();
   for (auto i = 0; i < constants.num_slave_servers; i++) {
-    slaves.push_back(std::make_unique<uni::slave::TestingContext>(constants));
+    slaves.push_back(std::make_unique<uni::slave::TestingContext>(constants, std::to_string(i)));
   }
 
   // Holds onto Channels that aren't empty.
@@ -42,18 +36,18 @@ void TestDriver::run_test(TestFunction test) {
     // to the current Slave), and create the uni::net::ChannelTesting object with that.
     for (auto j = 0; j < constants.num_slave_servers; j++) {
       auto& receiver_async_sheduler = slaves[j]->scheduler;
-      auto in_channel = std::unique_ptr<uni::net::ChannelTesting>( new uni::net::ChannelTesting(
-        constants,
-        ip_strings[i],
+      auto in_channel = std::make_unique<uni::net::ChannelTesting>(
+        slaves[i]->ip_string,
+        constants.slave_port,
         nonempty_channels,
         boost::none
-      ));
-      auto out_channel = std::unique_ptr<uni::net::ChannelTesting>( new uni::net::ChannelTesting(
-        constants,
-        ip_strings[j],
+      );
+      auto out_channel = std::make_unique<uni::net::ChannelTesting>(
+        slaves[j]->ip_string,
+        constants.slave_port,
         nonempty_channels,
         *in_channel
-      ));
+      );
       channels.push_back(out_channel.get());
       slaves[i]->connections_out.add_channel(std::move(out_channel));
       slaves[j]->connections_in.add_channel(std::move(in_channel));

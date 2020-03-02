@@ -12,7 +12,6 @@
 
 #include <async/testing/AsyncSchedulerTesting.h>
 #include <common/common.h>
-#include <constants/constants.h>
 #include <net/Channel.h>
 #include <net/endpoint_id.h>
 
@@ -33,8 +32,8 @@ class ChannelTesting
   // We pass in the async_scheduler of the receiver Universal Slave. This class directly calls the
   // async_scheduler to deliver the message.
   ChannelTesting(
-      uni::constants::Constants const& constants, // present in both modes
       std::string const& other_ip_string, // present in read mode
+      unsigned other_ip_port, // present in read mode
       std::vector<uni::net::ChannelTesting*>& nonempty_channels, // present in write mode
       boost::optional<uni::net::ChannelTesting&> other_channel); // present in write mode
 
@@ -62,9 +61,9 @@ class ChannelTesting
   void add_close_callback(std::function<void(void)> callback) override;
 
  private:
-  uni::constants::Constants const& _constants;
   // The other ip address
   std::string const _other_ip_string;
+  unsigned _other_ip_port;
   // FIFO queue which contains messages at the sender that are yet to be
   // received and processed by the receiver.
   std::queue<std::string> _message_queue;

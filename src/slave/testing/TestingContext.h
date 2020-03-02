@@ -26,8 +26,10 @@ namespace slave {
 
 struct TestingContext {
   TestingContext(
-    uni::constants::Constants const& constants);
+    uni::constants::Constants const& constants,
+    std::string ip_string);
 
+  std::string ip_string;
   uni::async::AsyncSchedulerTesting scheduler;
   uni::net::ConnectionsIn client_connections_in;
   uni::net::ConnectionsIn connections_in;

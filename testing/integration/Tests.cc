@@ -25,13 +25,16 @@ TestFunction Tests::test1() {
       std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
       std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
     // Send the client message to the first Universal Slave
-    auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
+    auto client_channels = std::vector<std::unique_ptr<uni::net::ChannelTesting>>();
+    for (auto i = 0; i < slaves.size(); i++) {
+      client_channels.push_back(create_client_connection(
+        constants, nonempty_channels, *slaves[i]));
+    }
     for (auto i = 0; i < 300; i++) {
       // Send a client message to some node in the Paxos Group. The node is
       // chosen randomly.
-      auto incoming_message = uni::net::IncomingMessage(client_endpoint_id,
-          build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[std::rand() % slaves.size()]->scheduler.queue_message(incoming_message);
+      client_channels[std::rand() % client_channels.size()]->queue_send(
+        build_client_request("m" + std::to_string(i)).SerializeAsString());
       // Run the nodes and network for 1ms.
       run_for_milliseconds(slaves, nonempty_channels, 1);
     }
@@ -52,13 +55,16 @@ TestFunction Tests::test2() {
       std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
     auto nodes_failed = 0;
     // Send the client message to the first Universal Slave
-    auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
+    auto client_channels = std::vector<std::unique_ptr<uni::net::ChannelTesting>>();
+    for (auto i = 0; i < slaves.size(); i++) {
+      client_channels.push_back(create_client_connection(
+        constants, nonempty_channels, *slaves[i]));
+    }
     for (auto i = 0; i < 300; i++) {
       // Send a client message to some node in the Paxos Group. The node is
       // chosen randomly.
-      auto incoming_message = uni::net::IncomingMessage(client_endpoint_id,
-          build_client_request("m" + std::to_string(i)).SerializeAsString());
-      slaves[std::rand() % slaves.size()]->scheduler.queue_message(incoming_message);
+      client_channels[std::rand() % client_channels.size()]->queue_send(
+        build_client_request("m" + std::to_string(i)).SerializeAsString());
       // Run the nodes and network for 1ms.
       run_for_milliseconds(slaves, nonempty_channels, 1);
       // Fail a node if there isn't already a failed node.
@@ -133,7 +139,11 @@ TestFunction Tests::test4() {
       std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
       std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
       std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
-    auto client_endpoint_id = uni::net::endpoint_id("client", 10000);
+    auto client_channels = std::vector<std::unique_ptr<uni::net::ChannelTesting>>();
+    for (auto i = 0; i < slaves.size(); i++) {
+      client_channels.push_back(create_client_connection(
+        constants, nonempty_channels, *slaves[i]));
+    }
     auto client_request_id = 0;
     auto simulate_client_requests = [&](int32_t request_count, int32_t target_slave) {
       // Send the client message to the first Universal Slave
@@ -141,9 +151,8 @@ TestFunction Tests::test4() {
       for (; client_request_id < final_request_id; client_request_id++) {
         // Send a client message to some node in the Paxos Group. The node is
         // chosen randomly.
-        auto incoming_message = uni::net::IncomingMessage(client_endpoint_id,
-            build_client_request("m" + std::to_string(client_request_id)).SerializeAsString());
-        slaves[target_slave]->scheduler.queue_message(incoming_message);
+        client_channels[target_slave]->queue_send(
+          build_client_request("m" + std::to_string(client_request_id)).SerializeAsString());
         run_for_milliseconds(slaves, nonempty_channels, 5);
       }
     };
@@ -416,9 +425,26 @@ void Tests::mark_node_as_responsive(std::vector<std::vector<uni::net::ChannelTes
   }
 }
 
-// std::unique_ptr<uni::net::ChannelTesting>& Tests::create_client_connection(uni::slave::TestingContext& slave) {
-  
-// }
+std::unique_ptr<uni::net::ChannelTesting> Tests::create_client_connection(
+  uni::constants::Constants const& constants,
+  std::vector<uni::net::ChannelTesting*>& nonempty_channels,
+  uni::slave::TestingContext& slave
+) {
+  auto in_channel = std::make_unique<uni::net::ChannelTesting>(
+    "client",
+    constants.client_port,
+    nonempty_channels,
+    boost::none
+  );
+  auto out_channel = std::make_unique<uni::net::ChannelTesting>(
+    slave.ip_string,
+    constants.slave_port,
+    nonempty_channels,
+    *in_channel
+  );
+  slave.client_connections_in.add_channel(std::move(in_channel));
+  return out_channel;
+}
 
 } // integration
 } // testing
