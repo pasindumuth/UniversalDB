@@ -15,7 +15,6 @@ class IncomingMessageHandler {
  public:
   IncomingMessageHandler(
       uni::slave::ClientRequestHandler& request_handler,
-      uni::slave::HeartbeatTracker& heartbeat_tracker,
       uni::slave::LogSyncer& log_syncer,
       uni::paxos::MultiPaxosHandler& multi_paxos_handler);
 
@@ -23,7 +22,6 @@ class IncomingMessageHandler {
 
  private:
   uni::slave::ClientRequestHandler& _client_request_handler;
-  uni::slave::HeartbeatTracker& _heartbeat_tracker;
   uni::slave::LogSyncer& _log_syncer;
   uni::paxos::MultiPaxosHandler& _multi_paxos_handler;
 };

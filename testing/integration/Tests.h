@@ -34,22 +34,12 @@ class Tests {
 
   // This is a test that tests the FailureDetector by failing a node, waiting some time
   // and seeing if the remaining nodes have marked that node as deleted.
-  // TestFunction test3();
+  TestFunction test3();
 
   // This is a test where PaxosLogs are made to be populated evenly (by partitioning
   // off some of the nodes and populated the other nodes with message), and the LogSyncer
   // is left to do it's job and even out the PaxosLogs across all nodes.
   TestFunction test4();
-
-  // Makes sure that KVStore updates as expected. We must insert requests in there in a
-  // controlled way.
-  // TestFunction test5();
-
-  // To prevent memory leaks, we have reflection of various memory consuming variables.
-  // This includes derivations of the PaxosLog (like the request_id_set). There are methods
-  // in these classes to get the size of the datastructures, so in this test, we make
-  // sure they decrease together.
-  // TestFunction test6();
 
  private:
   // Creates a MessageWrapper (the top level message that is sent over

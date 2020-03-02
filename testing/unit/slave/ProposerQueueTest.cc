@@ -52,7 +52,7 @@ TEST_F(ProposerQueueTest, SingleTaskTest) {
  * Ensures that when a task is scheduled that returns different values on
  * different runs, that as the time is incremented, the task is repeated as expected.
  */
-TEST_F(ProposerQueueTest, MultileTasksTest) {
+TEST_F(ProposerQueueTest, MultipleTasksTest) {
   auto i = 3;
   auto j = 3;
   auto k = 0;

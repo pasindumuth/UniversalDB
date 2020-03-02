@@ -8,11 +8,9 @@ namespace slave {
 
 IncomingMessageHandler::IncomingMessageHandler(
     uni::slave::ClientRequestHandler& request_handler,
-    uni::slave::HeartbeatTracker& heartbeat_tracker,
     uni::slave::LogSyncer& log_syncer,
     uni::paxos::MultiPaxosHandler& multi_paxos_handler)
       : _client_request_handler(request_handler),
-        _heartbeat_tracker(heartbeat_tracker),
         _log_syncer(log_syncer),
         _multi_paxos_handler(multi_paxos_handler) {}
 

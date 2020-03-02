@@ -88,49 +88,49 @@ TestFunction Tests::test2() {
   };
 }
 
-// TestFunction Tests::test3() {
-//   return [this](
-//       uni::constants::Constants const& constants,
-//       std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
-//       std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
-//       std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
-//     bool passed = true;
-//     // Wait one heartbeat cycle so that the nodes can send each other a heartbeat
-//     for (auto i = 0; i < constants.heartbeat_period; i++) {
-//       for (auto j = 0; j < slaves.size(); j++) {
-//         slaves[j]->clock->increment_time(1);
-//       }
-//       // Exchange all the messages that need to be exchanged
-//       while (nonempty_channels.size() > 0) {
-//         nonempty_channels[0]->deliver_message();
-//       }
-//     }
-//     // All failure detectors should report that all of the slaves are still alive.
-//     for (auto const& slave : slaves) {
-//       UNIVERSAL_ASSERT_MESSAGE(
-//         slave->heartbeat_tracker->alive_endpoints().size() == slaves.size(),
-//         "The Paxos Logs should agree with one another.")
-//     }
-//     // Now kill one of the slaves
-//     mark_node_as_unresponsive(all_channels, 0);
-//     // Increment the clock on all other slaves an amount such that
-//     // they will detect the failure
-//     for (auto i = 0; i < constants.heartbeat_failure_threshold * constants.heartbeat_period; i++) {
-//       for (auto j = 1; j < slaves.size(); j++) {
-//         slaves[j]->clock->increment_time(1);
-//       }
-//       // Exchange all the messages that need to be exchanged
-//       while (nonempty_channels.size() > 0) {
-//         nonempty_channels[0]->deliver_message();
-//       }
-//     }
-//     for (auto i = 1; i < slaves.size(); i++) {
-//       UNIVERSAL_ASSERT_MESSAGE(
-//         slaves[i]->heartbeat_tracker->alive_endpoints().size() == slaves.size() - 1,
-//         "All failure detectors should report that one slave is dead.")
-//     }
-//   };
-// }
+TestFunction Tests::test3() {
+  return [this](
+      uni::constants::Constants const& constants,
+      std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
+      std::vector<std::vector<uni::net::ChannelTesting*>>& all_channels,
+      std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
+    bool passed = true;
+    // Wait one heartbeat cycle so that the nodes can send each other a heartbeat
+    for (auto i = 0; i < constants.heartbeat_period; i++) {
+      for (auto j = 0; j < slaves.size(); j++) {
+        slaves[j]->clock.increment_time(1);
+      }
+      // Exchange all the messages that need to be exchanged
+      while (nonempty_channels.size() > 0) {
+        nonempty_channels[0]->deliver_message();
+      }
+    }
+    // All failure detectors should report that all of the slaves are still alive.
+    for (auto const& slave : slaves) {
+      UNIVERSAL_ASSERT_MESSAGE(
+        slave->heartbeat_tracker.alive_endpoints().size() == slaves.size(),
+        "The Paxos Logs should agree with one another.")
+    }
+    // Now kill one of the slaves
+    mark_node_as_unresponsive(all_channels, 0);
+    // Increment the clock on all other slaves an amount such that
+    // they will detect the failure
+    for (auto i = 0; i < constants.heartbeat_failure_threshold * constants.heartbeat_period; i++) {
+      for (auto j = 1; j < slaves.size(); j++) {
+        slaves[j]->clock.increment_time(1);
+      }
+      // Exchange all the messages that need to be exchanged
+      while (nonempty_channels.size() > 0) {
+        nonempty_channels[0]->deliver_message();
+      }
+    }
+    for (auto i = 1; i < slaves.size(); i++) {
+      UNIVERSAL_ASSERT_MESSAGE(
+        slaves[i]->heartbeat_tracker.alive_endpoints().size() == slaves.size() - 1,
+        "All failure detectors should report that one slave is dead.")
+    }
+  };
+}
 
 // TODO this test is so bad that we don't even need the LogSyncer running for it to pass.
 TestFunction Tests::test4() {

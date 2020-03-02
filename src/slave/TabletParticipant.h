@@ -32,7 +32,6 @@ struct TabletParticipant {
   uni::slave::ProposerQueue proposer_queue;
   uni::slave::KVStore kvstore;
   uni::slave::ClientRequestHandler client_request_handler;
-  uni::slave::HeartbeatTracker heartbeat_tracker;
   uni::slave::LogSyncer log_syncer;
   uni::slave::IncomingMessageHandler incoming_message_handler;
 

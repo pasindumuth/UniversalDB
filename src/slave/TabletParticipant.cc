@@ -65,7 +65,6 @@ TabletParticipant::TabletParticipant(
           LOG(uni::logging::Level::WARN, "Client Channel to reply to no longer exists.");
         }
       }),
-    heartbeat_tracker(),
     log_syncer(
       constants,
       connections_out,
@@ -83,7 +82,6 @@ TabletParticipant::TabletParticipant(
       }),
     incoming_message_handler(
       client_request_handler,
-      heartbeat_tracker,
       log_syncer,
       multipaxos_handler) {
   scheduler->set_callback([this](uni::net::IncomingMessage message){
