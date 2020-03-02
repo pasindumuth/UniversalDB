@@ -1,7 +1,8 @@
 #include "TestDriver.h"
 
-#include <assert/UniversalException.h>
+#include <boost/optional.hpp>
 
+#include <assert/UniversalException.h>
 #include <proto/slave.pb.h>
 
 namespace uni {
@@ -34,7 +35,6 @@ void TestDriver::run_test(TestFunction test) {
   // Create the IncomingMessageHandler for each universal server
   auto all_channels = std::vector<std::vector<uni::net::ChannelTesting*>>();
   for (auto i = 0; i < constants.num_slave_servers; i++) {
-    auto& slave = *slaves[i];
     all_channels.push_back(std::vector<uni::net::ChannelTesting*>());
     auto& channels = all_channels.back();
     // Populate connections_out with uni::net::ChannelTesting objects. We iterate over
@@ -42,10 +42,21 @@ void TestDriver::run_test(TestFunction test) {
     // to the current Slave), and create the uni::net::ChannelTesting object with that.
     for (auto j = 0; j < constants.num_slave_servers; j++) {
       auto& receiver_async_sheduler = slaves[j]->scheduler;
-      auto channel = std::make_unique<uni::net::ChannelTesting>(
-          constants, receiver_async_sheduler, ip_strings[i], ip_strings[j], nonempty_channels);
-      channels.push_back(channel.get());
-      slave.connections_out.add_channel(std::move(channel));
+      auto in_channel = std::unique_ptr<uni::net::ChannelTesting>( new uni::net::ChannelTesting(
+        constants,
+        ip_strings[i],
+        nonempty_channels,
+        boost::none
+      ));
+      auto out_channel = std::unique_ptr<uni::net::ChannelTesting>( new uni::net::ChannelTesting(
+        constants,
+        ip_strings[j],
+        nonempty_channels,
+        *in_channel
+      ));
+      channels.push_back(out_channel.get());
+      slaves[i]->connections_out.add_channel(std::move(out_channel));
+      slaves[j]->connections_in.add_channel(std::move(in_channel));
     }
   }
 

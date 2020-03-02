@@ -416,6 +416,10 @@ void Tests::mark_node_as_responsive(std::vector<std::vector<uni::net::ChannelTes
   }
 }
 
+// std::unique_ptr<uni::net::ChannelTesting>& Tests::create_client_connection(uni::slave::TestingContext& slave) {
+  
+// }
+
 } // integration
 } // testing
 } // uni

@@ -12,16 +12,14 @@ namespace net {
 
 ChannelTesting::ChannelTesting(
     uni::constants::Constants const& constants,
-    uni::async::AsyncSchedulerTesting& async_scheduler,
-    std::string const& sender_ip_string,
-    std::string const& receiver_ip_string,
-    std::vector<ChannelTesting*>& nonempty_channels)
+    std::string const& other_ip_string,
+    std::vector<ChannelTesting*>& nonempty_channels,
+    boost::optional<uni::net::ChannelTesting&> other_channel)
       : _constants(constants),
-        _async_scheduler(async_scheduler),
-        _sender_ip_string(sender_ip_string),
-        _receiver_ip_string(receiver_ip_string),
+        _other_ip_string(other_ip_string),
         _nonempty_channels(nonempty_channels),
-        _connection_state(true) {}
+        _connection_state(true),
+        _other_channel(other_channel) {}
 
 void ChannelTesting::queue_send(std::string message) {
   if (_message_queue.size() < MAX_MESSAGES_QUEUE_SIZE) {
@@ -37,7 +35,17 @@ void ChannelTesting::queue_send(std::string message) {
 }
 
 endpoint_id ChannelTesting::endpoint_id() {
-  return uni::net::endpoint_id(_receiver_ip_string, _constants.slave_port);
+  return uni::net::endpoint_id(_other_ip_string, _constants.slave_port);
+}
+
+// Only meant to be called once before start_listening()
+void ChannelTesting::add_receive_callback(std::function<bool(std::string)> callback) {
+  _receive_callbacks.push_back(callback);
+}
+
+// Only meant to be called once before start_listening()
+void ChannelTesting::add_close_callback(std::function<void(void)> callback) {
+  _close_callbacks.push_back(callback);
 }
 
 void ChannelTesting::deliver_message() {
@@ -49,12 +57,18 @@ void ChannelTesting::deliver_message() {
   } else {
     auto message = _message_queue.front();
     // Create the Incoming Message and dispatch it to async_scheduler.
-    auto sender_endpoint_id = uni::net::endpoint_id(_sender_ip_string, _constants.slave_port);
-    auto incoming_message = IncomingMessage(sender_endpoint_id, message);
-    _async_scheduler.queue_message(incoming_message);
+    _other_channel.get().recieve_message(message);
     // Remove the message that was just processed.
     _message_queue.pop();
     check_empty();
+  }
+}
+
+void ChannelTesting::recieve_message(std::string message) {
+  UNIVERSAL_ASSERT_MESSAGE(_connection_state,
+      "A recieving channel cannot have a have message be delivered while the connectino state is false")
+  for (auto const& recieve_callback : _receive_callbacks) {
+    recieve_callback(message);
   }
 }
 
