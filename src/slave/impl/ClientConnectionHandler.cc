@@ -22,8 +22,8 @@ ClientConnectionHandler::ClientConnectionHandler(
 void ClientConnectionHandler::async_accept() {
   _acceptor.async_accept([this](const boost::system::error_code &ec, tcp::socket socket) {
     if (!ec) {
-      auto channel = std::make_shared<uni::net::ChannelImpl>(std::move(socket));
-      _connections_in.add_channel(channel);
+      _connections_in.add_channel(
+        std::make_unique<uni::net::ChannelImpl>(std::move(socket)));
       async_accept();
     } else {
       LOG(uni::logging::Level::ERROR, "Error accepting client connection: " + ec.message())

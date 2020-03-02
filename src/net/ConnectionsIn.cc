@@ -9,7 +9,7 @@ ConnectionsIn::ConnectionsIn(
     uni::async::AsyncScheduler& scheduler)
     : _scheduler(scheduler) {}
 
-void ConnectionsIn::add_channel(std::shared_ptr<uni::net::Channel> channel) {
+void ConnectionsIn::add_channel(std::unique_ptr<uni::net::Channel>&& channel) {
   auto endpoint_id = channel->endpoint_id();
   channel->add_receive_callback([endpoint_id, this](std::string message) {
     _scheduler.queue_message({endpoint_id, message});
@@ -26,17 +26,17 @@ void ConnectionsIn::add_channel(std::shared_ptr<uni::net::Channel> channel) {
   });
   channel->start_listening();
   std::unique_lock<std::mutex> lock(_channel_lock);
-  _channels.insert({endpoint_id, channel});
+  _channels.insert({endpoint_id, std::move(channel)});
 }
 
-boost::optional<std::shared_ptr<uni::net::Channel>> ConnectionsIn::get_channel(
+boost::optional<uni::net::Channel&> ConnectionsIn::get_channel(
     uni::net::endpoint_id endpoint_id) {
   std::unique_lock<std::mutex> lock(_channel_lock);
   auto it = _channels.find(endpoint_id);
   if (it != _channels.end()) {
-    return boost::optional<std::shared_ptr<uni::net::Channel>>(it->second);
+    return boost::optional<uni::net::Channel&>(*it->second);
   } else {
-    return boost::optional<std::shared_ptr<uni::net::Channel>>();
+    return boost::optional<uni::net::Channel&>();
   }
 }
 

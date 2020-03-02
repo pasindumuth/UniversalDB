@@ -21,6 +21,8 @@ class ChannelImpl
  public:
   ChannelImpl(boost::asio::ip::tcp::socket&& socket);
 
+  ~ChannelImpl() override {};
+
   uni::net::endpoint_id endpoint_id() override;
 
   void queue_send(std::string message) override;

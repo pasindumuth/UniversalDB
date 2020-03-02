@@ -18,7 +18,7 @@ class ConnectionsOut {
  public:
   ConnectionsOut(uni::constants::Constants const& constants);
 
-  void add_channel(std::shared_ptr<uni::net::Channel> channel);
+  void add_channel(std::unique_ptr<uni::net::Channel>&& channel);
 
   void broadcast(std::string message);
 
@@ -30,7 +30,7 @@ class ConnectionsOut {
 
  private:
   uni::constants::Constants const& _constants;
-  std::unordered_map<uni::net::endpoint_id, std::shared_ptr<uni::net::Channel>> _channels;
+  std::unordered_map<uni::net::endpoint_id, std::unique_ptr<uni::net::Channel>> _channels;
   std::mutex _channel_lock;
 };
 

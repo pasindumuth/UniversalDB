@@ -42,10 +42,10 @@ void TestDriver::run_test(TestFunction test) {
     // to the current Slave), and create the uni::net::ChannelTesting object with that.
     for (auto j = 0; j < constants.num_slave_servers; j++) {
       auto& receiver_async_sheduler = slaves[j]->scheduler;
-      auto channel = std::make_shared<uni::net::ChannelTesting>(
+      auto channel = std::make_unique<uni::net::ChannelTesting>(
           constants, receiver_async_sheduler, ip_strings[i], ip_strings[j], nonempty_channels);
-      slave.connections_out.add_channel(channel);
       channels.push_back(channel.get());
+      slave.connections_out.add_channel(std::move(channel));
     }
   }
 

@@ -33,6 +33,8 @@ class ChannelTesting
       std::string const& receiver_ip_string,
       std::vector<uni::net::ChannelTesting*>& nonempty_channels);
 
+  ~ChannelTesting() override {};
+
   uni::net::endpoint_id endpoint_id() override;
 
   // Add a new message to the queue

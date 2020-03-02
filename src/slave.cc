@@ -96,7 +96,8 @@ int main(int argc, char* argv[]) {
             [&connections_out, socket](const boost::system::error_code& ec, const tcp::endpoint& endpoint) {
           if (!ec) {
             LOG(uni::logging::Level::TRACE2, "Sent connection to: " + socket->remote_endpoint().address().to_string())
-            connections_out.add_channel(std::make_shared<uni::net::ChannelImpl>(std::move(*socket)));
+            connections_out.add_channel(
+              std::make_unique<uni::net::ChannelImpl>(std::move(*socket)));
           } else {
             LOG(uni::logging::Level::ERROR, "Error sending connection: " + ec.message())
           }

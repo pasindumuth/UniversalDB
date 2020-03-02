@@ -60,7 +60,7 @@ TabletParticipant::TabletParticipant(
         message_wrapper.set_allocated_client_message(client_message);
         auto channel = client_connections_in.get_channel(endpoint_id);
         if (channel) {
-          channel.get()->queue_send(message_wrapper.SerializeAsString());
+          channel.get().queue_send(message_wrapper.SerializeAsString());
         } else {
           LOG(uni::logging::Level::WARN, "Client Channel to reply to no longer exists.");
         }

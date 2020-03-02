@@ -17,6 +17,8 @@ namespace net {
  */
 class Channel {
  public:
+  virtual ~Channel() {};
+
   // The other end of the Channel.
   virtual uni::net::endpoint_id endpoint_id() = 0;
 
