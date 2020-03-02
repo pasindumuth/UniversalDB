@@ -37,12 +37,15 @@ class ChannelTesting
       std::vector<uni::net::ChannelTesting*>& nonempty_channels, // present in write mode
       boost::optional<uni::net::ChannelTesting&> other_channel); // present in write mode
 
-  ~ChannelTesting() override {};
+  ~ChannelTesting() {};
 
   uni::net::endpoint_id endpoint_id() override;
 
   // Add a new message to the queue
   void queue_send(std::string message) override;
+
+  // TODO implement this right
+  void start_listening() override {}
 
   // Pops the first message in the _message_queue and runs it through the _receive_callback.
   void deliver_message();
@@ -55,10 +58,6 @@ class ChannelTesting
 
   // Sets the connection state of the channel.
   void set_connection_state(bool connection_state);
-
-  void add_receive_callback(std::function<bool(std::string)> callback) override;
-
-  void add_close_callback(std::function<void(void)> callback) override;
 
  private:
   // The other ip address
@@ -76,8 +75,6 @@ class ChannelTesting
   bool _connection_state;
 
   // Other stuff
-  std::vector<std::function<bool(std::string)>> _receive_callbacks;
-  std::vector<std::function<void(void)>> _close_callbacks;
   boost::optional<uni::net::ChannelTesting&> _other_channel;
 
   // After the channel has lost a message, this function maintains the channels

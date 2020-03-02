@@ -38,16 +38,6 @@ endpoint_id ChannelTesting::endpoint_id() {
   return uni::net::endpoint_id(_other_ip_string, _other_ip_port);
 }
 
-// Only meant to be called once before start_listening()
-void ChannelTesting::add_receive_callback(std::function<bool(std::string)> callback) {
-  _receive_callbacks.push_back(callback);
-}
-
-// Only meant to be called once before start_listening()
-void ChannelTesting::add_close_callback(std::function<void(void)> callback) {
-  _close_callbacks.push_back(callback);
-}
-
 void ChannelTesting::deliver_message() {
   UNIVERSAL_ASSERT_MESSAGE(_message_queue.size() > 0,
       "We should never be trying to deliver a message from an empty channel")

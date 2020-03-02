@@ -34,16 +34,6 @@ void ChannelImpl::start_listening() {
   recv();
 }
 
-// Only meant to be called once before start_listening()
-void ChannelImpl::add_receive_callback(std::function<bool(std::string)> callback) {
-  _receive_callbacks.push_back(callback);
-}
-
-// Only meant to be called once before start_listening()
-void ChannelImpl::add_close_callback(std::function<void(void)> callback) {
-  _close_callbacks.push_back(callback);
-}
-
 // Implement timeouts, retries, and safety on remote socket closure.
 void ChannelImpl::send(std::string message) {
   auto length = message.size();
