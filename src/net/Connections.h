@@ -1,5 +1,5 @@
-#ifndef UNI_NET_CONNECTIONSOUT_H
-#define UNI_NET_CONNECTIONSOUT_H
+#ifndef UNI_NET_CONNECTIONS_H
+#define UNI_NET_CONNECTIONS_H
 
 #include <memory>
 #include <mutex>
@@ -15,9 +15,9 @@
 namespace uni {
 namespace net {
 
-class ConnectionsOut {
+class Connections {
  public:
-  ConnectionsOut(uni::async::AsyncScheduler& scheduler);
+  Connections(uni::async::AsyncScheduler& scheduler);
 
   void add_channel(std::unique_ptr<uni::net::Channel>&& channel);
 
@@ -42,4 +42,4 @@ class ConnectionsOut {
 } // net
 } // uni
 
-#endif // UNI_NET_CONNECTIONSOUT_H
+#endif // UNI_NET_CONNECTIONS_H

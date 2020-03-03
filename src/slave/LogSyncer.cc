@@ -13,13 +13,13 @@ namespace slave {
 
 LogSyncer::LogSyncer(
     uni::constants::Constants const& constants,
-    uni::net::ConnectionsOut& connections_out,
+    uni::net::Connections& connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::paxos::PaxosLog& paxos_log,
     uni::slave::FailureDetector& failure_detector,
     std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper)
       : _constants(constants),
-        _connections_out(connections_out),
+        _connections(connections),
         _timer_scheduler(timer_scheduler),
         _paxos_log(paxos_log),
         _failure_detector(failure_detector),
@@ -34,7 +34,7 @@ void LogSyncer::schedule_syncing() {
       _inner::build_sync_request(_paxos_log.get_available_indices()));
     auto message_wrapper = _sync_message_to_wrapper(sync_message);
     // TODO only send the sync_request to the leader.
-    _connections_out.broadcast(message_wrapper.SerializeAsString());
+    _connections.broadcast(message_wrapper.SerializeAsString());
   }, _constants.log_syncer_period);
 }
 
@@ -44,7 +44,7 @@ void LogSyncer::handle_sync_request(uni::net::endpoint_id endpoint_id, proto::sy
     _inner::build_sync_response(_paxos_log, request));
   auto message_wrapper = _sync_message_to_wrapper(sync_message);
   // Send the response to the sender.
-  _connections_out.send(endpoint_id, message_wrapper.SerializeAsString());
+  _connections.send(endpoint_id, message_wrapper.SerializeAsString());
 }
 
 // TODO: test right

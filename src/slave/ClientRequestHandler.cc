@@ -28,8 +28,14 @@ ClientRequestHandler::ClientRequestHandler(
   });
 }
 
-// TODO finish this. We have to actually update the KVStore. We have to actually
-// check if a write is valid.
+// The way this works is that _request_id_map holds onto the request_ids of all
+// requests that have been sent. When this method is run, we first check to see if
+// the request has already been satisfied. This is possible if the client had retried,
+// perhaps with a different slave. Notice that we do everything asynchronously via
+// the propser queue. But as an optimization, before shecheduling anything, we might
+// be able to check the _request_id_map to see if the request was already fulfilled,
+// and then avoid scheduling it to happen asynchronously (which might take a while
+// if there are already blocking jobs in the proposer queue).
 void ClientRequestHandler::handle_request(
     uni::net::endpoint_id endpoint_id,
     proto::client::ClientRequest const& message) {

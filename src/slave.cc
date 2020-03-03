@@ -13,8 +13,7 @@
 #include <async/impl/TimerAsyncSchedulerImpl.h>
 #include <common/common.h>
 #include <constants/constants.h>
-#include <net/ConnectionsIn.h>
-#include <net/ConnectionsOut.h>
+#include <net/Connections.h>
 #include <net/IncomingMessage.h>
 #include <net/SelfChannel.h>
 #include <net/impl/ChannelImpl.h>
@@ -65,9 +64,9 @@ int main(int argc, char* argv[]) {
   auto server_async_scheduler = uni::async::AsyncSchedulerImpl(server_io_context);
 
   // Schedule main acceptor
-  auto connections_out = uni::net::ConnectionsOut(server_async_scheduler);
+  auto connections = uni::net::Connections(server_async_scheduler);
   auto main_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.slave_port));
-  auto server_connection_handler = uni::slave::ServerConnectionHandler(constants, connections_out, main_acceptor, background_io_context);
+  auto server_connection_handler = uni::slave::ServerConnectionHandler(constants, connections, main_acceptor, background_io_context);
   auto resolver = tcp::resolver(background_io_context);
 
   // Timer
@@ -80,19 +79,19 @@ int main(int argc, char* argv[]) {
     auto endpoints = resolver.resolve(hostnames[i], std::to_string(constants.slave_port));
     auto socket = tcp::socket(background_io_context);
     boost::asio::connect(socket, endpoints);
-    connections_out.add_channel(std::make_unique<uni::net::ChannelImpl>(std::move(socket)));
+    connections.add_channel(std::make_unique<uni::net::ChannelImpl>(std::move(socket)));
   }
-  connections_out.add_channel(std::make_unique<uni::net::SelfChannel>());
+  connections.add_channel(std::make_unique<uni::net::SelfChannel>());
 
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
-  auto client_connections_in = uni::net::ConnectionsIn(server_async_scheduler);
-  auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor, client_connections_in);
+  auto client_connections = uni::net::Connections(server_async_scheduler);
+  auto client_connection_handler = uni::slave::ClientConnectionHandler(server_async_scheduler, client_acceptor, client_connections);
   
   auto production_context = uni::slave::ProductionContext(
     background_io_context,
     constants,
-    client_connections_in,
-    connections_out);
+    client_connections,
+    connections);
   server_async_scheduler.set_callback([&production_context](uni::net::IncomingMessage message){
     production_context.slave_handler.handle(message);
   });

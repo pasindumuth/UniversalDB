@@ -440,7 +440,7 @@ std::unique_ptr<uni::net::ChannelTesting> Tests::create_client_connection(
   );
   channel->set_other_end(client_channel.get());
   client_channel->set_other_end(channel.get());
-  slave.client_connections_in.add_channel(std::move(channel));
+  slave.client_connections.add_channel(std::move(channel));
   return client_channel;
 }
 

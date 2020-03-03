@@ -1,15 +1,15 @@
-#include "ConnectionsIn.h"
+#include "Connections.h"
 
 #include <assert/assert.h>
 
 namespace uni {
 namespace net {
 
-ConnectionsIn::ConnectionsIn(
+Connections::Connections(
     uni::async::AsyncScheduler& scheduler)
     : _scheduler(scheduler) {}
 
-void ConnectionsIn::add_channel(std::unique_ptr<uni::net::Channel>&& channel) {
+void Connections::add_channel(std::unique_ptr<uni::net::Channel>&& channel) {
   auto endpoint_id = channel->endpoint_id();
   channel->add_receive_callback([endpoint_id, this](std::string message) {
     _scheduler.queue_message({endpoint_id, message});
@@ -29,7 +29,7 @@ void ConnectionsIn::add_channel(std::unique_ptr<uni::net::Channel>&& channel) {
   _channels.insert({endpoint_id, std::move(channel)});
 }
 
-boost::optional<uni::net::Channel&> ConnectionsIn::get_channel(
+boost::optional<uni::net::Channel&> Connections::get_channel(
     uni::net::endpoint_id endpoint_id) {
   std::unique_lock<std::mutex> lock(_channel_lock);
   auto it = _channels.find(endpoint_id);
@@ -37,6 +37,27 @@ boost::optional<uni::net::Channel&> ConnectionsIn::get_channel(
     return boost::optional<uni::net::Channel&>(*it->second);
   } else {
     return boost::optional<uni::net::Channel&>();
+  }
+}
+
+void Connections::broadcast(std::string message) {
+  std::unique_lock<std::mutex> lock(_channel_lock);
+  for (auto const& channel : _channels) {
+    channel.second->queue_send(message);
+  }
+}
+
+bool Connections::has(uni::net::endpoint_id endpoint_id) {
+  std::unique_lock<std::mutex> lock(_channel_lock);
+  return _channels.find(endpoint_id) != _channels.end();
+}
+
+void Connections::send(uni::net::endpoint_id const& endpoint_id, std::string message) {
+  std::unique_lock<std::mutex> lock(_channel_lock);
+  auto it = _channels.find(endpoint_id);
+  if (it != _channels.end()) {
+    auto& channel = it->second;
+    channel->queue_send(message);
   }
 }
 

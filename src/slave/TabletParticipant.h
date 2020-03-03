@@ -11,7 +11,7 @@
 #include <async/AsyncScheduler.h>
 #include <common/common.h>
 #include <constants/constants.h>
-#include <net/ConnectionsIn.h>
+#include <net/Connections.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosLog.h>
 #include <slave/ClientRequestHandler.h>
@@ -38,8 +38,8 @@ struct TabletParticipant {
   TabletParticipant(
     std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
     uni::constants::Constants const& constants,
-    uni::net::ConnectionsOut& connections_out,
-    uni::net::ConnectionsIn& client_connections_in,
+    uni::net::Connections& connections,
+    uni::net::Connections& client_connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::slave::FailureDetector& failure_detector,
     uni::slave::TabletId& tid);

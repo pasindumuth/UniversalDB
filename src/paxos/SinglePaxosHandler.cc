@@ -12,12 +12,12 @@ namespace paxos {
 
 SinglePaxosHandler::SinglePaxosHandler(
     uni::constants::Constants const& constants,
-    uni::net::ConnectionsOut& connections_out,
+    uni::net::Connections& connections,
     uni::paxos::PaxosLog& paxos_log,
     index_t paxos_log_index,
     std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper)
       : _constants(constants),
-        _connections_out(connections_out),
+        _connections(connections),
         _paxos_log(paxos_log),
         _paxos_log_index(paxos_log_index),
         _paxos_message_to_wrapper(paxos_message_to_wrapper) {}
@@ -41,7 +41,7 @@ void SinglePaxosHandler::propose(const proto::paxos::PaxosLogEntry& entry) {
   paxos_message->set_allocated_prepare(prepare_message);
   paxos_message->set_paxos_index(_paxos_log_index);
   auto message_wrapper = _paxos_message_to_wrapper(paxos_message);
-  _connections_out.broadcast(message_wrapper.SerializeAsString());
+  _connections.broadcast(message_wrapper.SerializeAsString());
 }
 
 void SinglePaxosHandler::prepare(uni::net::endpoint_id const& endpoint_id, proto::paxos::Prepare const& prepare_message) {
@@ -60,7 +60,7 @@ void SinglePaxosHandler::prepare(uni::net::endpoint_id const& endpoint_id, proto
     paxos_message->set_allocated_promise(promise);
     paxos_message->set_paxos_index(_paxos_log_index);
     auto message_wrapper = _paxos_message_to_wrapper(paxos_message);
-    _connections_out.send(endpoint_id, message_wrapper.SerializeAsString());
+    _connections.send(endpoint_id, message_wrapper.SerializeAsString());
   }
 }
 
@@ -101,7 +101,7 @@ void SinglePaxosHandler::promise(proto::paxos::Promise const& promise_message) {
       paxos_message->set_allocated_accept(accept_message);
       paxos_message->set_paxos_index(_paxos_log_index);
       auto message_wrapper = _paxos_message_to_wrapper(paxos_message);
-      _connections_out.broadcast(message_wrapper.SerializeAsString());
+      _connections.broadcast(message_wrapper.SerializeAsString());
     }
   }
 }
@@ -125,7 +125,7 @@ void SinglePaxosHandler::accept(proto::paxos::Accept const& accept_message) {
     paxos_message->set_allocated_learn(learn_message);
     paxos_message->set_paxos_index(_paxos_log_index);
     auto message_wrapper = _paxos_message_to_wrapper(paxos_message);
-    _connections_out.broadcast(message_wrapper.SerializeAsString());
+    _connections.broadcast(message_wrapper.SerializeAsString());
   }
 }
 

@@ -31,7 +31,7 @@ void TestDriver::run_test(TestFunction test) {
   for (auto i = 0; i < constants.num_slave_servers; i++) {
     all_channels.push_back(std::vector<uni::net::ChannelTesting*>());
     auto& channels = all_channels.back();
-    // Populate connections_out with uni::net::ChannelTesting objects. We iterate over
+    // Populate connections with uni::net::ChannelTesting objects. We iterate over
     // the other Slaves, take their Aysnc Schedulers (which receive messages relative
     // to the current Slave), and create the uni::net::ChannelTesting object with that.
     for (auto j = 0; j < constants.num_slave_servers; j++) {
@@ -41,7 +41,7 @@ void TestDriver::run_test(TestFunction test) {
         nonempty_channels
       );
       channels.push_back(channel.get());
-      slaves[i]->connections_out.add_channel(std::move(channel));
+      slaves[i]->connections.add_channel(std::move(channel));
     }
   }
 

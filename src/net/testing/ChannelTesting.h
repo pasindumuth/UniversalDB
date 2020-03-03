@@ -43,8 +43,8 @@ class ChannelTesting
   // We pass in the async_scheduler of the receiver Universal Slave. This class directly calls the
   // async_scheduler to deliver the message.
   ChannelTesting(
-      std::string const& other_ip_string, // present in read mode
-      std::vector<uni::net::ChannelTesting*>& nonempty_channels); // present in write mode
+      std::string const& other_ip_string,
+      std::vector<uni::net::ChannelTesting*>& nonempty_channels);
 
   ~ChannelTesting() {};
 
@@ -55,8 +55,7 @@ class ChannelTesting
   // Adds the message to _message_queue.
   void queue_send(std::string message) override;
 
-  // TODO implement this right
-  void start_listening() override {}
+  void start_listening() override;
 
   // Pops the first message in the _message_queue and runs it through the other
   // channels recieve_message method. This will only be called when _message_queue is nonempty. 
@@ -86,6 +85,7 @@ class ChannelTesting
   // drop_message will simply drop the message. This helps simulate long term
   // or permanent connection failures.
   bool _connection_state;
+  bool _listening;
 
   // After the channel has lost a message, this function maintains the channels
   // inclusion in _nonempty_channels, removing it if the Channel becomes empty.

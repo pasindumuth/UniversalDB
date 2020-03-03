@@ -16,15 +16,15 @@ class HeartbeatTrackerTest
 
 TEST_F(HeartbeatTrackerTest, IncrementHeartbeatCount1) {
   auto heartbeat_count = std::map<uni::net::endpoint_id, uint32_t>{
-    {{ "ip1", 1610 }, 0},
-    {{ "ip2", 1610 }, 0},
-    {{ "ip3", 1610 }, 0},
+    {{ "ip1", 0 }, 0},
+    {{ "ip2", 0 }, 0},
+    {{ "ip3", 0 }, 0},
   };
   uni::slave::_inner::increment_counts(heartbeat_count);
   auto expected_value = std::map<uni::net::endpoint_id, uint32_t>{
-    {{ "ip1", 1610 }, 1},
-    {{ "ip2", 1610 }, 1},
-    {{ "ip3", 1610 }, 1},
+    {{ "ip1", 0 }, 1},
+    {{ "ip2", 0 }, 1},
+    {{ "ip3", 0 }, 1},
   };
   EXPECT_EQ(heartbeat_count, expected_value)
     << "Heartbeat count should have incremented by one";
@@ -36,15 +36,15 @@ TEST_F(HeartbeatTrackerTest, IncrementHeartbeatCount1) {
  */
 TEST_F(HeartbeatTrackerTest, IncrementHeartbeatCount2) {
   auto heartbeat_count = std::map<uni::net::endpoint_id, uint32_t>{
-    {{ "ip1", 1610 }, 0},
-    {{ "ip2", 1610 }, 2},
-    {{ "ip3", 1610 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT},
+    {{ "ip1", 0 }, 0},
+    {{ "ip2", 0 }, 2},
+    {{ "ip3", 0 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT},
   };
   uni::slave::_inner::increment_counts(heartbeat_count);
   auto expected_value = std::map<uni::net::endpoint_id, uint32_t>{
-    {{ "ip1", 1610 }, 1},
-    {{ "ip2", 1610 }, 3},
-    {{ "ip3", 1610 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT + 1},
+    {{ "ip1", 0 }, 1},
+    {{ "ip2", 0 }, 3},
+    {{ "ip3", 0 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT + 1},
   };
   EXPECT_EQ(heartbeat_count, expected_value)
     << "Heartbeat count should have incremented by one";
@@ -58,15 +58,15 @@ TEST_F(HeartbeatTrackerTest, IncrementHeartbeatCount2) {
  */
 TEST_F(HeartbeatTrackerTest, HandleHeartbeat) {
   auto heartbeat_count = std::map<uni::net::endpoint_id, uint32_t>{
-    {{ "ip1", 1610 }, 0},
-    {{ "ip2", 1610 }, 2},
-    {{ "ip3", 1610 }, 4},
+    {{ "ip1", 0 }, 0},
+    {{ "ip2", 0 }, 2},
+    {{ "ip3", 0 }, 4},
   };
-  uni::slave::_inner::handle_heartbeat(heartbeat_count, { "ip3", 1610 });
+  uni::slave::_inner::handle_heartbeat(heartbeat_count, { "ip3", 0 });
   auto expected_value = std::map<uni::net::endpoint_id, uint32_t>{
-    {{ "ip1", 1610 }, 0},
-    {{ "ip2", 1610 }, 2},
-    {{ "ip3", 1610 }, 0},
+    {{ "ip1", 0 }, 0},
+    {{ "ip2", 0 }, 2},
+    {{ "ip3", 0 }, 0},
   };
   EXPECT_EQ(heartbeat_count, expected_value)
     << "Heartbeat count should have been set to zero";
@@ -81,18 +81,18 @@ TEST_F(HeartbeatTrackerTest, HandleHeartbeat) {
  */
 TEST_F(HeartbeatTrackerTest, AliveEndpoints) {
   auto heartbeat_count = std::map<uni::net::endpoint_id, uint32_t>{
-    {{ "ip1", 1610 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT},
-    {{ "ip2", 1610 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT - 1},
-    {{ "ip3", 1610 }, 0},
+    {{ "ip1", 0 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT},
+    {{ "ip2", 0 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT - 1},
+    {{ "ip3", 0 }, 0},
   };
   auto endpoints = uni::slave::_inner::alive_endpoints(heartbeat_count);
   auto expected_heartbeat_count = std::map<uni::net::endpoint_id, uint32_t>{
-    {{ "ip2", 1610 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT - 1},
-    {{ "ip3", 1610 }, 0},
+    {{ "ip2", 0 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT - 1},
+    {{ "ip3", 0 }, 0},
   };
   auto expected_endpoints = std::vector<uni::net::endpoint_id>{
-    { "ip2", 1610 },
-    { "ip3", 1610 },
+    { "ip2", 0 },
+    { "ip3", 0 },
   };
   EXPECT_EQ(heartbeat_count, expected_heartbeat_count)
     << "Heartbeat count should have changed properly";
@@ -107,13 +107,13 @@ TEST_F(HeartbeatTrackerTest, AliveEndpoints) {
  */
 TEST_F(HeartbeatTrackerTest, LeaderEndpointPresent) {
   auto heartbeat_count = std::map<uni::net::endpoint_id, uint32_t>{
-    {{ "ip1", 1610 }, 3},
-    {{ "ip2", 1610 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT - 1},
-    {{ "ip3", 1610 }, 0},
+    {{ "ip1", 0 }, 3},
+    {{ "ip2", 0 }, uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT - 1},
+    {{ "ip3", 0 }, 0},
   };
   auto leader = uni::slave::_inner::leader_endpoint_id(heartbeat_count);
   auto expected_leader = boost::optional<uni::net::endpoint_id>(
-    uni::net::endpoint_id{ "ip1", 1610 });
+    uni::net::endpoint_id{ "ip1", 0 });
   EXPECT_EQ(leader, expected_leader)
     << "Leader should be correct";
 }
@@ -136,17 +136,17 @@ TEST_F(HeartbeatTrackerTest, LeaderEndpointNotPresent) {
  */
 TEST_F(HeartbeatTrackerTest, IntegrationTest) {
   auto tracker = uni::slave::HeartbeatTracker();
-  tracker.handle_heartbeat({ "ip1", 1610 });
-  tracker.handle_heartbeat({ "ip2", 1610 });
+  tracker.handle_heartbeat({ "ip1", 0 });
+  tracker.handle_heartbeat({ "ip2", 0 });
   for (auto i = 0; i < uni::slave::HeartbeatTracker::HEARTBEAT_FAILURE_COUNT; i++) {
       tracker.increment_counts();
   }
-  tracker.handle_heartbeat({ "ip3", 1610 });
+  tracker.handle_heartbeat({ "ip3", 0 });
   tracker.increment_counts();
   auto endpoints = tracker.alive_endpoints();
   EXPECT_EQ(endpoints.size(), 1) << "There should only be one alive endpoint";
   auto leader = tracker.leader_endpoint_id();
-  EXPECT_EQ(leader, boost::optional<uni::net::endpoint_id>({ "ip3", 1610 }))
+  EXPECT_EQ(leader, boost::optional<uni::net::endpoint_id>({ "ip3", 0 }))
     << "Leader should not be present";
 }
 

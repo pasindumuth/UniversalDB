@@ -5,7 +5,7 @@
 
 #include <common/common.h>
 #include <constants/constants.h>
-#include <net/ConnectionsOut.h>
+#include <net/Connections.h>
 #include <paxos/PaxosAcceptorState.h>
 #include <paxos/PaxosLearnerState.h>
 #include <paxos/PaxosLog.h>
@@ -30,7 +30,7 @@ class SinglePaxosHandler {
  public:
   SinglePaxosHandler(
       uni::constants::Constants const& constants,
-      uni::net::ConnectionsOut& connections_out,
+      uni::net::Connections& connections,
       uni::paxos::PaxosLog& paxos_log,
       index_t paxos_log_index,
       std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper);
@@ -62,7 +62,7 @@ class SinglePaxosHandler {
 
  private:
   uni::constants::Constants const& _constants;
-  uni::net::ConnectionsOut& _connections_out;
+  uni::net::Connections& _connections;
   uni::paxos::PaxosLog& _paxos_log;
   // The index of the Paxos Log that this Paxos Instance is trying to populate.
   index_t const _paxos_log_index;

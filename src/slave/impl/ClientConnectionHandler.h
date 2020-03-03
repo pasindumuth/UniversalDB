@@ -8,7 +8,7 @@
 #include <async/AsyncScheduler.h>
 #include <common/common.h>
 #include <net/Channel.h>
-#include <net/ConnectionsIn.h>
+#include <net/Connections.h>
 
 namespace uni {
 namespace slave {
@@ -20,7 +20,7 @@ class ClientConnectionHandler {
   ClientConnectionHandler(
       uni::async::AsyncScheduler& scheduler,
       boost::asio::ip::tcp::acceptor& acceptor,
-      uni::net::ConnectionsIn& connections_in);
+      uni::net::Connections& connections);
 
   // This method is primarily used by the background thread to listen to accept new connections
   // from the acceptor, add callbacks to send their data to the AsyncScheduler when they receive
@@ -30,7 +30,7 @@ class ClientConnectionHandler {
  private:
   uni::async::AsyncScheduler& _scheduler;
   boost::asio::ip::tcp::acceptor& _acceptor;
-  uni::net::ConnectionsIn& _connections_in;
+  uni::net::Connections& _connections;
 };
 
 } // slave

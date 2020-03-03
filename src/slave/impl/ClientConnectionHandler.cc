@@ -14,15 +14,15 @@ using boost::asio::ip::tcp;
 ClientConnectionHandler::ClientConnectionHandler(
     uni::async::AsyncScheduler& scheduler,
     tcp::acceptor& acceptor,
-    uni::net::ConnectionsIn& connections_in)
+    uni::net::Connections& connections)
       : _scheduler(scheduler),
         _acceptor(acceptor),
-        _connections_in(connections_in) {}
+        _connections(connections) {}
 
 void ClientConnectionHandler::async_accept() {
   _acceptor.async_accept([this](const boost::system::error_code &ec, tcp::socket socket) {
     if (!ec) {
-      _connections_in.add_channel(
+      _connections.add_channel(
         std::make_unique<uni::net::ChannelImpl>(std::move(socket)));
       async_accept();
     } else {

@@ -10,14 +10,14 @@ TestingContext::TestingContext(
   std::string ip_string)
   : ip_string(ip_string),
     scheduler(),
-    client_connections_in(scheduler),
-    connections_out(scheduler),
+    client_connections(scheduler),
+    connections(scheduler),
     clock(),
     timer_scheduler(clock),
     heartbeat_tracker(),
     failure_detector(
       heartbeat_tracker,
-      connections_out,
+      connections,
       timer_scheduler),
     paxos_log(),
     proposer_queue(timer_scheduler),
@@ -26,7 +26,7 @@ TestingContext::TestingContext(
       [this, &constants](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
-          connections_out,
+          connections,
           paxos_log,
           index,
           [](proto::paxos::PaxosMessage* paxos_message){
@@ -39,7 +39,7 @@ TestingContext::TestingContext(
       }),
     log_syncer(
       constants,
-      connections_out,
+      connections,
       timer_scheduler,
       paxos_log,
       failure_detector,
@@ -58,8 +58,8 @@ TestingContext::TestingContext(
               return std::make_unique<uni::async::AsyncSchedulerTesting>();
             },
             constants,
-            connections_out,
-            client_connections_in,
+            connections,
+            client_connections,
             timer_scheduler,
             failure_detector,
             tablet_id

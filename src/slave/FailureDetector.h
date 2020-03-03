@@ -3,7 +3,7 @@
 
 #include <async/TimerAsyncScheduler.h>
 #include <common/common.h>
-#include <net/ConnectionsOut.h>
+#include <net/Connections.h>
 #include <proto/message.pb.h>
 #include <slave/HeartbeatTracker.h>
 
@@ -26,7 +26,7 @@ class FailureDetector {
  public:
   FailureDetector(
     uni::slave::HeartbeatTracker& heartbeat_tracker,
-    uni::net::ConnectionsOut& connections_out,
+    uni::net::Connections& connections,
     uni::async::TimerAsyncScheduler& timer_scheduler);
 
   // Schedule heartbeat to be sent periodically
@@ -34,7 +34,7 @@ class FailureDetector {
 
  private:
   uni::slave::HeartbeatTracker& _heartbeat_tracker;
-  uni::net::ConnectionsOut& _connections_out;
+  uni::net::Connections& _connections;
   uni::async::TimerAsyncScheduler& _timer_scheduler;
   // Heartbeat message used across all sends
   proto::message::MessageWrapper _message;

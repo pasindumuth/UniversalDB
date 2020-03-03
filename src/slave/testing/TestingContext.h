@@ -11,8 +11,7 @@
 #include <async/testing/TimerAsyncSchedulerTesting.h>
 #include <constants/constants.h>
 #include <common/common.h>
-#include <net/ConnectionsOut.h>
-#include <net/ConnectionsIn.h>
+#include <net/Connections.h>
 #include <paxos/PaxosLog.h>
 #include <slave/FailureDetector.h>
 #include <slave/HeartbeatTracker.h>
@@ -31,8 +30,8 @@ struct TestingContext {
 
   std::string ip_string;
   uni::async::AsyncSchedulerTesting scheduler;
-  uni::net::ConnectionsIn client_connections_in;
-  uni::net::ConnectionsOut connections_out;
+  uni::net::Connections client_connections;
+  uni::net::Connections connections;
   uni::async::ClockTesting clock;
   uni::async::TimerAsyncSchedulerTesting timer_scheduler;
   uni::slave::HeartbeatTracker heartbeat_tracker;

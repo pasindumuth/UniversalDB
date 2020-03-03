@@ -15,21 +15,21 @@ ProductionContext::ThreadAndContext::ThreadAndContext()
 ProductionContext::ProductionContext(
   boost::asio::io_context& background_io_context,
   uni::constants::Constants const& constants,
-  uni::net::ConnectionsIn& client_connections_in,
-  uni::net::ConnectionsOut& connections_out)
+  uni::net::Connections& client_connections,
+  uni::net::Connections& connections)
   : timer_scheduler(background_io_context),
     heartbeat_tracker(),
     failure_detector(
       heartbeat_tracker,
-      connections_out,
+      connections,
       timer_scheduler),
     paxos_log(),
     multipaxos_handler(
       paxos_log,
-      [this, &constants, &connections_out](uni::paxos::index_t index) {
+      [this, &constants, &connections](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
-          connections_out,
+          connections,
           paxos_log,
           index,
           [](proto::paxos::PaxosMessage* paxos_message){
@@ -42,7 +42,7 @@ ProductionContext::ProductionContext(
       }),
     log_syncer(
       constants,
-      connections_out,
+      connections,
       timer_scheduler,
       paxos_log,
       failure_detector,
@@ -54,7 +54,7 @@ ProductionContext::ProductionContext(
         return message_wrapper;
       }),
     slave_handler(
-      [this, &constants, &client_connections_in, &connections_out](uni::slave::TabletId tablet_id) {
+      [this, &constants, &client_connections, &connections](uni::slave::TabletId tablet_id) {
         auto min_index = std::distance(
           _participants_per_thread.begin(),
             std::min_element(
@@ -68,8 +68,8 @@ ProductionContext::ProductionContext(
               return std::make_unique<uni::async::AsyncSchedulerImpl>(thread_and_context->io_context);
             },
             constants,
-            connections_out,
-            client_connections_in,
+            connections,
+            client_connections,
             timer_scheduler,
             failure_detector,
             tablet_id

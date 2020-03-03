@@ -11,8 +11,7 @@
 #include <async/impl/TimerAsyncSchedulerImpl.h>
 #include <constants/constants.h>
 #include <common/common.h>
-#include <net/ConnectionsOut.h>
-#include <net/ConnectionsIn.h>
+#include <net/Connections.h>
 #include <paxos/PaxosLog.h>
 #include <slave/FailureDetector.h>
 #include <slave/HeartbeatTracker.h>
@@ -33,8 +32,8 @@ struct ProductionContext {
   ProductionContext(
     boost::asio::io_context& background_io_context,
     uni::constants::Constants const& constants,
-    uni::net::ConnectionsIn& client_connections_in,
-    uni::net::ConnectionsOut& connections_out);
+    uni::net::Connections& client_connections,
+    uni::net::Connections& connections);
 
   uni::async::TimerAsyncSchedulerImpl timer_scheduler;
   uni::slave::HeartbeatTracker heartbeat_tracker;

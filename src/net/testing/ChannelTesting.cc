@@ -16,7 +16,8 @@ ChannelTesting::ChannelTesting(
       : _other_ip_string(other_ip_string),
         _nonempty_channels(nonempty_channels),
         _other_channel(nullptr),
-        _connection_state(true) {}
+        _connection_state(true),
+        _listening(false) {}
 
 void ChannelTesting::queue_send(std::string message) {
   if (_message_queue.size() < MAX_MESSAGES_QUEUE_SIZE) {
@@ -40,6 +41,10 @@ endpoint_id ChannelTesting::endpoint_id() {
   return uni::net::endpoint_id(_other_ip_string, 0);
 }
 
+void ChannelTesting::start_listening() {
+  _listening = true;
+}
+
 void ChannelTesting::deliver_message() {
   UNIVERSAL_ASSERT_MESSAGE(_message_queue.size() > 0,
       "We should never be trying to deliver a message from an empty channel")
@@ -57,10 +62,10 @@ void ChannelTesting::deliver_message() {
 }
 
 void ChannelTesting::recieve_message(std::string message) {
-  UNIVERSAL_ASSERT_MESSAGE(_connection_state,
-      "A recieving channel cannot have a have message be delivered while the connectino state is false")
-  for (auto const& recieve_callback : _receive_callbacks) {
-    recieve_callback(message);
+  if (_listening) {
+    for (auto const& recieve_callback : _receive_callbacks) {
+      recieve_callback(message);
+    }
   }
 }
 

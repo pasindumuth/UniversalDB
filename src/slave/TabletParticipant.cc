@@ -17,8 +17,8 @@ namespace slave {
 TabletParticipant::TabletParticipant(
   std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
   uni::constants::Constants const& constants,
-  uni::net::ConnectionsOut& connections_out,
-  uni::net::ConnectionsIn& client_connections_in,
+  uni::net::Connections& connections,
+  uni::net::Connections& client_connections,
   uni::async::TimerAsyncScheduler& timer_scheduler,
   uni::slave::FailureDetector& failure_detector,
   uni::slave::TabletId& tid)
@@ -27,10 +27,10 @@ TabletParticipant::TabletParticipant(
     paxos_log(),
     multipaxos_handler(
       paxos_log,
-      [this, &constants, &connections_out](uni::paxos::index_t index) {
+      [this, &constants, &connections](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
-          connections_out,
+          connections,
           paxos_log,
           index,
           [this](proto::paxos::PaxosMessage* paxos_message){
@@ -50,7 +50,7 @@ TabletParticipant::TabletParticipant(
       paxos_log,
       proposer_queue,
       kvstore,
-      [this, &client_connections_in](
+      [this, &client_connections](
         uni::net::endpoint_id endpoint_id,
         proto::client::ClientResponse* client_response
       ) {
@@ -58,7 +58,7 @@ TabletParticipant::TabletParticipant(
         auto client_message = new proto::client::ClientMessage();
         client_message->set_allocated_response(client_response);
         message_wrapper.set_allocated_client_message(client_message);
-        auto channel = client_connections_in.get_channel(endpoint_id);
+        auto channel = client_connections.get_channel(endpoint_id);
         if (channel) {
           channel.get().queue_send(message_wrapper.SerializeAsString());
         } else {
@@ -67,7 +67,7 @@ TabletParticipant::TabletParticipant(
       }),
     log_syncer(
       constants,
-      connections_out,
+      connections,
       timer_scheduler,
       paxos_log,
       failure_detector,

@@ -5,7 +5,7 @@
 
 #include <common/common.h>
 #include <constants/constants.h>
-#include <net/ConnectionsOut.h>
+#include <net/Connections.h>
 
 namespace uni {
 namespace slave {
@@ -16,7 +16,7 @@ class ServerConnectionHandler {
  public:
   ServerConnectionHandler(
       uni::constants::Constants const& constants,
-      uni::net::ConnectionsOut& connections_out,
+      uni::net::Connections& connections,
       boost::asio::ip::tcp::acceptor& acceptor,
       boost::asio::io_context& io_context);
 
@@ -24,7 +24,7 @@ class ServerConnectionHandler {
 
  private:
   uni::constants::Constants const& _constants;
-  uni::net::ConnectionsOut& _connections_out;
+  uni::net::Connections& _connections;
   boost::asio::ip::tcp::acceptor& _acceptor;
   boost::asio::io_context& _io_context;
 };

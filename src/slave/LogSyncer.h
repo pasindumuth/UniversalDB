@@ -7,7 +7,7 @@
 #include <async/TimerAsyncScheduler.h>
 #include <common/common.h>
 #include <constants/constants.h>
-#include <net/ConnectionsOut.h>
+#include <net/Connections.h>
 #include <net/endpoint_id.h>
 #include <paxos/PaxosLog.h>
 #include <paxos/PaxosTypes.h>
@@ -24,7 +24,7 @@ class LogSyncer {
  public:
   LogSyncer(
     uni::constants::Constants const& constants,
-    uni::net::ConnectionsOut& connections_out,
+    uni::net::Connections& connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::paxos::PaxosLog& paxos_log,
     uni::slave::FailureDetector& failure_detector,
@@ -38,7 +38,7 @@ class LogSyncer {
 
  private:
   uni::constants::Constants const& _constants;
-  uni::net::ConnectionsOut& _connections_out;
+  uni::net::Connections& _connections;
   uni::async::TimerAsyncScheduler& _timer_scheduler;
   uni::paxos::PaxosLog& _paxos_log;
   uni::slave::FailureDetector& _failure_detector;
