@@ -34,7 +34,6 @@ struct ProductionContext {
     boost::asio::io_context& background_io_context,
     uni::constants::Constants const& constants,
     uni::net::ConnectionsIn& client_connections_in,
-    uni::net::ConnectionsIn& connections_in,
     uni::net::ConnectionsOut& connections_out);
 
   uni::async::TimerAsyncSchedulerImpl timer_scheduler;

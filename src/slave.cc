@@ -16,6 +16,7 @@
 #include <net/ConnectionsIn.h>
 #include <net/ConnectionsOut.h>
 #include <net/IncomingMessage.h>
+#include <net/SelfChannel.h>
 #include <net/impl/ChannelImpl.h>
 #include <proto/message.pb.h>
 #include <proto/slave.pb.h>
@@ -64,10 +65,9 @@ int main(int argc, char* argv[]) {
   auto server_async_scheduler = uni::async::AsyncSchedulerImpl(server_io_context);
 
   // Schedule main acceptor
-  auto connections_in = uni::net::ConnectionsIn(server_async_scheduler);
-  auto connections_out = uni::net::ConnectionsOut(constants);
+  auto connections_out = uni::net::ConnectionsOut(server_async_scheduler);
   auto main_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.slave_port));
-  auto server_connection_handler = uni::slave::ServerConnectionHandler(constants, connections_in, connections_out, main_acceptor, background_io_context);
+  auto server_connection_handler = uni::slave::ServerConnectionHandler(constants, connections_out, main_acceptor, background_io_context);
   auto resolver = tcp::resolver(background_io_context);
 
   // Timer
@@ -75,39 +75,14 @@ int main(int argc, char* argv[]) {
 
   // Wait for a list of all slave nodes from the master
   server_connection_handler.async_accept();
-  auto master_socket = tcp::socket(server_io_context);
-  auto master_acceptor = tcp::acceptor(server_io_context, tcp::endpoint(tcp::v4(), constants.master_port));
-  // Connect to the master
-  master_acceptor.accept(master_socket);
-  auto master_channel = uni::net::ChannelImpl(std::move(master_socket));
-  // Set callback to execute when the master sends data
-  master_channel.add_receive_callback(
-    [&resolver, &constants, &background_io_context, &connections_out](std::string message) {
-      auto message_wrapper = proto::message::MessageWrapper();
-      message_wrapper.ParseFromString(message);
-      auto slave_list = message_wrapper.master_message().request().slave_list();
-      // Iterate through each slave hostname
-      for (auto i = 0; i < slave_list.slave_hostnames_size(); i++) {
-        auto hostname = slave_list.slave_hostnames(i);
-        auto endpoints = resolver.resolve(hostname, std::to_string(constants.slave_port));
-        auto socket = std::make_shared<tcp::socket>(background_io_context);
-        // Connect with the other slave.
-        boost::asio::async_connect(*socket, endpoints,
-            [&connections_out, socket](const boost::system::error_code& ec, const tcp::endpoint& endpoint) {
-          if (!ec) {
-            LOG(uni::logging::Level::TRACE2, "Sent connection to: " + socket->remote_endpoint().address().to_string())
-            connections_out.add_channel(
-              std::make_unique<uni::net::ChannelImpl>(std::move(*socket)));
-          } else {
-            LOG(uni::logging::Level::ERROR, "Error sending connection: " + ec.message())
-          }
-        });
-      }
-      return false; // The master channel will only send one message, so stop listening after this.
-    });
-  master_channel.start_listening();
-  server_io_context.run(); // Listen for new messages in the master channel
-  server_io_context.restart(); // We must restart before run can be called on the io_context again.
+
+  for (auto i = 1; i < hostnames.size(); i++) {
+    auto endpoints = resolver.resolve(hostnames[i], std::to_string(constants.slave_port));
+    auto socket = tcp::socket(background_io_context);
+    boost::asio::connect(socket, endpoints);
+    connections_out.add_channel(std::make_unique<uni::net::ChannelImpl>(std::move(socket)));
+  }
+  connections_out.add_channel(std::make_unique<uni::net::SelfChannel>());
 
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
   auto client_connections_in = uni::net::ConnectionsIn(server_async_scheduler);
@@ -117,7 +92,6 @@ int main(int argc, char* argv[]) {
     background_io_context,
     constants,
     client_connections_in,
-    connections_in,
     connections_out);
   server_async_scheduler.set_callback([&production_context](uni::net::IncomingMessage message){
     production_context.slave_handler.handle(message);

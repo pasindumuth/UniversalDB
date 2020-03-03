@@ -430,20 +430,18 @@ std::unique_ptr<uni::net::ChannelTesting> Tests::create_client_connection(
   std::vector<uni::net::ChannelTesting*>& nonempty_channels,
   uni::slave::TestingContext& slave
 ) {
-  auto in_channel = std::make_unique<uni::net::ChannelTesting>(
+  auto channel = std::make_unique<uni::net::ChannelTesting>(
     "client",
-    constants.client_port,
-    nonempty_channels,
-    boost::none
+    nonempty_channels
   );
-  auto out_channel = std::make_unique<uni::net::ChannelTesting>(
+  auto client_channel = std::make_unique<uni::net::ChannelTesting>(
     slave.ip_string,
-    constants.slave_port,
-    nonempty_channels,
-    *in_channel
+    nonempty_channels
   );
-  slave.client_connections_in.add_channel(std::move(in_channel));
-  return out_channel;
+  channel->set_other_end(client_channel.get());
+  client_channel->set_other_end(channel.get());
+  slave.client_connections_in.add_channel(std::move(channel));
+  return client_channel;
 }
 
 } // integration

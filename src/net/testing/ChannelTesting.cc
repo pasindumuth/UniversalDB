@@ -12,14 +12,11 @@ namespace net {
 
 ChannelTesting::ChannelTesting(
     std::string const& other_ip_string,
-    unsigned other_ip_port,
-    std::vector<ChannelTesting*>& nonempty_channels,
-    boost::optional<uni::net::ChannelTesting&> other_channel)
+    std::vector<ChannelTesting*>& nonempty_channels)
       : _other_ip_string(other_ip_string),
-        _other_ip_port(other_ip_port),
         _nonempty_channels(nonempty_channels),
-        _connection_state(true),
-        _other_channel(other_channel) {}
+        _other_channel(nullptr),
+        _connection_state(true) {}
 
 void ChannelTesting::queue_send(std::string message) {
   if (_message_queue.size() < MAX_MESSAGES_QUEUE_SIZE) {
@@ -34,8 +31,13 @@ void ChannelTesting::queue_send(std::string message) {
   }
 }
 
+// Move these 2 above queue_send.
+void ChannelTesting::set_other_end(uni::net::ChannelTesting* other_channel) {
+  _other_channel = other_channel;
+}
+
 endpoint_id ChannelTesting::endpoint_id() {
-  return uni::net::endpoint_id(_other_ip_string, _other_ip_port);
+  return uni::net::endpoint_id(_other_ip_string, 0);
 }
 
 void ChannelTesting::deliver_message() {
@@ -47,9 +49,7 @@ void ChannelTesting::deliver_message() {
   } else {
     auto message = _message_queue.front();
     // Create the Incoming Message and dispatch it to async_scheduler.
-    if (_other_channel) {
-      _other_channel.get().recieve_message(message);
-    }
+    _other_channel->recieve_message(message);
     // Remove the message that was just processed.
     _message_queue.pop();
     check_empty();

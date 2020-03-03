@@ -16,7 +16,6 @@ ProductionContext::ProductionContext(
   boost::asio::io_context& background_io_context,
   uni::constants::Constants const& constants,
   uni::net::ConnectionsIn& client_connections_in,
-  uni::net::ConnectionsIn& connections_in,
   uni::net::ConnectionsOut& connections_out)
   : timer_scheduler(background_io_context),
     heartbeat_tracker(),

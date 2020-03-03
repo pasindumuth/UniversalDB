@@ -1,13 +1,14 @@
-#ifndef UNI_NET_OUTCONNECTIONS_H
-#define UNI_NET_OUTCONNECTIONS_H
+#ifndef UNI_NET_CONNECTIONSOUT_H
+#define UNI_NET_CONNECTIONSOUT_H
 
 #include <memory>
 #include <mutex>
-#include <string>
 #include <unordered_map>
 
+#include <boost/optional.hpp>
+
+#include <async/AsyncScheduler.h>
 #include <common/common.h>
-#include <constants/constants.h>
 #include <net/Channel.h>
 #include <net/endpoint_id.h>
 
@@ -16,9 +17,13 @@ namespace net {
 
 class ConnectionsOut {
  public:
-  ConnectionsOut(uni::constants::Constants const& constants);
+  ConnectionsOut(uni::async::AsyncScheduler& scheduler);
 
   void add_channel(std::unique_ptr<uni::net::Channel>&& channel);
+
+  // This method is primary used by the server thread to get the Channel object from it's endpoint_id
+  // object. This is useful if we have to send data out on that channel.
+  boost::optional<uni::net::Channel&> get_channel(uni::net::endpoint_id endpoint_id);
 
   void broadcast(std::string message);
 
@@ -29,12 +34,12 @@ class ConnectionsOut {
   void send(uni::net::endpoint_id const& endpoint_id, std::string message);
 
  private:
-  uni::constants::Constants const& _constants;
-  std::unordered_map<uni::net::endpoint_id, std::unique_ptr<uni::net::Channel>> _channels;
   std::mutex _channel_lock;
+  std::unordered_map<uni::net::endpoint_id, std::unique_ptr<uni::net::Channel>> _channels;
+  uni::async::AsyncScheduler& _scheduler;
 };
 
 } // net
 } // uni
 
-#endif // UNI_NET_OUTCONNECTIONS_H
+#endif // UNI_NET_CONNECTIONSOUT_H

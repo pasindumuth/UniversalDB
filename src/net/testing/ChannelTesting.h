@@ -21,10 +21,21 @@ namespace net {
 /**
  * This class is used during testing for simulation.
  * 
- * We design this class so that like the impl classes, there are essentially 2
- * versions of this: Read mode and Write mode.
+ * The other_channel and this channel form a pair, holding each other as
+ * the other channel. Messages sent through queue_send goes through to the 
+ * other channel and runs through their receive callbacks. The nonempty_channels
+ * includes this channel if _message_queue is non-empty. If the other channel has
+ * start_listening() not already called, then it 
  * 
- * TODO: make 2 distinct classes for this.
+ * Visualize this channel on the left, an arrow to the other channel on the right, 
+ * nonempty_channels above filling up with this channel if the message_queue,
+ * visualized beneath the line, is non-empty. The connection_state of this channels creates
+ * a leak in the arrow on the left, and if start_listening() isn't called on the other channel,
+ * there is a leak in the arrow on the right.
+ * 
+ * Properties that we observe: nonempty_channels contains this channel if message_queue
+ * is non-empty. If either start_listening and or connection_state isn't set, then trying to
+ * send a message will poll message_queue, but it won't go to the other side.
  */
 class ChannelTesting
     : public uni::net::Channel {
@@ -33,21 +44,22 @@ class ChannelTesting
   // async_scheduler to deliver the message.
   ChannelTesting(
       std::string const& other_ip_string, // present in read mode
-      unsigned other_ip_port, // present in read mode
-      std::vector<uni::net::ChannelTesting*>& nonempty_channels, // present in write mode
-      boost::optional<uni::net::ChannelTesting&> other_channel); // present in write mode
+      std::vector<uni::net::ChannelTesting*>& nonempty_channels); // present in write mode
 
   ~ChannelTesting() {};
 
+  void set_other_end(uni::net::ChannelTesting* other_channel);
+
   uni::net::endpoint_id endpoint_id() override;
 
-  // Add a new message to the queue
+  // Adds the message to _message_queue.
   void queue_send(std::string message) override;
 
   // TODO implement this right
   void start_listening() override {}
 
-  // Pops the first message in the _message_queue and runs it through the _receive_callback.
+  // Pops the first message in the _message_queue and runs it through the other
+  // channels recieve_message method. This will only be called when _message_queue is nonempty. 
   void deliver_message();
 
   // Recieves message and then calls the receive callbacks
@@ -62,20 +74,18 @@ class ChannelTesting
  private:
   // The other ip address
   std::string const _other_ip_string;
-  unsigned _other_ip_port;
   // FIFO queue which contains messages at the sender that are yet to be
   // received and processed by the receiver.
   std::queue<std::string> _message_queue;
   // This channel is responsible for maintaining its place in this vectors when
   // a call to queue_send and deliver_message is made.
   std::vector<uni::net::ChannelTesting*>& _nonempty_channels;
+  // The other end.
+  uni::net::ChannelTesting* _other_channel;
   // As long as the connection state is false, calling deliver_message and
   // drop_message will simply drop the message. This helps simulate long term
   // or permanent connection failures.
   bool _connection_state;
-
-  // Other stuff
-  boost::optional<uni::net::ChannelTesting&> _other_channel;
 
   // After the channel has lost a message, this function maintains the channels
   // inclusion in _nonempty_channels, removing it if the Channel becomes empty.

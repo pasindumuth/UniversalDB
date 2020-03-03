@@ -36,21 +36,18 @@ void TestDriver::run_test(TestFunction test) {
     // to the current Slave), and create the uni::net::ChannelTesting object with that.
     for (auto j = 0; j < constants.num_slave_servers; j++) {
       auto& receiver_async_sheduler = slaves[j]->scheduler;
-      auto in_channel = std::make_unique<uni::net::ChannelTesting>(
-        slaves[i]->ip_string,
-        constants.slave_port,
-        nonempty_channels,
-        boost::none
-      );
-      auto out_channel = std::make_unique<uni::net::ChannelTesting>(
+      auto channel = std::make_unique<uni::net::ChannelTesting>(
         slaves[j]->ip_string,
-        constants.slave_port,
-        nonempty_channels,
-        *in_channel
+        nonempty_channels
       );
-      channels.push_back(out_channel.get());
-      slaves[i]->connections_out.add_channel(std::move(out_channel));
-      slaves[j]->connections_in.add_channel(std::move(in_channel));
+      channels.push_back(channel.get());
+      slaves[i]->connections_out.add_channel(std::move(channel));
+    }
+  }
+
+  for (auto i = 0; i < constants.num_slave_servers; i++) {
+    for (auto j = 0; j < constants.num_slave_servers; j++) {
+      all_channels[i][j]->set_other_end(all_channels[j][i]);
     }
   }
 

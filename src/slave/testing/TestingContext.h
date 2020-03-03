@@ -32,7 +32,6 @@ struct TestingContext {
   std::string ip_string;
   uni::async::AsyncSchedulerTesting scheduler;
   uni::net::ConnectionsIn client_connections_in;
-  uni::net::ConnectionsIn connections_in;
   uni::net::ConnectionsOut connections_out;
   uni::async::ClockTesting clock;
   uni::async::TimerAsyncSchedulerTesting timer_scheduler;

@@ -25,9 +25,7 @@ void ChannelImpl::queue_send(std::string message) {
 }
 
 endpoint_id ChannelImpl::endpoint_id() {
-  auto const& ip_string = _socket.remote_endpoint().address().to_string();
-  auto const& port = _socket.remote_endpoint().port();
-  return uni::net::endpoint_id(ip_string, port);
+  return uni::net::endpoint_id(_socket.remote_endpoint().address().to_string(), 0);
 }
 
 void ChannelImpl::start_listening() {
