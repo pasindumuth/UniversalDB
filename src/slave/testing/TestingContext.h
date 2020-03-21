@@ -13,10 +13,10 @@
 #include <common/common.h>
 #include <net/Connections.h>
 #include <paxos/PaxosLog.h>
-#include <slave/FailureDetector.h>
-#include <slave/HeartbeatTracker.h>
-#include <slave/LogSyncer.h>
-#include <slave/ProposerQueue.h>
+#include <server/FailureDetector.h>
+#include <server/HeartbeatTracker.h>
+#include <server/LogSyncer.h>
+#include <async/AsyncQueue.h>
 #include <slave/TabletParticipant.h>
 #include <slave/SlaveIncomingMessageHandler.h>
 
@@ -34,12 +34,12 @@ struct TestingContext {
   uni::net::Connections connections;
   uni::async::ClockTesting clock;
   uni::async::TimerAsyncSchedulerTesting timer_scheduler;
-  uni::slave::HeartbeatTracker heartbeat_tracker;
-  uni::slave::FailureDetector failure_detector;
+  uni::server::HeartbeatTracker heartbeat_tracker;
+  uni::server::FailureDetector failure_detector;
   uni::paxos::PaxosLog paxos_log;
-  uni::slave::ProposerQueue proposer_queue;
+  uni::async::AsyncQueue proposer_queue;
   uni::paxos::MultiPaxosHandler multipaxos_handler;
-  uni::slave::LogSyncer log_syncer;
+  uni::server::LogSyncer log_syncer;
   uni::slave::SlaveIncomingMessageHandler slave_handler;
 };
 

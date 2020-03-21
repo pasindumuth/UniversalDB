@@ -1,5 +1,5 @@
-#ifndef UNI_SLAVE_PROPOSERQUEUE_H
-#define UNI_SLAVE_PROPOSERQUEUE_H
+#ifndef UNI_ASYNC_ASYNCQUEUE_H
+#define UNI_ASYNC_ASYNCQUEUE_H
 
 #include <functional>
 #include <queue>
@@ -8,7 +8,7 @@
 #include <common/common.h>
 
 namespace uni {
-namespace slave {
+namespace async {
 
 /**
  * @brief A queue of tasks that are run and repeated, based the return value of the task
@@ -20,21 +20,21 @@ namespace slave {
  * If it shouldn't be run again, the task is popped and the next task is scheduled to run as soon
  * as possible (but not immediately in the #add_task method call).
  */
-class ProposerQueue {
+class AsyncQueue {
  public:
   /**
-   * @brief Constructs a ProposerQueue, using a TimerAsyncScheduler to schedule the tasks.
+   * @brief Constructs a AsyncQueue, using a TimerAsyncScheduler to schedule the tasks.
    */
-  ProposerQueue(
+  AsyncQueue(
     uni::async::TimerAsyncScheduler& timer_scheduler);
 
   /**
-   * @brief Add a task into the ProposerQueue
+   * @brief Add a task into the AsyncQueue
    */
   void add_task(std::function<int(void)> callback);
 
   /**
-   * @brief Checks whether the ProposerQueue is empty
+   * @brief Checks whether the AsyncQueue is empty
    */
   bool empty();
 
@@ -46,7 +46,7 @@ class ProposerQueue {
   std::queue<std::function<int(void)>> _callbacks;
 };
 
-} // namespace slave
+} // namespace async
 } // namespace uni
 
-#endif // UNI_SLAVE_PROPOSERQUEUE_H
+#endif // UNI_ASYNC_ASYNCQUEUE_H

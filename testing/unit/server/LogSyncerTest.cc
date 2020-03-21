@@ -4,12 +4,12 @@
 #include <net/endpoint_id.h>
 #include <paxos/PaxosTypes.h>
 #include <paxos/PaxosLog.h>
-#include <slave/LogSyncer.h>
+#include <server/LogSyncer.h>
 
 namespace uni {
 namespace testing {
 namespace unit {
-namespace slave {
+namespace server {
 
 class LogSyncerTest
     : public ::testing::Test {};
@@ -18,7 +18,7 @@ class LogSyncerTest
 
 TEST_F(LogSyncerTest, BuildSyncRequestTest) {
   auto request = std::unique_ptr<proto::sync::SyncRequest>(
-    uni::slave::_inner::build_sync_request({0, 1, 2, 3, 5, 7, 8, 9, 11}));
+    uni::server::_inner::build_sync_request({0, 1, 2, 3, 5, 7, 8, 9, 11}));
   EXPECT_EQ(request->missing_indices().size(), 4);
   EXPECT_EQ(request->missing_indices().at(0).start(), 0);
   EXPECT_EQ(request->missing_indices().at(0).end(), 3);
@@ -53,7 +53,7 @@ TEST_F(LogSyncerTest, BuildSyncResponseShortLogTest) {
     {2, proto::paxos::PaxosLogEntry()},
   });
   auto response = std::unique_ptr<proto::sync::SyncResponse>(
-    uni::slave::_inner::build_sync_response(paxos_log, request));
+    uni::server::_inner::build_sync_response(paxos_log, request));
   EXPECT_EQ(response->missing_entries().size(), 2);
   EXPECT_EQ(response->missing_entries().at(0).index(), 0);
   EXPECT_EQ(response->missing_entries().at(1).index(), 1);
@@ -81,7 +81,7 @@ TEST_F(LogSyncerTest, BuildSyncResponseLongLogTest) {
     {4, proto::paxos::PaxosLogEntry()},
   });
   auto response = std::unique_ptr<proto::sync::SyncResponse>(
-    uni::slave::_inner::build_sync_response(paxos_log, request));
+    uni::server::_inner::build_sync_response(paxos_log, request));
   EXPECT_EQ(response->missing_entries().size(), 4);
   EXPECT_EQ(response->missing_entries().at(0).index(), 0);
   EXPECT_EQ(response->missing_entries().at(1).index(), 1);
@@ -89,7 +89,7 @@ TEST_F(LogSyncerTest, BuildSyncResponseLongLogTest) {
   EXPECT_EQ(response->missing_entries().at(3).index(), 4);
 }
 
-} // namespace slave
+} // namespace server
 } // namespace unit
 } // namespace testing
 } // namespace uni

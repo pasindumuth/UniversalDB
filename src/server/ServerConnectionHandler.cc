@@ -3,7 +3,7 @@
 #include <net/impl/ChannelImpl.h>
 
 namespace uni {
-namespace slave {
+namespace server {
 
 using boost::asio::ip::tcp;
 
@@ -30,5 +30,5 @@ void ServerConnectionHandler::async_accept() {
   });
 }
 
-} // slave
+} // server
 } // uni

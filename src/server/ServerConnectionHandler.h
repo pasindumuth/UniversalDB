@@ -1,5 +1,5 @@
-#ifndef UNI_SLAVE_SERVERCONNECTIONHANDLER
-#define UNI_SLAVE_SERVERCONNECTIONHANDLER
+#ifndef UNI_SERVER_SERVERCONNECTIONHANDLER
+#define UNI_SERVER_SERVERCONNECTIONHANDLER
 
 #include <boost/asio.hpp>
 
@@ -8,7 +8,7 @@
 #include <net/Connections.h>
 
 namespace uni {
-namespace slave {
+namespace server {
 
 // Responsible for scheduling accept handler and data receive handlers for
 // other server connections.
@@ -29,8 +29,8 @@ class ServerConnectionHandler {
   boost::asio::io_context& _io_context;
 };
 
-} // slave
+} // server
 } // uni
 
 
-#endif // UNI_SLAVE_SERVERCONNECTIONHANDLER
+#endif // UNI_SERVER_SERVERCONNECTIONHANDLER

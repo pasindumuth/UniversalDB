@@ -13,9 +13,9 @@
 #include <common/common.h>
 #include <net/Connections.h>
 #include <paxos/PaxosLog.h>
-#include <slave/FailureDetector.h>
-#include <slave/HeartbeatTracker.h>
-#include <slave/LogSyncer.h>
+#include <server/FailureDetector.h>
+#include <server/HeartbeatTracker.h>
+#include <server/LogSyncer.h>
 #include <slave/SlaveIncomingMessageHandler.h>
 
 namespace uni {
@@ -36,11 +36,11 @@ struct ProductionContext {
     uni::net::Connections& connections);
 
   uni::async::TimerAsyncSchedulerImpl timer_scheduler;
-  uni::slave::HeartbeatTracker heartbeat_tracker;
-  uni::slave::FailureDetector failure_detector;
+  uni::server::HeartbeatTracker heartbeat_tracker;
+  uni::server::FailureDetector failure_detector;
   uni::paxos::PaxosLog paxos_log;
   uni::paxos::MultiPaxosHandler multipaxos_handler;
-  uni::slave::LogSyncer log_syncer;
+  uni::server::LogSyncer log_syncer;
   uni::slave::SlaveIncomingMessageHandler slave_handler;
 
  private:

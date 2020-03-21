@@ -1,5 +1,5 @@
-#ifndef UNI_SLAVE_CLIENTCONNECTIONHANDLER
-#define UNI_SLAVE_CLIENTCONNECTIONHANDLER
+#ifndef UNI_SERVER_CLIENTCONNECTIONHANDLER
+#define UNI_SERVER_CLIENTCONNECTIONHANDLER
 
 #include <unordered_map>
 
@@ -11,7 +11,7 @@
 #include <net/Connections.h>
 
 namespace uni {
-namespace slave {
+namespace server {
 
 // Responsible for scheduling accept handler and data receive handlers for
 // client connections.
@@ -33,8 +33,8 @@ class ClientConnectionHandler {
   uni::net::Connections& _connections;
 };
 
-} // slave
+} // server
 } // uni
 
 
-#endif // UNI_SLAVE_CLIENTCONNECTIONHANDLER
+#endif // UNI_SERVER_CLIENTCONNECTIONHANDLER

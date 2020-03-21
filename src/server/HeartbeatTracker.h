@@ -1,5 +1,5 @@
-#ifndef UNI_SLAVE_HEARTBEATTRACKER
-#define UNI_SLAVE_HEARTBEATTRACKER
+#ifndef UNI_SERVER_HEARTBEATTRACKER
+#define UNI_SERVER_HEARTBEATTRACKER
 
 #include <map>
 #include <vector>
@@ -11,7 +11,7 @@
 #include <net/endpoint_id.h>
 
 namespace uni {
-namespace slave {
+namespace server {
 
 class HeartbeatTracker {
  public:
@@ -61,7 +61,7 @@ boost::optional<uni::net::endpoint_id> leader_endpoint_id(std::map<uni::net::end
 std::string debug_string(std::map<uni::net::endpoint_id, uint32_t>& heartbeat_count);
 
 } // namespace _inner
-} // namespace slave
+} // namespace server
 } // namespace uni
 
-#endif // UNI_SLAVE_HEARTBEATTRACKER
+#endif // UNI_SERVER_HEARTBEATTRACKER

@@ -8,7 +8,7 @@ namespace slave {
 
 IncomingMessageHandler::IncomingMessageHandler(
     uni::slave::ClientRequestHandler& request_handler,
-    uni::slave::LogSyncer& log_syncer,
+    uni::server::LogSyncer& log_syncer,
     uni::paxos::MultiPaxosHandler& multi_paxos_handler)
       : _client_request_handler(request_handler),
         _log_syncer(log_syncer),

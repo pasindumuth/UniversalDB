@@ -3,30 +3,30 @@
 #include <async/testing/ClockTesting.h>
 #include <async/testing/TimerAsyncSchedulerTesting.h>
 #include <common/common.h>
-#include <slave/ProposerQueue.h>
+#include <async/AsyncQueue.h>
 
 namespace uni {
 namespace testing {
 namespace unit {
-namespace slave {
+namespace async {
 
-class ProposerQueueTest
+class AsyncQueueTest
     : public ::testing::Test {
  protected:
-  ProposerQueueTest()
+  AsyncQueueTest()
     : _clock(),
       _scheduler(_clock),
       _queue(_scheduler) {}
   uni::async::ClockTesting _clock;
   uni::async::TimerAsyncSchedulerTesting _scheduler;
-  uni::slave::ProposerQueue _queue;
+  uni::async::AsyncQueue _queue;
 };
 
 /**
  * Ensures that when a task is scheduled that returns different values on
  * different runs, that as the time is incremented, the task is repeated as expected.
  */
-TEST_F(ProposerQueueTest, SingleTaskTest) {
+TEST_F(AsyncQueueTest, SingleTaskTest) {
   auto i = 3;
   auto j = 0;
   _queue.add_task([&i, &j](){
@@ -52,7 +52,7 @@ TEST_F(ProposerQueueTest, SingleTaskTest) {
  * Ensures that when a task is scheduled that returns different values on
  * different runs, that as the time is incremented, the task is repeated as expected.
  */
-TEST_F(ProposerQueueTest, MultipleTasksTest) {
+TEST_F(AsyncQueueTest, MultipleTasksTest) {
   auto i = 3;
   auto j = 3;
   auto k = 0;
@@ -76,7 +76,7 @@ TEST_F(ProposerQueueTest, MultipleTasksTest) {
   EXPECT_EQ(j, -1) << "The second should have completely run and finished";
 }
 
-} // namespace slave
+} // namespace async
 } // namespace unit
 } // namespace testing
 } // namespace uni

@@ -9,14 +9,14 @@
 #include <proto/paxos.pb.h>
 
 namespace uni {
-namespace slave {
+namespace server {
 
 LogSyncer::LogSyncer(
     uni::constants::Constants const& constants,
     uni::net::Connections& connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::paxos::PaxosLog& paxos_log,
-    uni::slave::FailureDetector& failure_detector,
+    uni::server::FailureDetector& failure_detector,
     std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper)
       : _constants(constants),
         _connections(connections),
@@ -129,5 +129,5 @@ proto::sync::SyncResponse* build_sync_response(
 }
 
 } // namespace _inner
-} // namespace slave
+} // namespace server
 } // namespace uni

@@ -3,10 +3,10 @@
 #include <proto/slave.pb.h>
 
 namespace uni {
-namespace slave {
+namespace server {
 
 FailureDetector::FailureDetector(
-    uni::slave::HeartbeatTracker& heartbeat_tracker,
+    uni::server::HeartbeatTracker& heartbeat_tracker,
     uni::net::Connections& connections,
     uni::async::TimerAsyncScheduler& timer_scheduler)
       : _heartbeat_tracker(heartbeat_tracker),
@@ -24,8 +24,8 @@ void FailureDetector::schedule_heartbeat() {
   _timer_scheduler.schedule_repeated([this](){
     _connections.broadcast(_message.SerializeAsString());
     _heartbeat_tracker.increment_counts();
-  }, uni::slave::HeartbeatTracker::HEARTBEAT_SEND_PERIOD);
+  }, uni::server::HeartbeatTracker::HEARTBEAT_SEND_PERIOD);
 }
 
-} // namespace slave
+} // namespace server
 } // namespace uni

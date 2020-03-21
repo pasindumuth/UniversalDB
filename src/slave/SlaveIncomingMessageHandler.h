@@ -9,8 +9,8 @@
 #include <boost/asio.hpp>
 
 #include <common/common.h>
-#include <slave/LogSyncer.h>
-#include <slave/HeartbeatTracker.h>
+#include <server/LogSyncer.h>
+#include <server/HeartbeatTracker.h>
 #include <slave/TabletParticipant.h>
 
 namespace uni {
@@ -20,8 +20,8 @@ class SlaveIncomingMessageHandler {
  public:
   SlaveIncomingMessageHandler(
     std::function<uni::custom_unique_ptr<uni::slave::TabletParticipant>(uni::slave::TabletId)> tp_provider,
-    uni::slave::HeartbeatTracker& heartbeat_tracker,
-    uni::slave::LogSyncer& log_syncer);
+    uni::server::HeartbeatTracker& heartbeat_tracker,
+    uni::server::LogSyncer& log_syncer);
 
   void handle(uni::net::IncomingMessage incoming_message);
 
@@ -29,8 +29,8 @@ class SlaveIncomingMessageHandler {
 
  private:
   std::function<uni::custom_unique_ptr<uni::slave::TabletParticipant>(uni::slave::TabletId)> _tp_provider;
-  uni::slave::HeartbeatTracker& _heartbeat_tracker;
-  uni::slave::LogSyncer& _log_syncer;
+  uni::server::HeartbeatTracker& _heartbeat_tracker;
+  uni::server::LogSyncer& _log_syncer;
 
   std::unordered_map<TabletId, uni::custom_unique_ptr<uni::slave::TabletParticipant>> _tp_map;
 

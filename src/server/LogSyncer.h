@@ -1,5 +1,5 @@
-#ifndef UNI_SLAVE_LOGSYNCER
-#define UNI_SLAVE_LOGSYNCER
+#ifndef UNI_SERVER_LOGSYNCER
+#define UNI_SERVER_LOGSYNCER
 
 #include <vector>
 #include <functional>
@@ -14,11 +14,11 @@
 #include <proto/message.pb.h>
 #include <proto/slave.pb.h>
 #include <proto/sync.pb.h>
-#include <slave/FailureDetector.h>
+#include <server/FailureDetector.h>
 
 
 namespace uni {
-namespace slave {
+namespace server {
 
 class LogSyncer {
  public:
@@ -27,7 +27,7 @@ class LogSyncer {
     uni::net::Connections& connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::paxos::PaxosLog& paxos_log,
-    uni::slave::FailureDetector& failure_detector,
+    uni::server::FailureDetector& failure_detector,
     std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper);
 
   void schedule_syncing();
@@ -41,7 +41,7 @@ class LogSyncer {
   uni::net::Connections& _connections;
   uni::async::TimerAsyncScheduler& _timer_scheduler;
   uni::paxos::PaxosLog& _paxos_log;
-  uni::slave::FailureDetector& _failure_detector;
+  uni::server::FailureDetector& _failure_detector;
   std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> _sync_message_to_wrapper;
 };
 
@@ -51,7 +51,7 @@ proto::sync::SyncRequest* build_sync_request(std::vector<uni::paxos::index_t> av
 proto::sync::SyncResponse* build_sync_response(uni::paxos::PaxosLog& paxos_log, proto::sync::SyncRequest& request);
 
 } // namespace _inner
-} // namespace slave
+} // namespace server
 } // namespace uni
 
-#endif // UNI_SLAVE_LOGSYNCER
+#endif // UNI_SERVER_LOGSYNCER

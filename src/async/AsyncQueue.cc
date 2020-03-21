@@ -1,20 +1,20 @@
-#include "ProposerQueue.h"
+#include "AsyncQueue.h"
 
 namespace uni {
-namespace slave {
+namespace async {
 
-ProposerQueue::ProposerQueue(
+AsyncQueue::AsyncQueue(
     uni::async::TimerAsyncScheduler& timer_scheduler)
       : _timer_scheduler(timer_scheduler) {}
 
-void ProposerQueue::add_task(std::function<int(void)> callback) {
+void AsyncQueue::add_task(std::function<int(void)> callback) {
   _callbacks.push(callback);
   if (_callbacks.size() == 1) {
     _timer_scheduler.schedule_once([this](){ run_task(); }, 0);
   }
 }
 
-void ProposerQueue::run_task() {
+void AsyncQueue::run_task() {
   auto const& callback = _callbacks.front();
   auto wait = callback();
   if (wait < 0) {
@@ -27,9 +27,9 @@ void ProposerQueue::run_task() {
   }
 }
 
-bool ProposerQueue::empty() {
+bool AsyncQueue::empty() {
   return _callbacks.empty();
 }
 
-} // namespace slave
+} // namespace async
 } // namespace uni

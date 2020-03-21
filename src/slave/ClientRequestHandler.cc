@@ -13,7 +13,7 @@ namespace slave {
 ClientRequestHandler::ClientRequestHandler(
     uni::paxos::MultiPaxosHandler& multi_paxos_handler,
     uni::paxos::PaxosLog& paxos_log,
-    uni::slave::ProposerQueue& proposer_queue,
+    uni::async::AsyncQueue& proposer_queue,
     uni::slave::KVStore& kvstore,
     std::function<void(uni::net::endpoint_id, proto::client::ClientResponse*)> respond)
       : _multi_paxos_handler(multi_paxos_handler),

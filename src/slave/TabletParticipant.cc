@@ -20,7 +20,7 @@ TabletParticipant::TabletParticipant(
   uni::net::Connections& connections,
   uni::net::Connections& client_connections,
   uni::async::TimerAsyncScheduler& timer_scheduler,
-  uni::slave::FailureDetector& failure_detector,
+  uni::server::FailureDetector& failure_detector,
   uni::slave::TabletId& tid)
   : scheduler(scheduler_provider()),
     tablet_id(tid),

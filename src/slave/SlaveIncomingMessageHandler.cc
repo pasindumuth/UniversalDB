@@ -10,7 +10,7 @@
 #include <proto/master.pb.h>
 #include <proto/message.pb.h>
 #include <proto/tablet.pb.h>
-#include <slave/LogSyncer.h>
+#include <server/LogSyncer.h>
 #include <slave/TabletId.h>
 #include <slave/TabletParticipant.h>
 
@@ -19,8 +19,8 @@ namespace slave {
 
 SlaveIncomingMessageHandler::SlaveIncomingMessageHandler(
   std::function<uni::custom_unique_ptr<uni::slave::TabletParticipant>(uni::slave::TabletId)> tp_provider,
-  uni::slave::HeartbeatTracker& heartbeat_tracker,
-  uni::slave::LogSyncer& log_syncer)
+  uni::server::HeartbeatTracker& heartbeat_tracker,
+  uni::server::LogSyncer& log_syncer)
   : _tp_provider(tp_provider),
     _heartbeat_tracker(heartbeat_tracker),
     _log_syncer(log_syncer) {}

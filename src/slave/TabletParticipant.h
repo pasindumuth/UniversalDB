@@ -17,8 +17,8 @@
 #include <slave/ClientRequestHandler.h>
 #include <slave/IncomingMessageHandler.h>
 #include <slave/KVStore.h>
-#include <slave/LogSyncer.h>
-#include <slave/ProposerQueue.h>
+#include <server/LogSyncer.h>
+#include <async/AsyncQueue.h>
 #include <slave/TabletId.h>
 
 namespace uni {
@@ -29,10 +29,10 @@ struct TabletParticipant {
   uni::slave::TabletId tablet_id;
   uni::paxos::PaxosLog paxos_log;
   uni::paxos::MultiPaxosHandler multipaxos_handler;
-  uni::slave::ProposerQueue proposer_queue;
+  uni::async::AsyncQueue proposer_queue;
   uni::slave::KVStore kvstore;
   uni::slave::ClientRequestHandler client_request_handler;
-  uni::slave::LogSyncer log_syncer;
+  uni::server::LogSyncer log_syncer;
   uni::slave::IncomingMessageHandler incoming_message_handler;
 
   TabletParticipant(
@@ -41,7 +41,7 @@ struct TabletParticipant {
     uni::net::Connections& connections,
     uni::net::Connections& client_connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
-    uni::slave::FailureDetector& failure_detector,
+    uni::server::FailureDetector& failure_detector,
     uni::slave::TabletId& tid);
 };
 

@@ -75,7 +75,7 @@ class Tests {
   bool some_proposer_queue_nonempty(
     std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves);
 
-  // While there are messages in the ProposerQueue at any node, and while are any
+  // While there are messages in the AsyncQueue at any node, and while are any
   // messages in the channels, keep increasing the clock on each slave. There is no
   // message dropping.
   void run_until_completion(

@@ -1,14 +1,14 @@
-#ifndef UNI_SLAVE_FAILUREDETECTOR
-#define UNI_SLAVE_FAILUREDETECTOR
+#ifndef UNI_SERVER_FAILUREDETECTOR
+#define UNI_SERVER_FAILUREDETECTOR
 
 #include <async/TimerAsyncScheduler.h>
 #include <common/common.h>
 #include <net/Connections.h>
 #include <proto/message.pb.h>
-#include <slave/HeartbeatTracker.h>
+#include <server/HeartbeatTracker.h>
 
 namespace uni {
-namespace slave {
+namespace server {
 
 /**
  * This class maintains a list of Paxos participants that have not failed. The
@@ -25,7 +25,7 @@ namespace slave {
 class FailureDetector {
  public:
   FailureDetector(
-    uni::slave::HeartbeatTracker& heartbeat_tracker,
+    uni::server::HeartbeatTracker& heartbeat_tracker,
     uni::net::Connections& connections,
     uni::async::TimerAsyncScheduler& timer_scheduler);
 
@@ -33,14 +33,14 @@ class FailureDetector {
   void schedule_heartbeat();
 
  private:
-  uni::slave::HeartbeatTracker& _heartbeat_tracker;
+  uni::server::HeartbeatTracker& _heartbeat_tracker;
   uni::net::Connections& _connections;
   uni::async::TimerAsyncScheduler& _timer_scheduler;
   // Heartbeat message used across all sends
   proto::message::MessageWrapper _message;
 };
 
-} // namespace slave
+} // namespace server
 } // namespace uni
 
-#endif // UNI_SLAVE_FAILUREDETECTOR
+#endif // UNI_SERVER_FAILUREDETECTOR

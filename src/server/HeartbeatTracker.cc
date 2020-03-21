@@ -5,7 +5,7 @@
 #include <common/common.h>
 
 namespace uni {
-namespace slave {
+namespace server {
 
 uint32_t const HeartbeatTracker::HEARTBEAT_FAILURE_COUNT = 4;
 uint32_t const HeartbeatTracker::HEARTBEAT_SEND_PERIOD = 1000;
@@ -105,5 +105,5 @@ std::string debug_string(std::map<uni::net::endpoint_id, uint32_t>& heartbeat_co
 }
 
 } // namespace _inner
-} // namespace slave
+} // namespace server
 } // namespace uni
