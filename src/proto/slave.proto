@@ -1,16 +1,21 @@
 syntax = "proto3";
 
-import "sync.proto";
 import "paxos.proto";
+import "sync.proto";
 
 package proto.slave;
 
 message Heartbeat {}
+
+message KeySpaceChanged {
+  uint32 generation = 1;
+}
 
 message SlaveMessage {
   oneof slave_message {
     Heartbeat heartbeat = 1;
     proto.paxos.PaxosMessage paxos_message = 2;
     proto.sync.SyncMessage sync_message = 3;
+    KeySpaceChanged key_space_changed = 4;
   }
 }

@@ -33,9 +33,16 @@ message ClientResponse {
   Code error_code = 2;
 }
 
+message FindKeyRange {
+  string database_id = 1;
+  string table_id = 2;
+  string key = 3;
+}
+
 message ClientMessage {
   oneof client_message {
     ClientRequest request = 1;
     ClientResponse response = 2;
+    FindKeyRange find_key_range = 3;
   }
 }

@@ -1,6 +1,8 @@
 syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
+import "paxos_master.proto";
+import "paxos_slave.proto";
 
 package proto.paxos;
 
@@ -34,6 +36,12 @@ message PaxosLogEntry {
   google.protobuf.StringValue key = 3;
   google.protobuf.StringValue value = 4;
   google.protobuf.UInt64Value timestamp = 5;
+
+  oneof entry_content {
+    proto.paxos.master.NewKeySpaceSelected key_space_selected = 6;
+    proto.paxos.master.KeySpaceCommit key_space_commit = 7;
+    proto.paxos.slave.KeySpaceChanged key_space_changed = 8;
+  }
 }
 
 message Prepare {

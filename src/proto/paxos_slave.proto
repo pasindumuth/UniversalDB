@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+import "common.proto";
+
+package proto.paxos.slave;
+
+message KeySpaceChanged {
+  repeated proto.common.KeySpaceRange new_ranges = 1;
+  uint32 generation = 2;
+}

@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "common.proto";
+
 package proto.master;
 
 message SlaveList {
@@ -25,9 +27,16 @@ message MasterResponse {
   Code error_code = 1;
 }
 
+message NewKeySpaceSelected {
+  string slave_group_id = 1;
+  repeated proto.common.KeySpaceRange new_ranges = 2;
+  uint32 generation = 3;
+}
+
 message MasterMessage {
   oneof master_message {
     MasterRequest request = 1;
     MasterResponse response = 2;
+    NewKeySpaceSelected key_space_selected = 3;
   }
 }
