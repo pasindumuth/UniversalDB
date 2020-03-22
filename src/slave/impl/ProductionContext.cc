@@ -16,6 +16,7 @@ ProductionContext::ProductionContext(
   boost::asio::io_context& background_io_context,
   uni::constants::Constants const& constants,
   uni::net::Connections& client_connections,
+  uni::net::Connections& master_connections,
   uni::net::Connections& connections,
   std::vector<uni::net::EndpointId>& config_endpoints,
   uni::async::AsyncSchedulerImpl& scheduler)
@@ -66,9 +67,15 @@ ProductionContext::ProductionContext(
       }),
     config_manager(
       async_queue,
+      master_connections,
       multipaxos_handler,
       paxos_log,
       config_endpoints),
+    key_space_manager(
+      async_queue,
+      master_connections,
+      multipaxos_handler,
+      paxos_log),
     slave_handler(
       [this, &constants, &client_connections, &connections](uni::slave::TabletId tablet_id) {
         auto min_index = std::distance(

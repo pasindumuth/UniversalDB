@@ -21,6 +21,7 @@
 #include <slave/TabletParticipant.h>
 #include <slave/SlaveConfigManager.h>
 #include <slave/SlaveIncomingMessageHandler.h>
+#include <slave/SlaveKeySpaceManager.h>
 
 namespace uni {
 namespace slave {
@@ -34,6 +35,7 @@ struct TestingContext {
   std::string ip_string;
   uni::async::AsyncSchedulerTesting scheduler;
   uni::net::Connections client_connections;
+  uni::net::Connections master_connections;
   uni::net::Connections connections;
   uni::async::ClockTesting clock;
   uni::async::TimerAsyncSchedulerTesting timer_scheduler;
@@ -44,6 +46,7 @@ struct TestingContext {
   uni::paxos::MultiPaxosHandler multipaxos_handler;
   uni::server::LogSyncer log_syncer;
   uni::slave::SlaveConfigManager config_manager;
+  uni::slave::SlaveKeySpaceManager key_space_manager;
   uni::slave::SlaveIncomingMessageHandler slave_handler;
 };
 

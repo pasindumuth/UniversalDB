@@ -21,6 +21,7 @@
 #include <server/LogSyncer.h>
 #include <slave/SlaveConfigManager.h>
 #include <slave/SlaveIncomingMessageHandler.h>
+#include <slave/SlaveKeySpaceManager.h>
 
 namespace uni {
 namespace slave {
@@ -37,6 +38,7 @@ struct ProductionContext {
     boost::asio::io_context& background_io_context,
     uni::constants::Constants const& constants,
     uni::net::Connections& client_connections,
+    uni::net::Connections& master_connections,
     uni::net::Connections& connections,
     std::vector<uni::net::EndpointId>& config_endpoints,
     uni::async::AsyncSchedulerImpl& scheduler);
@@ -49,6 +51,7 @@ struct ProductionContext {
   uni::paxos::MultiPaxosHandler multipaxos_handler;
   uni::server::LogSyncer log_syncer;
   uni::slave::SlaveConfigManager config_manager;
+  uni::slave::SlaveKeySpaceManager key_space_manager;
   uni::slave::SlaveIncomingMessageHandler slave_handler;
 
  private:

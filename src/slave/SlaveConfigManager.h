@@ -16,6 +16,7 @@ class SlaveConfigManager {
  public:
   SlaveConfigManager(
     uni::async::AsyncQueue& async_queue,
+    uni::net::Connections& master_connections,
     uni::paxos::MultiPaxosHandler& multipaxos_handler,
     uni::paxos::PaxosLog& paxos_log,
     std::vector<uni::net::EndpointId>& config_endpoints);
@@ -24,6 +25,7 @@ class SlaveConfigManager {
 
  private:
   uni::async::AsyncQueue& _async_queue;
+  uni::net::Connections& _master_connections;
   uni::paxos::MultiPaxosHandler& _multipaxos_handler;
   uni::paxos::PaxosLog& _paxos_log;
   std::vector<uni::net::EndpointId>& _config_endpoints;

@@ -12,6 +12,7 @@ TestingContext::TestingContext(
   : ip_string(ip_string),
     scheduler(),
     client_connections(scheduler),
+    master_connections(scheduler),
     connections(scheduler),
     clock(),
     timer_scheduler(clock),
@@ -61,9 +62,15 @@ TestingContext::TestingContext(
       }),
     config_manager(
       async_queue,
+      master_connections,
       multipaxos_handler,
       paxos_log,
       config_endpoints),
+    key_space_manager(
+      async_queue,
+      master_connections,
+      multipaxos_handler,
+      paxos_log),
     slave_handler(
       [this, &constants](uni::slave::TabletId tablet_id) {
         return uni::custom_unique_ptr<uni::slave::TabletParticipant>(

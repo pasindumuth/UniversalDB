@@ -68,11 +68,17 @@ int main(int argc, char* argv[]) {
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
   auto client_connections = uni::net::Connections(server_async_scheduler);
   auto client_connection_handler = uni::server::ConnectionHandler(client_connections, client_acceptor);
-  
+
+  // Add the datamaster connection handler. The datamasters will initiate the connections.
+  auto master_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.master_port));
+  auto master_connections = uni::net::Connections(server_async_scheduler);
+  auto master_connection_handler = uni::server::ConnectionHandler(master_connections, master_acceptor);
+
   auto production_context = uni::slave::ProductionContext(
     background_io_context,
     constants,
     client_connections,
+    master_connections,
     connections,
     config_endpoints,
     server_async_scheduler);
