@@ -30,7 +30,7 @@ void Connections::add_channel(std::unique_ptr<uni::net::Channel>&& channel) {
 }
 
 boost::optional<uni::net::Channel&> Connections::get_channel(
-    uni::net::endpoint_id endpoint_id) {
+    uni::net::EndpointId endpoint_id) {
   std::unique_lock<std::mutex> lock(_channel_lock);
   auto it = _channels.find(endpoint_id);
   if (it != _channels.end()) {
@@ -47,12 +47,12 @@ void Connections::broadcast(std::string message) {
   }
 }
 
-bool Connections::has(uni::net::endpoint_id endpoint_id) {
+bool Connections::has(uni::net::EndpointId endpoint_id) {
   std::unique_lock<std::mutex> lock(_channel_lock);
   return _channels.find(endpoint_id) != _channels.end();
 }
 
-void Connections::send(uni::net::endpoint_id const& endpoint_id, std::string message) {
+void Connections::send(uni::net::EndpointId const& endpoint_id, std::string message) {
   std::unique_lock<std::mutex> lock(_channel_lock);
   auto it = _channels.find(endpoint_id);
   if (it != _channels.end()) {

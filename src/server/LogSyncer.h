@@ -8,7 +8,7 @@
 #include <common/common.h>
 #include <constants/constants.h>
 #include <net/Connections.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 #include <paxos/PaxosLog.h>
 #include <paxos/PaxosTypes.h>
 #include <proto/message.pb.h>
@@ -31,7 +31,7 @@ class LogSyncer {
 
   void schedule_syncing();
 
-  void handle_sync_request(uni::net::endpoint_id endpoint_id, proto::sync::SyncRequest request);
+  void handle_sync_request(uni::net::EndpointId endpoint_id, proto::sync::SyncRequest request);
 
   void handle_sync_response(proto::sync::SyncResponse response);
 

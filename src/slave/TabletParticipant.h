@@ -29,7 +29,7 @@ struct TabletParticipant {
   uni::slave::TabletId tablet_id;
   uni::paxos::PaxosLog paxos_log;
   uni::paxos::MultiPaxosHandler multipaxos_handler;
-  uni::async::AsyncQueue proposer_queue;
+  uni::async::AsyncQueue async_queue;
   uni::slave::KVStore kvstore;
   uni::slave::ClientRequestHandler client_request_handler;
   uni::server::LogSyncer log_syncer;

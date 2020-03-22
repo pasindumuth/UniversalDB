@@ -10,7 +10,7 @@
 #include <async/AsyncQueue.h>
 #include <server/SlaveGroupId.h>
 #include <net/Connections.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 #include <paxos/MultiPaxosHandler.h>
 
 namespace uni {
@@ -33,18 +33,18 @@ class GroupConfigManager {
   uni::paxos::PaxosLog& _paxos_log;
 
   struct Config {
-    std::vector<uni::net::endpoint_id> slaves;
+    std::vector<uni::net::EndpointId> slaves;
     uint32_t generation;
   };
 
   struct NewConfig {
-    std::vector<uni::net::endpoint_id> slaves;
-    std::vector<uni::net::endpoint_id> new_slaves;
+    std::vector<uni::net::EndpointId> slaves;
+    std::vector<uni::net::EndpointId> new_slaves;
     uint32_t generation;
   };
 
   std::unordered_map<uni::server::SlaveGroupId, std::variant<Config, NewConfig>> _slave_group_config;
-  std::vector<uni::net::endpoint_id> _spare_nodes;
+  std::vector<uni::net::EndpointId> _spare_nodes;
 };
 
 } // namespace master

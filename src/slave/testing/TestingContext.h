@@ -37,7 +37,7 @@ struct TestingContext {
   uni::server::HeartbeatTracker heartbeat_tracker;
   uni::server::FailureDetector failure_detector;
   uni::paxos::PaxosLog paxos_log;
-  uni::async::AsyncQueue proposer_queue;
+  uni::async::AsyncQueue async_queue;
   uni::paxos::MultiPaxosHandler multipaxos_handler;
   uni::server::LogSyncer log_syncer;
   uni::slave::SlaveIncomingMessageHandler slave_handler;

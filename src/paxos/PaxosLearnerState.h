@@ -6,7 +6,7 @@
 #include <vector>
 
 #include <common/common.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 #include <paxos/PaxosTypes.h>
 
 namespace uni {

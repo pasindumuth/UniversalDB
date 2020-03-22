@@ -6,7 +6,7 @@ namespace net {
 SelfChannel::SelfChannel()
   : listening(false) {}
 
-uni::net::endpoint_id SelfChannel::endpoint_id() {
+uni::net::EndpointId SelfChannel::endpoint_id() {
   return {"localhost", 0};
 }
 

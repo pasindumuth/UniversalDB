@@ -72,7 +72,7 @@ class Tests {
   void print_paxos_logs(std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves);
 
   // Looks at the proposer queues and returns true iff there is a task scheduled in one.
-  bool some_proposer_queue_nonempty(
+  bool some_async_queue_nonempty(
     std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves);
 
   // While there are messages in the AsyncQueue at any node, and while are any

@@ -9,6 +9,7 @@
 #include <boost/asio.hpp>
 
 #include <async/impl/TimerAsyncSchedulerImpl.h>
+#include <async/impl/AsyncSchedulerImpl.h>
 #include <async/AsyncQueue.h>
 #include <constants/constants.h>
 #include <common/common.h>
@@ -31,7 +32,8 @@ struct ProductionContext {
     uni::constants::Constants const& constants,
     uni::net::Connections& client_connections,
     uni::net::Connections& slave_connections,
-    uni::net::Connections& connections);
+    uni::net::Connections& connections,
+    uni::async::AsyncSchedulerImpl& scheduler);
 
   uni::async::TimerAsyncSchedulerImpl timer_scheduler;
   uni::async::AsyncQueue async_queue;

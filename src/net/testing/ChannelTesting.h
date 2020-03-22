@@ -13,7 +13,7 @@
 #include <async/testing/AsyncSchedulerTesting.h>
 #include <common/common.h>
 #include <net/Channel.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 
 namespace uni {
 namespace net {
@@ -50,7 +50,7 @@ class ChannelTesting
 
   void set_other_end(uni::net::ChannelTesting* other_channel);
 
-  uni::net::endpoint_id endpoint_id() override;
+  uni::net::EndpointId endpoint_id() override;
 
   // Adds the message to _message_queue.
   void queue_send(std::string message) override;

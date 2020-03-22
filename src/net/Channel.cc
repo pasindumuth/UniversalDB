@@ -4,7 +4,7 @@
 #include <string>
 
 #include <common/common.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 
 namespace uni {
 namespace net {

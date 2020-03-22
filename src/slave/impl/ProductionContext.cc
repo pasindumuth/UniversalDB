@@ -1,6 +1,6 @@
 #include "ProductionContext.h"
 
-#include <async/impl/AsyncSchedulerImpl.h>
+#include <net/IncomingMessage.h>
 
 namespace uni {
 namespace slave {
@@ -16,7 +16,8 @@ ProductionContext::ProductionContext(
   boost::asio::io_context& background_io_context,
   uni::constants::Constants const& constants,
   uni::net::Connections& client_connections,
-  uni::net::Connections& connections)
+  uni::net::Connections& connections,
+  uni::async::AsyncSchedulerImpl& scheduler)
   : timer_scheduler(background_io_context),
     heartbeat_tracker(),
     failure_detector(
@@ -88,6 +89,9 @@ ProductionContext::ProductionContext(
     _io_contexts.push_back(std::make_unique<ThreadAndContext>());
     _participants_per_thread.push_back(0);
   }
+  scheduler.set_callback([this](uni::net::IncomingMessage message){
+    slave_handler.handle(message);
+  });
 }
 
 } // namespace slave

@@ -44,7 +44,7 @@ void SinglePaxosHandler::propose(const proto::paxos::PaxosLogEntry& entry) {
   _connections.broadcast(message_wrapper.SerializeAsString());
 }
 
-void SinglePaxosHandler::prepare(uni::net::endpoint_id const& endpoint_id, proto::paxos::Prepare const& prepare_message) {
+void SinglePaxosHandler::prepare(uni::net::EndpointId const& endpoint_id, proto::paxos::Prepare const& prepare_message) {
   auto latest_proposal_number = std::get<0>(_acceptor_state.accepted_state);
   auto new_proposal_number = prepare_message.rnd();
   if (new_proposal_number > latest_proposal_number) {

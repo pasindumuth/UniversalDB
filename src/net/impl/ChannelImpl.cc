@@ -24,8 +24,8 @@ void ChannelImpl::queue_send(std::string message) {
   }
 }
 
-endpoint_id ChannelImpl::endpoint_id() {
-  return uni::net::endpoint_id(_socket.remote_endpoint().address().to_string(), 0);
+uni::net::EndpointId ChannelImpl::endpoint_id() {
+  return uni::net::EndpointId(_socket.remote_endpoint().address().to_string(), 0);
 }
 
 void ChannelImpl::start_listening() {

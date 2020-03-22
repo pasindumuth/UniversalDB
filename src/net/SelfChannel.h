@@ -6,7 +6,7 @@
 #include <vector>
 
 #include <common/common.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 #include <net/Channel.h>
 
 namespace uni {
@@ -19,7 +19,7 @@ class SelfChannel
 
   ~SelfChannel() {};
 
-  uni::net::endpoint_id endpoint_id() override;
+  uni::net::EndpointId endpoint_id() override;
 
   void queue_send(std::string message) override;
 

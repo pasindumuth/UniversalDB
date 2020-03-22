@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
 #include <common/common.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 #include <paxos/PaxosTypes.h>
 #include <paxos/PaxosLog.h>
 #include <server/LogSyncer.h>

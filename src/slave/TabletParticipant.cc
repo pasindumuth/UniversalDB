@@ -1,6 +1,6 @@
 #include "TabletParticipant.h"
 
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 #include <net/IncomingMessage.h>
 #include <paxos/PaxosTypes.h>
 #include <paxos/SinglePaxosHandler.h>
@@ -43,15 +43,15 @@ TabletParticipant::TabletParticipant(
             return message_wrapper;
           });
       }),
-    proposer_queue(timer_scheduler),
+    async_queue(timer_scheduler),
     kvstore(),
     client_request_handler(
       multipaxos_handler,
       paxos_log,
-      proposer_queue,
+      async_queue,
       kvstore,
       [this, &client_connections](
-        uni::net::endpoint_id endpoint_id,
+        uni::net::EndpointId endpoint_id,
         proto::client::ClientResponse* client_response
       ) {
         auto message_wrapper = proto::message::MessageWrapper();

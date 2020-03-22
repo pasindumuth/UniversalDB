@@ -8,15 +8,15 @@
 namespace uni {
 namespace net {
 
-struct endpoint_id {
+struct EndpointId {
   std::string ip_string;
   int32_t port;
 
-  endpoint_id(std::string const& ip_string, int32_t const& port);
+  EndpointId(std::string const& ip_string, int32_t const& port);
 
-  bool operator==(const endpoint_id& other) const;
+  bool operator==(const EndpointId& other) const;
 
-  bool operator<(const endpoint_id& other) const;
+  bool operator<(const EndpointId& other) const;
 
   std::size_t hash() const;
 };
@@ -28,8 +28,8 @@ struct endpoint_id {
 namespace std {
 
 template<>
-struct hash<uni::net::endpoint_id> {
-  std::size_t operator()(const uni::net::endpoint_id& id) const {
+struct hash<uni::net::EndpointId> {
+  std::size_t operator()(const uni::net::EndpointId& id) const {
     return id.hash();
   }
 };

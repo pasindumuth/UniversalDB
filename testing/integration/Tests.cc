@@ -251,10 +251,10 @@ proto::message::MessageWrapper Tests::build_client_request(std::string message) 
 }
 
 // Looks at the proposer queues and returns true iff there is a task scheduled in one.
-bool Tests::some_proposer_queue_nonempty(
+bool Tests::some_async_queue_nonempty(
   std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves) {
     for (auto const& slave: slaves) {
-      if (!slave->proposer_queue.empty()) {
+      if (!slave->async_queue.empty()) {
         return true;
       }
     }
@@ -264,7 +264,7 @@ bool Tests::some_proposer_queue_nonempty(
 void Tests::run_until_completion(
   std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
   std::vector<uni::net::ChannelTesting*>& nonempty_channels) {
-    while (some_proposer_queue_nonempty(slaves) || nonempty_channels.size() > 0) {
+    while (some_async_queue_nonempty(slaves) || nonempty_channels.size() > 0) {
       run_for_milliseconds(slaves, nonempty_channels, 1);
     }
 }

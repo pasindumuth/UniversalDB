@@ -20,7 +20,7 @@ TestingContext::TestingContext(
       connections,
       timer_scheduler),
     paxos_log(),
-    proposer_queue(timer_scheduler),
+    async_queue(timer_scheduler),
     multipaxos_handler(
       paxos_log,
       [this, &constants](uni::paxos::index_t index) {

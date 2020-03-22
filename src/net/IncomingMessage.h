@@ -4,16 +4,16 @@
 #include <string>
 
 #include <common/common.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 
 namespace uni {
 namespace net {
 
 struct IncomingMessage {
-  uni::net::endpoint_id endpoint_id;
+  uni::net::EndpointId endpoint_id;
   std::string message;
 
-  IncomingMessage(uni::net::endpoint_id endpoint_id, std::string message)
+  IncomingMessage(uni::net::EndpointId endpoint_id, std::string message)
       : endpoint_id(endpoint_id),
         message(message) {}
 };

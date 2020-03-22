@@ -16,15 +16,15 @@ void HeartbeatTracker::increment_counts() {
   _inner::increment_counts(_heartbeat_count);
 }
 
-void HeartbeatTracker::handle_heartbeat(uni::net::endpoint_id endpoint_id) {
+void HeartbeatTracker::handle_heartbeat(uni::net::EndpointId endpoint_id) {
   _inner::handle_heartbeat(_heartbeat_count, endpoint_id);
 }
 
-std::vector<uni::net::endpoint_id> HeartbeatTracker::alive_endpoints() {
+std::vector<uni::net::EndpointId> HeartbeatTracker::alive_endpoints() {
   return _inner::alive_endpoints(_heartbeat_count);
 }
 
-boost::optional<uni::net::endpoint_id> HeartbeatTracker::leader_endpoint_id() {
+boost::optional<uni::net::EndpointId> HeartbeatTracker::leader_endpoint_id() {
   return _inner::leader_endpoint_id(_heartbeat_count);
 }
 
@@ -38,7 +38,7 @@ namespace _inner {
   
 // Increment the heartbeat_count of each endpoint.
 void increment_counts(
-  std::map<uni::net::endpoint_id, uint32_t>& heartbeat_count
+  std::map<uni::net::EndpointId, uint32_t>& heartbeat_count
 ) {
   for (auto& [endpoint, count] : heartbeat_count) {
     count++;
@@ -48,8 +48,8 @@ void increment_counts(
 // If the endpoint_id isn't in the heartbeat_count, add it in and set its value to
 // 0. Otherwise, reset its value to 0.
 void handle_heartbeat(
-  std::map<uni::net::endpoint_id, uint32_t>& heartbeat_count,
-  uni::net::endpoint_id endpoint_id
+  std::map<uni::net::EndpointId, uint32_t>& heartbeat_count,
+  uni::net::EndpointId endpoint_id
 ) {
   auto it = heartbeat_count.find(endpoint_id);
   if (it == heartbeat_count.end()) {
@@ -62,10 +62,10 @@ void handle_heartbeat(
 // Return all endpoints with heartbeat_counts < HEARTBEAT_FAILURE_COUNT.
 // If there are any endpoints where this doesn't hold, get rid fo them from
 // heartbeat_count.
-std::vector<uni::net::endpoint_id> alive_endpoints(
-  std::map<uni::net::endpoint_id, uint32_t>& heartbeat_count
+std::vector<uni::net::EndpointId> alive_endpoints(
+  std::map<uni::net::EndpointId, uint32_t>& heartbeat_count
 ) {
-  auto endpoints = std::vector<uni::net::endpoint_id>();
+  auto endpoints = std::vector<uni::net::EndpointId>();
   auto it = heartbeat_count.begin();
   // Iterate through all heartbeat counts, removing the endpoints that are
   // dead, and populating the `endpoints` variable with the endpoints
@@ -83,8 +83,8 @@ std::vector<uni::net::endpoint_id> alive_endpoints(
 
 // Call _alive_endpoints, and if there is at least one alive endpoint, return
 // the first one. This is the leader endpoint.
-boost::optional<uni::net::endpoint_id> leader_endpoint_id(
-  std::map<uni::net::endpoint_id, uint32_t>& heartbeat_count
+boost::optional<uni::net::EndpointId> leader_endpoint_id(
+  std::map<uni::net::EndpointId, uint32_t>& heartbeat_count
 ) {
   auto endpoints = alive_endpoints(heartbeat_count);
   if (endpoints.size() > 0) {
@@ -94,7 +94,7 @@ boost::optional<uni::net::endpoint_id> leader_endpoint_id(
 }
 
 // Creates a debug string with the heartbeat count
-std::string debug_string(std::map<uni::net::endpoint_id, uint32_t>& heartbeat_count) {
+std::string debug_string(std::map<uni::net::EndpointId, uint32_t>& heartbeat_count) {
   auto ss = std::stringstream();
   ss << "HeartbeatTracker: {" << std::endl;
   for (auto const& [endpoint, count] : heartbeat_count) {

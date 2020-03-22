@@ -37,8 +37,8 @@ void ChannelTesting::set_other_end(uni::net::ChannelTesting* other_channel) {
   _other_channel = other_channel;
 }
 
-endpoint_id ChannelTesting::endpoint_id() {
-  return uni::net::endpoint_id(_other_ip_string, 0);
+uni::net::EndpointId ChannelTesting::endpoint_id() {
+  return uni::net::EndpointId(_other_ip_string, 0);
 }
 
 void ChannelTesting::start_listening() {

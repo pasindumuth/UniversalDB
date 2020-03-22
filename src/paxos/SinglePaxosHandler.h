@@ -49,7 +49,7 @@ class SinglePaxosHandler {
   void propose(proto::paxos::PaxosLogEntry const& entry);
 
   // Handles a Prepare message for this Paxos Instance.
-  void prepare(uni::net::endpoint_id const& endpoint_id, proto::paxos::Prepare const& prepare_message);
+  void prepare(uni::net::EndpointId const& endpoint_id, proto::paxos::Prepare const& prepare_message);
 
   // Handles a Promise message for this Paxos Instance.
   void promise(proto::paxos::Promise const& promise_message);

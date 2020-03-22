@@ -1,6 +1,6 @@
 #include "ProductionContext.h"
 
-#include <async/impl/AsyncSchedulerImpl.h>
+#include <net/IncomingMessage.h>
 
 namespace uni {
 namespace master {
@@ -10,7 +10,8 @@ ProductionContext::ProductionContext(
   uni::constants::Constants const& constants,
   uni::net::Connections& client_connections,
   uni::net::Connections& slave_connections,
-  uni::net::Connections& connections)
+  uni::net::Connections& connections,
+  uni::async::AsyncSchedulerImpl& scheduler)
   : timer_scheduler(background_io_context),
     async_queue(timer_scheduler),
     paxos_log(),
@@ -57,7 +58,12 @@ ProductionContext::ProductionContext(
       log_syncer,
       multipaxos_handler,
       group_config_manager,
-      key_space_manager) {}
+      key_space_manager)
+{
+  scheduler.set_callback([this](uni::net::IncomingMessage message){
+    master_handler.handle(message);
+  });
+}
 
 } // namespace master
 } // namespace uni

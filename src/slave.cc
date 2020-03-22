@@ -1,38 +1,16 @@
-#include <chrono>
-#include <exception>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <thread>
-#include <vector>
-
 #include <boost/asio.hpp>
-#include <boost/system/error_code.hpp>
 
 #include <async/impl/AsyncSchedulerImpl.h>
 #include <async/impl/TimerAsyncSchedulerImpl.h>
 #include <common/common.h>
 #include <constants/constants.h>
 #include <net/Connections.h>
-#include <net/IncomingMessage.h>
 #include <net/SelfChannel.h>
 #include <net/impl/ChannelImpl.h>
-#include <proto/message.pb.h>
-#include <proto/slave.pb.h>
-#include <paxos/MultiPaxosHandler.h>
-#include <paxos/PaxosLog.h>
-#include <paxos/PaxosTypes.h>
-#include <paxos/SinglePaxosHandler.h>
 #include <server/ClientConnectionHandler.h>
-#include <server/HeartbeatTracker.h>
-#include <server/FailureDetector.h>
-#include <server/LogSyncer.h>
-#include <slave/impl/ProductionContext.h>
-#include <async/AsyncQueue.h>
 #include <server/ServerConnectionHandler.h>
-#include <slave/SlaveIncomingMessageHandler.h>
+#include <slave/impl/ProductionContext.h>
 #include <utils.h>
-#include <utils/pbutil.h>
 
 using boost::asio::ip::tcp;
 
@@ -91,10 +69,8 @@ int main(int argc, char* argv[]) {
     background_io_context,
     constants,
     client_connections,
-    connections);
-  server_async_scheduler.set_callback([&production_context](uni::net::IncomingMessage message){
-    production_context.slave_handler.handle(message);
-  });
+    connections,
+    server_async_scheduler);
 
   client_connection_handler.async_accept();
 

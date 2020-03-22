@@ -13,12 +13,12 @@ namespace slave {
 ClientRequestHandler::ClientRequestHandler(
     uni::paxos::MultiPaxosHandler& multi_paxos_handler,
     uni::paxos::PaxosLog& paxos_log,
-    uni::async::AsyncQueue& proposer_queue,
+    uni::async::AsyncQueue& async_queue,
     uni::slave::KVStore& kvstore,
-    std::function<void(uni::net::endpoint_id, proto::client::ClientResponse*)> respond)
+    std::function<void(uni::net::EndpointId, proto::client::ClientResponse*)> respond)
       : _multi_paxos_handler(multi_paxos_handler),
         _paxos_log(paxos_log),
-        _proposer_queue(proposer_queue),
+        _async_queue(async_queue),
         _kvstore(kvstore),
         _respond(respond) {
   _paxos_log.add_callback([this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry){
@@ -37,10 +37,10 @@ ClientRequestHandler::ClientRequestHandler(
 // and then avoid scheduling it to happen asynchronously (which might take a while
 // if there are already blocking jobs in the proposer queue).
 void ClientRequestHandler::handle_request(
-    uni::net::endpoint_id endpoint_id,
+    uni::net::EndpointId endpoint_id,
     proto::client::ClientRequest const& message) {
   auto retry_count = std::make_shared<int>(0);
-  _proposer_queue.add_task([this, retry_count, message, endpoint_id](){
+  _async_queue.add_task([this, retry_count, message, endpoint_id](){
     auto entry_index = _request_id_map.find(message.request_id());
     if (entry_index != _request_id_map.end()) {
       // The request was fullfilled in the last retry

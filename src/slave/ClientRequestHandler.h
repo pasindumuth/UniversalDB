@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 #include <common/common.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosLog.h>
 #include <paxos/PaxosTypes.h>
@@ -22,21 +22,21 @@ class ClientRequestHandler {
   ClientRequestHandler(
       uni::paxos::MultiPaxosHandler& multi_paxos_handler,
       uni::paxos::PaxosLog& paxos_log,
-      uni::async::AsyncQueue& proposer_queue,
+      uni::async::AsyncQueue& async_queue,
       uni::slave::KVStore& kvstore,
-      std::function<void(uni::net::endpoint_id, proto::client::ClientResponse*)> respond);
+      std::function<void(uni::net::EndpointId, proto::client::ClientResponse*)> respond);
 
   void handle_request(
-    uni::net::endpoint_id endpoint_id,
+    uni::net::EndpointId endpoint_id,
     proto::client::ClientRequest const& message);
 
  private:
   uni::paxos::MultiPaxosHandler& _multi_paxos_handler;
   uni::paxos::PaxosLog& _paxos_log;
-  uni::async::AsyncQueue& _proposer_queue;
+  uni::async::AsyncQueue& _async_queue;
   uni::slave::KVStore& _kvstore;
   // This function consumes the ClientResponse; it deletes it from memory
-  std::function<void(uni::net::endpoint_id, proto::client::ClientResponse*)> _respond;
+  std::function<void(uni::net::EndpointId, proto::client::ClientResponse*)> _respond;
 
   // Another thing to maintain, another thing that could result in a memory leak.
   std::unordered_map<std::string, uni::paxos::index_t> _request_id_map;

@@ -16,7 +16,7 @@ void MultiPaxosHandler::propose(proto::paxos::PaxosLogEntry const& entry) {
 }
 
 void MultiPaxosHandler::handle_incoming_message(
-    uni::net::endpoint_id const& endpoint_id, proto::paxos::PaxosMessage const& paxos_message) {
+    uni::net::EndpointId const& endpoint_id, proto::paxos::PaxosMessage const& paxos_message) {
   auto& paxos_instance = get_instance(paxos_message.paxos_index());
   if (paxos_message.has_prepare()) {
     LOG(uni::logging::Level::TRACE2, "Prepare gotten.")

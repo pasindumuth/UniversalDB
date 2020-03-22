@@ -67,10 +67,8 @@ int main(int argc, char* argv[]) {
     constants,
     client_connections,
     slave_client_connections,
-    connections);
-  server_async_scheduler.set_callback([&production_context](uni::net::IncomingMessage message){
-    production_context.master_handler.handle(message);
-  });
+    connections,
+    server_async_scheduler);
 
   client_connection_handler.async_accept();
 

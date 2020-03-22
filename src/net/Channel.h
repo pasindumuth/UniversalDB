@@ -6,7 +6,7 @@
 #include <vector>
 
 #include <common/common.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 
 namespace uni {
 namespace net {
@@ -20,7 +20,7 @@ class Channel {
 
   // The endpoint of the other end of the channel.
   // The port is just set to 0; only the ip address matters.
-  virtual uni::net::endpoint_id endpoint_id() = 0;
+  virtual uni::net::EndpointId endpoint_id() = 0;
 
   // Queues a message to be send to the other end of the channel.
   virtual void queue_send(std::string message) = 0;

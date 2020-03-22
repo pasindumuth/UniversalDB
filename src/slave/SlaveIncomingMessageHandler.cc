@@ -4,7 +4,7 @@
 #include <boost/system/error_code.hpp>
 
 #include <common/common.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 #include <net/IncomingMessage.h>
 #include <proto/client.pb.h>
 #include <proto/master.pb.h>

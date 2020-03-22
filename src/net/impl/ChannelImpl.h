@@ -11,7 +11,7 @@
 
 #include <common/common.h>
 #include <net/Channel.h>
-#include <net/endpoint_id.h>
+#include <net/EndpointId.h>
 
 namespace uni {
 namespace net {
@@ -23,7 +23,7 @@ class ChannelImpl
 
   ~ChannelImpl() {};
 
-  uni::net::endpoint_id endpoint_id() override;
+  uni::net::EndpointId endpoint_id() override;
 
   void queue_send(std::string message) override;
 

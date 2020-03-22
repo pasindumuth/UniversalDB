@@ -36,7 +36,7 @@ void LogSyncer::schedule_syncing() {
   }, _constants.log_syncer_period);
 }
 
-void LogSyncer::handle_sync_request(uni::net::endpoint_id endpoint_id, proto::sync::SyncRequest request) {
+void LogSyncer::handle_sync_request(uni::net::EndpointId endpoint_id, proto::sync::SyncRequest request) {
   auto sync_message = new proto::sync::SyncMessage;
   sync_message->set_allocated_sync_response(
     _inner::build_sync_response(_paxos_log, request));
