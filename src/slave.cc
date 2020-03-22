@@ -7,8 +7,7 @@
 #include <net/Connections.h>
 #include <net/SelfChannel.h>
 #include <net/impl/ChannelImpl.h>
-#include <server/ClientConnectionHandler.h>
-#include <server/ServerConnectionHandler.h>
+#include <server/ConnectionHandler.h>
 #include <slave/impl/ProductionContext.h>
 #include <utils.h>
 
@@ -44,7 +43,7 @@ int main(int argc, char* argv[]) {
   // Schedule main acceptor
   auto connections = uni::net::Connections(server_async_scheduler);
   auto main_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.slave_port));
-  auto server_connection_handler = uni::server::ServerConnectionHandler(constants, connections, main_acceptor, background_io_context);
+  auto server_connection_handler = uni::server::ConnectionHandler(connections, main_acceptor);
   auto resolver = tcp::resolver(background_io_context);
 
   // Timer
@@ -68,7 +67,7 @@ int main(int argc, char* argv[]) {
 
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
   auto client_connections = uni::net::Connections(server_async_scheduler);
-  auto client_connection_handler = uni::server::ClientConnectionHandler(server_async_scheduler, client_acceptor, client_connections);
+  auto client_connection_handler = uni::server::ConnectionHandler(client_connections, client_acceptor);
   
   auto production_context = uni::slave::ProductionContext(
     background_io_context,

@@ -1,5 +1,5 @@
-#ifndef UNI_SERVER_SERVERCONNECTIONHANDLER
-#define UNI_SERVER_SERVERCONNECTIONHANDLER
+#ifndef UNI_SERVER_CONNECTIONHANDLER_H
+#define UNI_SERVER_CONNECTIONHANDLER_H
 
 #include <boost/asio.hpp>
 
@@ -12,25 +12,21 @@ namespace server {
 
 // Responsible for scheduling accept handler and data receive handlers for
 // other server connections.
-class ServerConnectionHandler {
+class ConnectionHandler {
  public:
-  ServerConnectionHandler(
-      uni::constants::Constants const& constants,
+  ConnectionHandler(
       uni::net::Connections& connections,
-      boost::asio::ip::tcp::acceptor& acceptor,
-      boost::asio::io_context& io_context);
+      boost::asio::ip::tcp::acceptor& acceptor);
 
   void async_accept();
 
  private:
-  uni::constants::Constants const& _constants;
   uni::net::Connections& _connections;
   boost::asio::ip::tcp::acceptor& _acceptor;
-  boost::asio::io_context& _io_context;
 };
 
 } // server
 } // uni
 
 
-#endif // UNI_SERVER_SERVERCONNECTIONHANDLER
+#endif // UNI_SERVER_CONNECTIONHANDLER_H
