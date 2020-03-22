@@ -16,13 +16,11 @@ LogSyncer::LogSyncer(
     uni::net::Connections& connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::paxos::PaxosLog& paxos_log,
-    uni::server::FailureDetector& failure_detector,
     std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper)
       : _constants(constants),
         _connections(connections),
         _timer_scheduler(timer_scheduler),
         _paxos_log(paxos_log),
-        _failure_detector(failure_detector),
         _sync_message_to_wrapper(sync_message_to_wrapper) {
   schedule_syncing();
 }

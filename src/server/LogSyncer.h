@@ -27,7 +27,6 @@ class LogSyncer {
     uni::net::Connections& connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::paxos::PaxosLog& paxos_log,
-    uni::server::FailureDetector& failure_detector,
     std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper);
 
   void schedule_syncing();
@@ -41,7 +40,6 @@ class LogSyncer {
   uni::net::Connections& _connections;
   uni::async::TimerAsyncScheduler& _timer_scheduler;
   uni::paxos::PaxosLog& _paxos_log;
-  uni::server::FailureDetector& _failure_detector;
   std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> _sync_message_to_wrapper;
 };
 

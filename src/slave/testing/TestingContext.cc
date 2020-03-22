@@ -42,7 +42,6 @@ TestingContext::TestingContext(
       connections,
       timer_scheduler,
       paxos_log,
-      failure_detector,
       [](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
         auto slave_message = new proto::slave::SlaveMessage;

@@ -1,53 +1,80 @@
-#include <string>
-#include <memory>
-
 #include <boost/asio.hpp>
 
+#include <async/impl/AsyncSchedulerImpl.h>
+#include <async/impl/TimerAsyncSchedulerImpl.h>
 #include <common/common.h>
+#include <logging/log.h>
+#include <master/impl/ProductionContext.h>
+#include <net/Connections.h>
+#include <net/SelfChannel.h>
 #include <net/impl/ChannelImpl.h>
-#include <proto/master.pb.h>
-#include <proto/message.pb.h>
+#include <server/ClientConnectionHandler.h>
+#include <server/ServerConnectionHandler.h>
 #include <utils.h>
 
 using boost::asio::ip::tcp;
 
 int main(int argc, char* argv[]) {
   auto hostnames = parse_hostnames(argc, argv);
+  auto main_serving_hostname = hostnames[0];
 
   // Initialize constants
   auto const constants = initialize_constants();
-  uni::logging::get_log_level() = uni::logging::Level::INFO;
+  uni::logging::get_log_level() = uni::logging::Level::TRACE1;
+  LOG(uni::logging::Level::INFO, "Starting main server on: " + main_serving_hostname + ":" + std::to_string(constants.slave_port))
 
-  // To bootstrap the system, the first thing that the Master does is to send
-  // all slaves a list of the hostnames of all the other slaves.
-  auto slave_list = proto::master::SlaveList();
-  for (auto const& hostname : hostnames) {
-    slave_list.add_slave_hostnames(hostname.c_str());
+  // Initialize io_context for background thread (for managing the network
+  // and dispatching requests to the server thread).
+  auto background_io_context = boost::asio::io_context();
+  auto background_work_guard = boost::asio::make_work_guard(background_io_context);
+  auto network_thread = std::thread([&background_io_context](){
+    background_io_context.run();
+  });
+
+  // Initialize io_context for server thread (for processing requests and
+  // dispatching responses to the background thread).
+  auto server_io_context = boost::asio::io_context();
+  auto server_async_scheduler = uni::async::AsyncSchedulerImpl(server_io_context);
+
+  // Schedule main acceptor
+  auto connections = uni::net::Connections(server_async_scheduler);
+  auto main_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.slave_port));
+  auto server_connection_handler = uni::server::ServerConnectionHandler(constants, connections, main_acceptor, background_io_context);
+  auto resolver = tcp::resolver(background_io_context);
+
+  // Timer
+  auto timer_scheduler = uni::async::TimerAsyncSchedulerImpl(background_io_context);
+
+  server_connection_handler.async_accept();
+
+  for (auto i = 1; i < hostnames.size(); i++) {
+    auto endpoints = resolver.resolve(hostnames[i], std::to_string(constants.slave_port));
+    auto socket = tcp::socket(background_io_context);
+    boost::asio::connect(socket, endpoints);
+    connections.add_channel(std::make_unique<uni::net::ChannelImpl>(std::move(socket)));
   }
+  connections.add_channel(std::make_unique<uni::net::SelfChannel>());
 
-  auto channels = std::vector<std::shared_ptr<uni::net::ChannelImpl>>();
-  auto io_context = boost::asio::io_context();
-  for (auto const& hostname : hostnames) {
-    auto resolver = tcp::resolver(io_context);
-    auto endpoints = resolver.resolve(hostname, std::to_string(constants.master_port));
-    auto socket = std::make_shared<tcp::socket>(io_context);
-    // Connect to the slave
-    boost::asio::async_connect(*socket, endpoints,
-      [socket, &slave_list, &channels, &hostname](const boost::system::error_code& ec, const tcp::endpoint& endpoint) {
-        auto channel = std::make_shared<uni::net::ChannelImpl>(std::move(*socket));
-        auto message_wrapper = proto::message::MessageWrapper();
-        auto master_message = new proto::master::MasterMessage();
-        auto master_request = new proto::master::MasterRequest();
-        master_request->set_allocated_slave_list(new proto::master::SlaveList(slave_list));
-        master_message->set_allocated_request(master_request);
-        message_wrapper.set_allocated_master_message(master_message);
-        // Send the slave the list contains the hostnames of all slaves.
-        channel->queue_send(message_wrapper.SerializeAsString());
-        channels.push_back(channel);
-        LOG(uni::logging::Level::INFO, "Sent SlaveList to Slave: " + hostname)
-    });
-  }
+  auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
+  auto client_connections = uni::net::Connections(server_async_scheduler);
+  auto client_connection_handler = uni::server::ClientConnectionHandler(server_async_scheduler, client_acceptor, client_connections);
+  
+  // Slave connections TODO do this
+  auto slave_client_connections = uni::net::Connections(server_async_scheduler);
 
-  auto work_guard = boost::asio::make_work_guard(io_context);
-  io_context.run();
+  auto production_context = uni::master::ProductionContext(
+    background_io_context,
+    constants,
+    client_connections,
+    slave_client_connections,
+    connections);
+  server_async_scheduler.set_callback([&production_context](uni::net::IncomingMessage message){
+    production_context.master_handler.handle(message);
+  });
+
+  client_connection_handler.async_accept();
+
+  LOG(uni::logging::Level::INFO, "Setup finished")
+  auto server_work_guard = boost::asio::make_work_guard(server_io_context);
+  server_io_context.run();
 }

@@ -70,7 +70,6 @@ TabletParticipant::TabletParticipant(
       connections,
       timer_scheduler,
       paxos_log,
-      failure_detector,
       [this](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
         auto tablet_message = new proto::tablet::TabletMessage;
