@@ -11,27 +11,21 @@ ProductionContext::ProductionContext(
   uni::net::Connections& client_connections,
   uni::net::Connections& slave_connections,
   uni::net::Connections& connections,
+  std::vector<uni::net::EndpointId>& config_endpoints,
   uni::async::AsyncSchedulerImpl& scheduler)
   : timer_scheduler(background_io_context),
     async_queue(timer_scheduler),
     paxos_log(),
-    datamaster_config{
-      {"master1", 0},
-      {"master2", 0},
-      {"master3", 0},
-      {"master4", 0},
-      {"master5", 0}
-    },
     multipaxos_handler(
       paxos_log,
-      [this, &constants, &connections](uni::paxos::index_t index) {
+      [this, &constants, &connections, &config_endpoints](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
           connections,
           paxos_log,
           index,
-          [this](){
-            return datamaster_config;
+          [&config_endpoints](){
+            return config_endpoints;
           },
           [](proto::paxos::PaxosMessage* paxos_message){
             auto message_wrapper = proto::message::MessageWrapper();
@@ -46,8 +40,8 @@ ProductionContext::ProductionContext(
       connections,
       timer_scheduler,
       paxos_log,
-      [this](){
-        return datamaster_config;
+      [&config_endpoints](){
+        return config_endpoints;
       },
       [](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();

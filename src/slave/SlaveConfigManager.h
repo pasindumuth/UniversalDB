@@ -17,16 +17,16 @@ class SlaveConfigManager {
   SlaveConfigManager(
     uni::async::AsyncQueue& async_queue,
     uni::paxos::MultiPaxosHandler& multipaxos_handler,
-    uni::paxos::PaxosLog& paxos_log);
+    uni::paxos::PaxosLog& paxos_log,
+    std::vector<uni::net::EndpointId>& config_endpoints);
 
-  std::vector<uni::net::EndpointId> config_endpoints();
+  std::vector<uni::net::EndpointId> const& config_endpoints() const;
 
  private:
   uni::async::AsyncQueue& _async_queue;
   uni::paxos::MultiPaxosHandler& _multipaxos_handler;
   uni::paxos::PaxosLog& _paxos_log;
-
-  std::vector<uni::net::EndpointId> _config_endpoints;
+  std::vector<uni::net::EndpointId>& _config_endpoints;
 };
 
 } // namespace slave

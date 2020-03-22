@@ -14,6 +14,7 @@
 #include <constants/constants.h>
 #include <common/common.h>
 #include <net/Connections.h>
+#include <net/EndpointId.h>
 #include <paxos/PaxosLog.h>
 #include <server/FailureDetector.h>
 #include <server/HeartbeatTracker.h>
@@ -37,6 +38,7 @@ struct ProductionContext {
     uni::constants::Constants const& constants,
     uni::net::Connections& client_connections,
     uni::net::Connections& connections,
+    std::vector<uni::net::EndpointId>& config_endpoints,
     uni::async::AsyncSchedulerImpl& scheduler);
 
   uni::async::TimerAsyncSchedulerImpl timer_scheduler;

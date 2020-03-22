@@ -27,7 +27,8 @@ class FailureDetector {
   FailureDetector(
     uni::server::HeartbeatTracker& heartbeat_tracker,
     uni::net::Connections& connections,
-    uni::async::TimerAsyncScheduler& timer_scheduler);
+    uni::async::TimerAsyncScheduler& timer_scheduler,
+    std::function<std::vector<uni::net::EndpointId>()> get_endpoints);
 
   // Schedule heartbeat to be sent periodically
   void schedule_heartbeat();
@@ -36,6 +37,7 @@ class FailureDetector {
   uni::server::HeartbeatTracker& _heartbeat_tracker;
   uni::net::Connections& _connections;
   uni::async::TimerAsyncScheduler& _timer_scheduler;
+  std::function<std::vector<uni::net::EndpointId>()> _get_endpoints;
   // Heartbeat message used across all sends
   proto::message::MessageWrapper _message;
 };

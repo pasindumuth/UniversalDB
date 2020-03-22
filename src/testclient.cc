@@ -60,11 +60,11 @@ int main(int argc, char* argv[]) {
 
   for (auto request_id = 0;; request_id++) {
     auto message = std::string();
-    std::getline(std::cin, message);
+    std::getline(std::cin, message); // Example input: d, t, k, v
     auto parsed_output = parse_input(std::move(message));
 
     UNIVERSAL_ASSERT_MESSAGE(parsed_output.size() >= 4,
-      "The input must contain a key and value, delimited by a comma and space.");
+      "The input must contain 4 elements, (database_id, table_id, key, value), delimited by a ', '.");
 
     auto message_wrapper = proto::message::MessageWrapper();
     auto client_message = new proto::client::ClientMessage();

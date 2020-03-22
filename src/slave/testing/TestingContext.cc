@@ -7,6 +7,7 @@ namespace slave {
 
 TestingContext::TestingContext(
   uni::constants::Constants const& constants,
+  std::vector<uni::net::EndpointId>& config_endpoints,
   std::string ip_string)
   : ip_string(ip_string),
     scheduler(),
@@ -18,7 +19,10 @@ TestingContext::TestingContext(
     failure_detector(
       heartbeat_tracker,
       connections,
-      timer_scheduler),
+      timer_scheduler,
+      [this](){
+        return config_manager.config_endpoints();
+      }),
     paxos_log(),
     async_queue(timer_scheduler),
     multipaxos_handler(
@@ -58,7 +62,8 @@ TestingContext::TestingContext(
     config_manager(
       async_queue,
       multipaxos_handler,
-      paxos_log),
+      paxos_log,
+      config_endpoints),
     slave_handler(
       [this, &constants](uni::slave::TabletId tablet_id) {
         return uni::custom_unique_ptr<uni::slave::TabletParticipant>(

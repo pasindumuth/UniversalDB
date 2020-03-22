@@ -7,7 +7,7 @@ SelfChannel::SelfChannel()
   : listening(false) {}
 
 uni::net::EndpointId SelfChannel::endpoint_id() {
-  return {"localhost", 0};
+  return {"127.0.0.1", 0};
 }
 
 void SelfChannel::queue_send(std::string message) {

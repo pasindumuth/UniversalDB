@@ -25,7 +25,9 @@ class Connections {
   // object. This is useful if we have to send data out on that channel.
   boost::optional<uni::net::Channel&> get_channel(uni::net::EndpointId endpoint_id);
 
-  void broadcast(std::string message);
+  // Sends the message to all endpoints passed into this function. If the endpoint doesn't
+  // exists in _channels, then the endpoint is ignored (no errors are thrown).
+  void broadcast(std::vector<uni::net::EndpointId> endpoints, std::string message);
 
   bool has(uni::net::EndpointId endpoint_id);
 

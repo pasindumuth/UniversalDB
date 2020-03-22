@@ -6,17 +6,18 @@
 #include <thread>
 #include <vector>
 
+#include <async/AsyncQueue.h>
 #include <async/testing/AsyncSchedulerTesting.h>
 #include <async/testing/ClockTesting.h>
 #include <async/testing/TimerAsyncSchedulerTesting.h>
 #include <constants/constants.h>
 #include <common/common.h>
 #include <net/Connections.h>
+#include <net/EndpointId.h>
 #include <paxos/PaxosLog.h>
 #include <server/FailureDetector.h>
 #include <server/HeartbeatTracker.h>
 #include <server/LogSyncer.h>
-#include <async/AsyncQueue.h>
 #include <slave/TabletParticipant.h>
 #include <slave/SlaveConfigManager.h>
 #include <slave/SlaveIncomingMessageHandler.h>
@@ -27,6 +28,7 @@ namespace slave {
 struct TestingContext {
   TestingContext(
     uni::constants::Constants const& constants,
+    std::vector<uni::net::EndpointId>& config_endpoints,
     std::string ip_string);
 
   std::string ip_string;

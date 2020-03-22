@@ -17,6 +17,7 @@ ProductionContext::ProductionContext(
   uni::constants::Constants const& constants,
   uni::net::Connections& client_connections,
   uni::net::Connections& connections,
+  std::vector<uni::net::EndpointId>& config_endpoints,
   uni::async::AsyncSchedulerImpl& scheduler)
   : timer_scheduler(background_io_context),
     async_queue(timer_scheduler),
@@ -24,7 +25,10 @@ ProductionContext::ProductionContext(
     failure_detector(
       heartbeat_tracker,
       connections,
-      timer_scheduler),
+      timer_scheduler,
+      [this](){
+        return config_manager.config_endpoints();
+      }),
     paxos_log(),
     multipaxos_handler(
       paxos_log,
@@ -63,7 +67,8 @@ ProductionContext::ProductionContext(
     config_manager(
       async_queue,
       multipaxos_handler,
-      paxos_log),
+      paxos_log,
+      config_endpoints),
     slave_handler(
       [this, &constants, &client_connections, &connections](uni::slave::TabletId tablet_id) {
         auto min_index = std::distance(

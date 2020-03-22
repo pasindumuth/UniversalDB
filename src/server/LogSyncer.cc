@@ -33,7 +33,7 @@ void LogSyncer::schedule_syncing() {
       _inner::build_sync_request(_paxos_log.get_available_indices()));
     auto message_wrapper = _sync_message_to_wrapper(sync_message);
     // TODO only send the sync_request to the leader.
-    _connections.broadcast(message_wrapper.SerializeAsString());
+    _connections.broadcast(_get_endpoints(), message_wrapper.SerializeAsString());
   }, _constants.log_syncer_period);
 }
 

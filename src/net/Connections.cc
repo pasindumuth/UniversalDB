@@ -40,10 +40,13 @@ boost::optional<uni::net::Channel&> Connections::get_channel(
   }
 }
 
-void Connections::broadcast(std::string message) {
+void Connections::broadcast(std::vector<uni::net::EndpointId> endpoints, std::string message) {
   std::unique_lock<std::mutex> lock(_channel_lock);
-  for (auto const& channel : _channels) {
-    channel.second->queue_send(message);
+  for (auto const& endpoint : endpoints) {
+    auto it = _channels.find(endpoint);
+    if (it != _channels.end()) {
+      it->second->queue_send(message);
+    }
   }
 }
 

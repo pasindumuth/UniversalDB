@@ -18,9 +18,22 @@ void TestDriver::run_test(TestFunction test) {
   auto const constants = initialize_constants();
 
   // Create mock AsyncScheduler.
+  auto config_endpoints = std::vector<uni::net::EndpointId>{
+    {"universal0", 0},
+    {"universal1", 0},
+    {"universal2", 0},
+    {"universal3", 0},
+    {"universal4", 0}
+  };
   auto slaves = std::vector<std::unique_ptr<uni::slave::TestingContext>>();
   for (auto i = 0; i < constants.num_slave_servers; i++) {
-    slaves.push_back(std::make_unique<uni::slave::TestingContext>(constants, std::to_string(i)));
+    slaves.push_back(
+      std::make_unique<uni::slave::TestingContext>(
+        constants,
+        config_endpoints,
+        "universal" + std::to_string(i)
+      )
+    );
   }
 
   // Holds onto Channels that aren't empty.
