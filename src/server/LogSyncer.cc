@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <memory>
 #include <tuple>
-#include <vector>
 
 #include <paxos/PaxosTypes.h>
 #include <proto/paxos.pb.h>
@@ -16,11 +15,13 @@ LogSyncer::LogSyncer(
     uni::net::Connections& connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::paxos::PaxosLog& paxos_log,
+    std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
     std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper)
       : _constants(constants),
         _connections(connections),
         _timer_scheduler(timer_scheduler),
         _paxos_log(paxos_log),
+        _get_endpoints(get_endpoints),
         _sync_message_to_wrapper(sync_message_to_wrapper) {
   schedule_syncing();
 }

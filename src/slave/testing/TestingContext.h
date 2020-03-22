@@ -18,6 +18,7 @@
 #include <server/LogSyncer.h>
 #include <async/AsyncQueue.h>
 #include <slave/TabletParticipant.h>
+#include <slave/SlaveConfigManager.h>
 #include <slave/SlaveIncomingMessageHandler.h>
 
 namespace uni {
@@ -40,6 +41,7 @@ struct TestingContext {
   uni::async::AsyncQueue async_queue;
   uni::paxos::MultiPaxosHandler multipaxos_handler;
   uni::server::LogSyncer log_syncer;
+  uni::slave::SlaveConfigManager config_manager;
   uni::slave::SlaveIncomingMessageHandler slave_handler;
 };
 

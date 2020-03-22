@@ -15,6 +15,13 @@ ProductionContext::ProductionContext(
   : timer_scheduler(background_io_context),
     async_queue(timer_scheduler),
     paxos_log(),
+    datamaster_config{
+      {"master1", 0},
+      {"master2", 0},
+      {"master3", 0},
+      {"master4", 0},
+      {"master5", 0}
+    },
     multipaxos_handler(
       paxos_log,
       [this, &constants, &connections](uni::paxos::index_t index) {
@@ -23,6 +30,9 @@ ProductionContext::ProductionContext(
           connections,
           paxos_log,
           index,
+          [this](){
+            return datamaster_config;
+          },
           [](proto::paxos::PaxosMessage* paxos_message){
             auto message_wrapper = proto::message::MessageWrapper();
             auto slave_message = new proto::slave::SlaveMessage;
@@ -36,6 +46,9 @@ ProductionContext::ProductionContext(
       connections,
       timer_scheduler,
       paxos_log,
+      [this](){
+        return datamaster_config;
+      },
       [](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
         auto slave_message = new proto::slave::SlaveMessage;

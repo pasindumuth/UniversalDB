@@ -8,6 +8,7 @@
 
 #include <boost/asio.hpp>
 
+#include <async/AsyncQueue.h>
 #include <async/impl/AsyncSchedulerImpl.h>
 #include <async/impl/TimerAsyncSchedulerImpl.h>
 #include <constants/constants.h>
@@ -17,6 +18,7 @@
 #include <server/FailureDetector.h>
 #include <server/HeartbeatTracker.h>
 #include <server/LogSyncer.h>
+#include <slave/SlaveConfigManager.h>
 #include <slave/SlaveIncomingMessageHandler.h>
 
 namespace uni {
@@ -38,11 +40,13 @@ struct ProductionContext {
     uni::async::AsyncSchedulerImpl& scheduler);
 
   uni::async::TimerAsyncSchedulerImpl timer_scheduler;
+  uni::async::AsyncQueue async_queue;
   uni::server::HeartbeatTracker heartbeat_tracker;
   uni::server::FailureDetector failure_detector;
   uni::paxos::PaxosLog paxos_log;
   uni::paxos::MultiPaxosHandler multipaxos_handler;
   uni::server::LogSyncer log_syncer;
+  uni::slave::SlaveConfigManager config_manager;
   uni::slave::SlaveIncomingMessageHandler slave_handler;
 
  private:

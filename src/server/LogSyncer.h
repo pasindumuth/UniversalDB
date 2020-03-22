@@ -1,8 +1,8 @@
 #ifndef UNI_SERVER_LOGSYNCER
 #define UNI_SERVER_LOGSYNCER
 
-#include <vector>
 #include <functional>
+#include <vector>
 
 #include <async/TimerAsyncScheduler.h>
 #include <common/common.h>
@@ -27,6 +27,7 @@ class LogSyncer {
     uni::net::Connections& connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::paxos::PaxosLog& paxos_log,
+    std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
     std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper);
 
   void schedule_syncing();
@@ -40,6 +41,7 @@ class LogSyncer {
   uni::net::Connections& _connections;
   uni::async::TimerAsyncScheduler& _timer_scheduler;
   uni::paxos::PaxosLog& _paxos_log;
+  std::function<std::vector<uni::net::EndpointId>()> _get_endpoints;
   std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> _sync_message_to_wrapper;
 };
 

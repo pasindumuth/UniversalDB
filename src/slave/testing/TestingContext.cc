@@ -22,13 +22,16 @@ TestingContext::TestingContext(
     paxos_log(),
     async_queue(timer_scheduler),
     multipaxos_handler(
-      paxos_log,
+      paxos_log,    
       [this, &constants](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
           connections,
           paxos_log,
           index,
+          [this](){
+            return config_manager.config_endpoints();
+          },
           [](proto::paxos::PaxosMessage* paxos_message){
             auto message_wrapper = proto::message::MessageWrapper();
             auto slave_message = new proto::slave::SlaveMessage;
@@ -42,6 +45,9 @@ TestingContext::TestingContext(
       connections,
       timer_scheduler,
       paxos_log,
+      [this](){
+        return config_manager.config_endpoints();
+      },
       [](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
         auto slave_message = new proto::slave::SlaveMessage;
@@ -49,6 +55,10 @@ TestingContext::TestingContext(
         message_wrapper.set_allocated_slave_message(slave_message);
         return message_wrapper;
       }),
+    config_manager(
+      async_queue,
+      multipaxos_handler,
+      paxos_log),
     slave_handler(
       [this, &constants](uni::slave::TabletId tablet_id) {
         return uni::custom_unique_ptr<uni::slave::TabletParticipant>(
@@ -61,6 +71,7 @@ TestingContext::TestingContext(
             client_connections,
             timer_scheduler,
             failure_detector,
+            config_manager,
             tablet_id
           ), [this](uni::slave::TabletParticipant* tp) {
             delete tp;

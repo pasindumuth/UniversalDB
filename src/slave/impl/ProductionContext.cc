@@ -19,6 +19,7 @@ ProductionContext::ProductionContext(
   uni::net::Connections& connections,
   uni::async::AsyncSchedulerImpl& scheduler)
   : timer_scheduler(background_io_context),
+    async_queue(timer_scheduler),
     heartbeat_tracker(),
     failure_detector(
       heartbeat_tracker,
@@ -33,6 +34,9 @@ ProductionContext::ProductionContext(
           connections,
           paxos_log,
           index,
+          [this](){
+            return config_manager.config_endpoints();
+          },
           [](proto::paxos::PaxosMessage* paxos_message){
             auto message_wrapper = proto::message::MessageWrapper();
             auto slave_message = new proto::slave::SlaveMessage;
@@ -46,6 +50,9 @@ ProductionContext::ProductionContext(
       connections,
       timer_scheduler,
       paxos_log,
+      [this](){
+        return config_manager.config_endpoints();
+      },
       [](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
         auto slave_message = new proto::slave::SlaveMessage;
@@ -53,6 +60,10 @@ ProductionContext::ProductionContext(
         message_wrapper.set_allocated_slave_message(slave_message);
         return message_wrapper;
       }),
+    config_manager(
+      async_queue,
+      multipaxos_handler,
+      paxos_log),
     slave_handler(
       [this, &constants, &client_connections, &connections](uni::slave::TabletId tablet_id) {
         auto min_index = std::distance(
@@ -72,6 +83,7 @@ ProductionContext::ProductionContext(
             client_connections,
             timer_scheduler,
             failure_detector,
+            config_manager,
             tablet_id
           ), [this, &min_index](uni::slave::TabletParticipant* tp) {
             _participants_per_thread[min_index]--;

@@ -16,6 +16,7 @@
 #include <paxos/PaxosLog.h>
 #include <slave/ClientRequestHandler.h>
 #include <slave/IncomingMessageHandler.h>
+#include <slave/SlaveConfigManager.h>
 #include <slave/KVStore.h>
 #include <server/LogSyncer.h>
 #include <async/AsyncQueue.h>
@@ -42,6 +43,7 @@ struct TabletParticipant {
     uni::net::Connections& client_connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::server::FailureDetector& failure_detector,
+    uni::slave::SlaveConfigManager& config_manager,
     uni::slave::TabletId& tid);
 };
 

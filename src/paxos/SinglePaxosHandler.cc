@@ -15,11 +15,13 @@ SinglePaxosHandler::SinglePaxosHandler(
     uni::net::Connections& connections,
     uni::paxos::PaxosLog& paxos_log,
     index_t paxos_log_index,
+    std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
     std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper)
       : _constants(constants),
         _connections(connections),
         _paxos_log(paxos_log),
         _paxos_log_index(paxos_log_index),
+        _get_endpoints(get_endpoints),
         _paxos_message_to_wrapper(paxos_message_to_wrapper) {}
 
 crnd_t SinglePaxosHandler::next_proposal_number() {

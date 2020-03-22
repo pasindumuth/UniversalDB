@@ -38,6 +38,7 @@ struct ProductionContext {
   uni::async::TimerAsyncSchedulerImpl timer_scheduler;
   uni::async::AsyncQueue async_queue;
   uni::paxos::PaxosLog paxos_log;
+  std::vector<uni::net::EndpointId> datamaster_config;
   uni::paxos::MultiPaxosHandler multipaxos_handler;
   uni::server::LogSyncer log_syncer;
   uni::master::GroupConfigManager group_config_manager;

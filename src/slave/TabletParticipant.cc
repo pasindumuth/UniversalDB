@@ -21,18 +21,22 @@ TabletParticipant::TabletParticipant(
   uni::net::Connections& client_connections,
   uni::async::TimerAsyncScheduler& timer_scheduler,
   uni::server::FailureDetector& failure_detector,
+  uni::slave::SlaveConfigManager& config_manager,
   uni::slave::TabletId& tid)
   : scheduler(scheduler_provider()),
     tablet_id(tid),
     paxos_log(),
     multipaxos_handler(
       paxos_log,
-      [this, &constants, &connections](uni::paxos::index_t index) {
+      [this, &constants, &connections, &config_manager](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
           connections,
           paxos_log,
           index,
+          [&config_manager](){
+            return config_manager.config_endpoints();
+          },
           [this](proto::paxos::PaxosMessage* paxos_message){
             auto message_wrapper = proto::message::MessageWrapper();
             auto tablet_message = new proto::tablet::TabletMessage;
@@ -70,6 +74,9 @@ TabletParticipant::TabletParticipant(
       connections,
       timer_scheduler,
       paxos_log,
+      [&config_manager]() {
+        return config_manager.config_endpoints();
+      },
       [this](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
         auto tablet_message = new proto::tablet::TabletMessage;

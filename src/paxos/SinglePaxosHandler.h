@@ -2,10 +2,12 @@
 #define UNI_PAXOS_SINGLEPAXOSHANDLER_H
 
 #include <functional>
+#include <vector>
 
 #include <common/common.h>
 #include <constants/constants.h>
 #include <net/Connections.h>
+#include <net/EndpointId.h>
 #include <paxos/PaxosAcceptorState.h>
 #include <paxos/PaxosLearnerState.h>
 #include <paxos/PaxosLog.h>
@@ -33,6 +35,7 @@ class SinglePaxosHandler {
       uni::net::Connections& connections,
       uni::paxos::PaxosLog& paxos_log,
       index_t paxos_log_index,
+      std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
       std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper);
 
   // Returns a value that's strictly greater than the last proposal number in
@@ -66,6 +69,7 @@ class SinglePaxosHandler {
   uni::paxos::PaxosLog& _paxos_log;
   // The index of the Paxos Log that this Paxos Instance is trying to populate.
   index_t const _paxos_log_index;
+  std::function<std::vector<uni::net::EndpointId>()> _get_endpoints;
   std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> _paxos_message_to_wrapper;
 
   PaxosProposerState _proposer_state;
