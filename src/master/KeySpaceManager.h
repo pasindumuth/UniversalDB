@@ -21,6 +21,11 @@ namespace master {
 
 class KeySpaceManager {
  public:
+  static int const RETRY_LIMIT;
+  static int const WAIT_FOR_COMMIT;
+  static int const WAIT_FOR_FREE;
+  static int const WAIT_FOR_NEW_KEY_SPACE;
+
   KeySpaceManager(
     uni::async::AsyncQueue& async_queue,
     uni::master::GroupConfigManager& config_manager,

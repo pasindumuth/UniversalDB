@@ -19,6 +19,9 @@ namespace slave {
 
 class ClientRequestHandler {
  public:
+  static int const RETRY_LIMIT;
+  static int const WAIT_FOR_PAXOS;
+
   ClientRequestHandler(
       uni::paxos::MultiPaxosHandler& multi_paxos_handler,
       uni::paxos::PaxosLog& paxos_log,

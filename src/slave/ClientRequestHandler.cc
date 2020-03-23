@@ -10,6 +10,9 @@
 namespace uni {
 namespace slave {
 
+int const ClientRequestHandler::RETRY_LIMIT = 3;
+int const ClientRequestHandler::WAIT_FOR_PAXOS = 100;
+
 ClientRequestHandler::ClientRequestHandler(
     uni::paxos::MultiPaxosHandler& multi_paxos_handler,
     uni::paxos::PaxosLog& paxos_log,
@@ -45,20 +48,20 @@ void ClientRequestHandler::handle_request(
     if (entry_index != _request_id_map.end()) {
       // The request was fullfilled in the last retry
       auto client_response = new proto::client::ClientResponse();
-      client_response->set_error_code(proto::client::ClientResponse::SUCCESS);
+      client_response->set_error_code(proto::client::Code::SUCCESS);
       if (message.request_type() == proto::client::ClientRequest::READ) {
         // Populate the value of the read
         auto entry = _paxos_log.get_entry(entry_index->second);
         client_response->set_allocated_value(uni::utils::pb::string(entry.get().value()));
       }
       _respond(endpoint_id, client_response);
-      return -1;
-    } else if (*retry_count == 3) { // TODO make this into a constant
+      return uni::async::AsyncQueue::TERMINATE;
+    } else if (*retry_count == RETRY_LIMIT) {
       // Maximum number of retries have been reached
       auto client_response = new proto::client::ClientResponse();
-      client_response->set_error_code(proto::client::ClientResponse::ERROR);
+      client_response->set_error_code(proto::client::Code::ERROR);
       _respond(endpoint_id, client_response);
-      return -1;
+      return uni::async::AsyncQueue::TERMINATE;
     }
 
     if (message.request_type() == proto::client::ClientRequest::WRITE) {
@@ -67,9 +70,9 @@ void ClientRequestHandler::handle_request(
       if (message.timestamp().value() <= lat) {
         // The timestamp trying to be inserted to is not strictly greater than lat
         auto client_response = new proto::client::ClientResponse();
-        client_response->set_error_code(proto::client::ClientResponse::ERROR);
+        client_response->set_error_code(proto::client::Code::ERROR);
         _respond(endpoint_id, client_response);
-        return -1;
+        return uni::async::AsyncQueue::TERMINATE;
       }
     }
 
@@ -90,7 +93,7 @@ void ClientRequestHandler::handle_request(
     log_entry.set_allocated_timestamp(uni::utils::pb::uint64(message.timestamp()));
     _multi_paxos_handler.propose(log_entry);
     *retry_count += 1;
-    return 100; // TODO make this into a constant
+    return WAIT_FOR_PAXOS;
   });
 }
 

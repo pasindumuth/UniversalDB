@@ -21,14 +21,14 @@ message ClientRequest {
   google.protobuf.UInt64Value timestamp = 7;
 }
 
+enum Code {
+  UNSET = 0;
+  SUCCESS = 1;
+  ERROR = 2;
+}
+
 // Response sent to a client from the Universal slaves.
 message ClientResponse {
-  enum Code {
-    UNSET = 0;
-    SUCCESS = 1;
-    ERROR = 2;
-  }
-
   google.protobuf.StringValue value = 1;
   Code error_code = 2;
 }
@@ -44,6 +44,7 @@ message FindKeyRangeRequest {
 // to them.
 message FindKeyRangeResponse {
   string slave_group_id = 1;
+  Code error_code = 2;
 }
 
 message ClientMessage {

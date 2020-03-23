@@ -3,6 +3,8 @@
 namespace uni {
 namespace async {
 
+int const AsyncQueue::TERMINATE = -1;
+
 AsyncQueue::AsyncQueue(
     uni::async::TimerAsyncScheduler& timer_scheduler)
       : _timer_scheduler(timer_scheduler) {}
@@ -17,7 +19,7 @@ void AsyncQueue::add_task(std::function<int(void)> callback) {
 void AsyncQueue::run_task() {
   auto const& callback = _callbacks.front();
   auto wait = callback();
-  if (wait < 0) {
+  if (wait == TERMINATE) {
     _callbacks.pop();
     if (_callbacks.size() > 0) {
       _timer_scheduler.schedule_once([this](){ run_task(); }, 0);

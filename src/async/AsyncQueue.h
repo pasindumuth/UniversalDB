@@ -22,6 +22,7 @@ namespace async {
  */
 class AsyncQueue {
  public:
+  static int const TERMINATE;
   /**
    * @brief Constructs a AsyncQueue, using a TimerAsyncScheduler to schedule the tasks.
    */

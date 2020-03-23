@@ -6,7 +6,6 @@
 #include <master/KeySpaceManager.h>
 #include <net/IncomingMessage.h>
 #include <paxos/MultiPaxosHandler.h>
-#include <server/HeartbeatTracker.h>
 #include <server/LogSyncer.h>
 
 namespace uni {

@@ -11,6 +11,11 @@
 namespace uni {
 namespace master {
 
+int const KeySpaceManager::RETRY_LIMIT = 3;
+int const KeySpaceManager::WAIT_FOR_COMMIT = 100;
+int const KeySpaceManager::WAIT_FOR_FREE = 100;
+int const KeySpaceManager::WAIT_FOR_NEW_KEY_SPACE = 100;
+
 KeySpaceManager::KeySpaceManager(
   uni::async::AsyncQueue& async_queue,
   uni::master::GroupConfigManager& config_manager,
@@ -93,7 +98,7 @@ void KeySpaceManager::handle_find_key(
             auto client_response = new proto::client::FindKeyRangeResponse();
             client_response->set_slave_group_id(group_id.id);
             _respond(endpoint_id, client_response);
-            return -1;
+            return uni::async::AsyncQueue::TERMINATE;
           }
         }
       }
@@ -108,10 +113,17 @@ void KeySpaceManager::handle_find_key(
             auto endpoints = _config_manager.get_endpoints(group_id);
             auto wrapper = build_new_key_space_selected_message(*key_space);
             _slave_connections.broadcast(endpoints, wrapper.SerializeAsString());
-            return 100; // Repeatedly bombard the slaves until they have dealt with this message.
+            return WAIT_FOR_COMMIT; // Repeatedly bombard the slaves until they have dealt with this message.
           }
         }
       }
+    }
+
+    if (*retry_count == RETRY_LIMIT) {
+      auto client_response = new proto::client::FindKeyRangeResponse();
+      client_response->set_error_code(proto::client::Code::ERROR);
+      _respond(endpoint_id, client_response);
+      return uni::async::AsyncQueue::TERMINATE;
     }
 
     // Try to assign the key-space range to the first group by proposing this change with paxos.
@@ -127,7 +139,7 @@ void KeySpaceManager::handle_find_key(
     if (it == _slave_group_ranges.end()) {
       // Try again in a bit. Soon, there should be a slave group
       // whose key space gets back to the steady state (KeySpace).
-      return 100;
+      return WAIT_FOR_FREE;
     }
 
     auto const& key_space = std::get<KeySpace>(it->second);
@@ -143,7 +155,8 @@ void KeySpaceManager::handle_find_key(
     auto new_key_space_message = build_new_key_space_selected_paxos(it->first, new_key_space);
     log_entry.set_allocated_key_space_selected(new_key_space_message);
     _multipaxos_handler.propose(log_entry);
-    return 100; // TODO make this into a constant
+    *retry_count += 1;
+    return WAIT_FOR_NEW_KEY_SPACE;
   });
 }
 
