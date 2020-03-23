@@ -9,7 +9,7 @@
 #include <constants/constants.h>
 
 uni::constants::Constants initialize_constants() {
-  return uni::constants::Constants(5, 1610, 1710, 1810, 1000, 4, 1000);
+  return uni::constants::Constants(2, 1610, 1710, 1810, 1000, 4, 1000);
 }
 
 std::vector<std::string> parse_hostnames(int32_t argc, char* argv[]) {

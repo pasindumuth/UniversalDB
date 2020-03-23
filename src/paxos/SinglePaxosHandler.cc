@@ -25,7 +25,7 @@ SinglePaxosHandler::SinglePaxosHandler(
         _paxos_message_to_wrapper(paxos_message_to_wrapper) {}
 
 crnd_t SinglePaxosHandler::next_proposal_number() {
-  return _proposer_state.latest + 10; // TODO: pick this randomly.
+  return _proposer_state.latest + std::rand() % 1000;
 }
 
 uint32_t SinglePaxosHandler::majority_threshold() {
