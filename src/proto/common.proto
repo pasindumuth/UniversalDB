@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/wrappers.proto";
+
 package proto.common;
 
 message Endpoint {
@@ -9,6 +11,6 @@ message Endpoint {
 message KeySpaceRange {
   string database_id = 1;
   string table_id = 2;
-  string start_key = 3;
-  string end_key = 4;
+  google.protobuf.StringValue start_key = 3; // start/end_key must be optional
+  google.protobuf.StringValue end_key = 4;
 }

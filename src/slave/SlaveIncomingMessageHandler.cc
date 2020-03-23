@@ -2,6 +2,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/optional.hpp>
 
 #include <common/common.h>
 #include <net/EndpointId.h>
@@ -72,7 +73,7 @@ void SlaveIncomingMessageHandler::forward_message(
   std::string table_id,
   uni::net::IncomingMessage incoming_message
 ) {
-  TabletId tablet_id = { database_id, table_id, "", ""};
+  TabletId tablet_id = { database_id, table_id, boost::none, boost::none};
   if (_tp_map.find(tablet_id) == _tp_map.end()) {
     _tp_map.insert({tablet_id, _tp_provider(tablet_id)});
   }

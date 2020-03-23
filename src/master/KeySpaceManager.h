@@ -57,6 +57,8 @@ class KeySpaceManager {
   std::unordered_map<uni::server::SlaveGroupId, std::variant<KeySpace, NewKeySpace>> _slave_group_ranges;
 
   proto::message::MessageWrapper build_new_key_space_selected_message(NewKeySpace const& key_space);
+
+  bool within_range(uni::server::KeySpaceRange const& key_space_range, proto::client::FindKeyRangeRequest const& message);
 };
 
 } // namespace master

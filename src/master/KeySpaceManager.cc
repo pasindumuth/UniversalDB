@@ -1,6 +1,9 @@
 #include "KeySpaceManager.h"
 
+#include <boost/optional.hpp>
+
 #include <common/common.h>
+#include <utils/pbutil.h>
 
 namespace uni {
 namespace master {
@@ -31,13 +34,24 @@ proto::message::MessageWrapper KeySpaceManager::build_new_key_space_selected_mes
     auto const proto_range = key_space_selected_message->add_new_ranges();
     proto_range->set_database_id(range.database_id);
     proto_range->set_table_id(range.table_id);
-    proto_range->set_start_key(range.start_key);
-    proto_range->set_end_key(range.end_key);
+    if (range.start_key) proto_range->set_allocated_start_key(uni::utils::pb::string(range.start_key.get()));
+    if (range.end_key) proto_range->set_allocated_end_key(uni::utils::pb::string(range.end_key.get()));
   }
   key_space_selected_message->set_generation(key_space.generation);
   master_message->set_allocated_key_space_selected(key_space_selected_message);
   message_wrapper.set_allocated_master_message(master_message);
   return message_wrapper;
+}
+
+bool KeySpaceManager::within_range(
+  uni::server::KeySpaceRange const& range,
+  proto::client::FindKeyRangeRequest const& message
+) {
+  if (range.database_id != message.database_id()) return false;
+  if (range.table_id != message.table_id()) return false;
+  if (range.start_key != boost::none && range.start_key.get() > message.key()) return false;
+  if (range.end_key != boost::none && range.end_key.get() <= message.key()) return false;
+  return true;
 }
 
 void KeySpaceManager::handle_find_key(
@@ -51,10 +65,7 @@ void KeySpaceManager::handle_find_key(
     for (auto const& [group_id, v] : _slave_group_ranges) {
       if (auto const& key_space = std::get_if<KeySpace>(&v)) {
         for (auto const& range : key_space->ranges) {
-          if (range.database_id == message.database_id() &&
-              range.table_id == message.table_id() &&
-              range.start_key <= message.key() &&
-              range.end_key > message.key()) {
+          if (within_range(range, message)) {
             // We have found a group_id where the requested key exists in the KeySpaceRange
             auto client_response = new proto::client::FindKeyRangeResponse();
             client_response->set_slave_group_id(group_id.id);
@@ -69,10 +80,7 @@ void KeySpaceManager::handle_find_key(
       // NewKeySpaceSelected message.
       if (auto const& key_space = std::get_if<NewKeySpace>(&v)) {
         for (auto const& range : key_space->ranges) {
-          if (range.database_id == message.database_id() &&
-              range.table_id == message.table_id() &&
-              range.start_key <= message.key() &&
-              range.end_key > message.key()) {
+          if (within_range(range, message)) {
             // We have found a group_id where the requested key exists in the KeySpaceRange
             auto endpoints = _config_manager.get_endpoints(group_id);
             auto wrapper = build_new_key_space_selected_message(*key_space);
