@@ -1,5 +1,7 @@
 #include "TestingContext.h"
 
+#include <slave/functors.h>
+
 namespace uni {
 namespace slave {
 
@@ -18,9 +20,7 @@ TestingContext::TestingContext(
       heartbeat_tracker,
       connections,
       timer_scheduler,
-      [this](){
-        return config_manager.config_endpoints();
-      }),
+      uni::slave::GetEndpoints(config_manager)),
     paxos_log(),
     async_queue(timer_scheduler),
     multipaxos_handler(
@@ -31,32 +31,16 @@ TestingContext::TestingContext(
           connections,
           paxos_log,
           index,
-          [this](){
-            return config_manager.config_endpoints();
-          },
-          [](proto::paxos::PaxosMessage* paxos_message){
-            auto message_wrapper = proto::message::MessageWrapper();
-            auto slave_message = new proto::slave::SlaveMessage;
-            slave_message->set_allocated_paxos_message(paxos_message);
-            message_wrapper.set_allocated_slave_message(slave_message);
-            return message_wrapper;
-          });
+          uni::slave::GetEndpoints(config_manager),
+          uni::slave::SendPaxos());
       }),
     log_syncer(
       constants,
       connections,
       timer_scheduler,
       paxos_log,
-      [this](){
-        return config_manager.config_endpoints();
-      },
-      [](proto::sync::SyncMessage* sync_message){
-        auto message_wrapper = proto::message::MessageWrapper();
-        auto slave_message = new proto::slave::SlaveMessage;
-        slave_message->set_allocated_sync_message(sync_message);
-        message_wrapper.set_allocated_slave_message(slave_message);
-        return message_wrapper;
-      }),
+      uni::slave::GetEndpoints(config_manager),
+      uni::slave::SendSync()),
     config_manager(
       async_queue,
       master_connections,

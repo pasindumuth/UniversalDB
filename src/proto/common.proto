@@ -9,6 +9,6 @@ message Endpoint {
 message KeySpaceRange {
   string database_id = 1;
   string table_id = 2;
-  string key_start = 3;
-  string key_end = 4;
+  string start_key = 3;
+  string end_key = 4;
 }

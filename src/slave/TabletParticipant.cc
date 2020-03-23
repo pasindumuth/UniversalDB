@@ -9,6 +9,7 @@
 #include <proto/message.pb.h>
 #include <proto/tablet.pb.h>
 #include <proto/sync.pb.h>
+#include <slave/functors.h>
 #include <utils/pbutil.h>
 
 namespace uni {
@@ -34,9 +35,7 @@ TabletParticipant::TabletParticipant(
           connections,
           paxos_log,
           index,
-          [&config_manager](){
-            return config_manager.config_endpoints();
-          },
+          uni::slave::GetEndpoints(config_manager),
           [this](proto::paxos::PaxosMessage* paxos_message){
             auto message_wrapper = proto::message::MessageWrapper();
             auto tablet_message = new proto::tablet::TabletMessage;
@@ -54,7 +53,7 @@ TabletParticipant::TabletParticipant(
       paxos_log,
       async_queue,
       kvstore,
-      [this, &client_connections](
+      [&client_connections](
         uni::net::EndpointId endpoint_id,
         proto::client::ClientResponse* client_response
       ) {
@@ -74,9 +73,7 @@ TabletParticipant::TabletParticipant(
       connections,
       timer_scheduler,
       paxos_log,
-      [&config_manager]() {
-        return config_manager.config_endpoints();
-      },
+      uni::slave::GetEndpoints(config_manager),
       [this](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
         auto tablet_message = new proto::tablet::TabletMessage;

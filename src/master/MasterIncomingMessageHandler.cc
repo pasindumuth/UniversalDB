@@ -19,6 +19,13 @@ void MasterIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mes
   auto endpoint_id = incoming_message.endpoint_id;
   auto message_wrapper = proto::message::MessageWrapper();
   message_wrapper.ParseFromString(incoming_message.message);
+  if (message_wrapper.has_client_message()) {
+    auto const& client_message = message_wrapper.client_message();
+    if (client_message.has_find_key_range_request()) {
+      LOG(uni::logging::Level::TRACE2, "Client FindKeyRange message gotten.")
+      _key_space_manager.handle_find_key(endpoint_id, client_message.find_key_range_request());
+    }
+  }
 }
 
 } // namespace master

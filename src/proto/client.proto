@@ -33,16 +33,24 @@ message ClientResponse {
   Code error_code = 2;
 }
 
-message FindKeyRange {
+message FindKeyRangeRequest {
   string database_id = 1;
   string table_id = 2;
   string key = 3;
+}
+
+// TODO: for now, just return the slave group id. In the future, we must
+// return the ip addresses of the slaves so that the client can connect
+// to them.
+message FindKeyRangeResponse {
+  string slave_group_id = 1;
 }
 
 message ClientMessage {
   oneof client_message {
     ClientRequest request = 1;
     ClientResponse response = 2;
-    FindKeyRange find_key_range = 3;
+    FindKeyRangeRequest find_key_range_request = 3;
+    FindKeyRangeResponse find_key_range_response = 4;
   }
 }

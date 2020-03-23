@@ -1,6 +1,8 @@
 #include "ProductionContext.h"
 
+#include <master/functors.h>
 #include <net/IncomingMessage.h>
+#include <proto/client.pb.h>
 #include <server/SlaveGroupId.h>
 
 namespace uni {
@@ -46,7 +48,7 @@ ProductionContext::ProductionContext(
       [](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
         auto slave_message = new proto::slave::SlaveMessage;
-        slave_message->set_allocated_sync_message(sync_message);
+        slave_message->set_allocated_sync_message(sync_message); // TODO: Must replace "slave_message"
         message_wrapper.set_allocated_slave_message(slave_message);
         return message_wrapper;
       }),
@@ -60,7 +62,8 @@ ProductionContext::ProductionContext(
       group_config_manager,
       slave_connections,
       multipaxos_handler,
-      paxos_log),
+      paxos_log,
+      uni::master::SendFindKeyRangeResponse(client_connections)),
     master_handler(
       log_syncer,
       multipaxos_handler,

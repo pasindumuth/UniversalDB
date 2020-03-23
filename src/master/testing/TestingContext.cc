@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include <master/functors.h>
+
 namespace uni {
 namespace master {
 
@@ -62,7 +64,8 @@ TestingContext::TestingContext(
       group_config_manager,
       slave_connections,
       multipaxos_handler,
-      paxos_log),
+      paxos_log,
+      uni::master::SendFindKeyRangeResponse(client_connections)),
     master_handler(
       log_syncer,
       multipaxos_handler,

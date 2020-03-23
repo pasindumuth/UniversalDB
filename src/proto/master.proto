@@ -4,39 +4,13 @@ import "common.proto";
 
 package proto.master;
 
-message SlaveList {
-  repeated string slave_hostnames = 1;
-}
-
-// Message sent from Master to Slave.
-message MasterRequest {
-  uint32 request_id = 1;
-  oneof data {
-    SlaveList slave_list = 3;
-  }
-}
-
-// Response sent from Slave to Master.
-message MasterResponse {
-  enum Code {
-    UNSET = 0;
-    SUCCESS = 1;
-    ERROR = 2;
-  }
-
-  Code error_code = 1;
-}
-
 message NewKeySpaceSelected {
-  string slave_group_id = 1;
-  repeated proto.common.KeySpaceRange new_ranges = 2;
-  uint32 generation = 3;
+  repeated proto.common.KeySpaceRange new_ranges = 1;
+  uint32 generation = 2;
 }
 
 message MasterMessage {
   oneof master_message {
-    MasterRequest request = 1;
-    MasterResponse response = 2;
-    NewKeySpaceSelected key_space_selected = 3;
+    NewKeySpaceSelected key_space_selected = 1;
   }
 }
