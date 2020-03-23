@@ -29,6 +29,8 @@ class Connections {
   // exists in _channels, then the endpoint is ignored (no errors are thrown).
   void broadcast(std::vector<uni::net::EndpointId> endpoints, std::string message);
 
+  std::vector<uni::net::EndpointId> get_all_endpoints() const;
+
   bool has(uni::net::EndpointId endpoint_id);
 
   // This method is primary used by the server thread to get the Channel object from it's endpoint_id

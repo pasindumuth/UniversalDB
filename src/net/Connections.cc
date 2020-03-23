@@ -50,6 +50,14 @@ void Connections::broadcast(std::vector<uni::net::EndpointId> endpoints, std::st
   }
 }
 
+std::vector<uni::net::EndpointId> Connections::get_all_endpoints() const {
+  auto endpoints = std::vector<EndpointId>();
+  for (auto const& [key, value] : _channels) {
+    endpoints.push_back(key);
+  }
+  return endpoints;
+}
+
 bool Connections::has(uni::net::EndpointId endpoint_id) {
   std::unique_lock<std::mutex> lock(_channel_lock);
   return _channels.find(endpoint_id) != _channels.end();

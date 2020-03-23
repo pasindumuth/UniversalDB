@@ -52,18 +52,15 @@ int main(int argc, char* argv[]) {
   // Wait for a list of all slave nodes from the master
   server_connection_handler.async_accept();
 
-  std::vector<uni::net::EndpointId> config_endpoints;
   for (auto i = 1; i < hostnames.size(); i++) {
     auto endpoints = resolver.resolve(hostnames[i], std::to_string(constants.slave_port));
     auto socket = tcp::socket(background_io_context);
     boost::asio::connect(socket, endpoints);
     auto channel = std::make_unique<uni::net::ChannelImpl>(std::move(socket));
-    config_endpoints.push_back(channel->endpoint_id());
     connections.add_channel(std::move(channel));
     LOG(uni::logging::Level::INFO, "Connected to slave node: " + hostnames[i]);
   }
   auto channel = std::make_unique<uni::net::SelfChannel>();
-  config_endpoints.push_back(channel->endpoint_id());
   connections.add_channel(std::move(channel));
 
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
@@ -81,7 +78,6 @@ int main(int argc, char* argv[]) {
     client_connections,
     master_connections,
     connections,
-    config_endpoints,
     server_async_scheduler);
 
   client_connection_handler.async_accept();

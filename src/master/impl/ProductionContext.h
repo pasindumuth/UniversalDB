@@ -33,8 +33,6 @@ struct ProductionContext {
     uni::net::Connections& client_connections,
     uni::net::Connections& slave_connections,
     uni::net::Connections& connections,
-    std::vector<uni::net::EndpointId>& slave_endpoints,
-    std::vector<uni::net::EndpointId>& config_endpoints,
     uni::async::AsyncSchedulerImpl& scheduler);
 
   uni::async::TimerAsyncSchedulerImpl timer_scheduler;

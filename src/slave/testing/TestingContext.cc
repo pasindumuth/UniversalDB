@@ -5,7 +5,6 @@ namespace slave {
 
 TestingContext::TestingContext(
   uni::constants::Constants const& constants,
-  std::vector<uni::net::EndpointId>& config_endpoints,
   std::string ip_string)
   : ip_string(ip_string),
     scheduler(),
@@ -61,9 +60,9 @@ TestingContext::TestingContext(
     config_manager(
       async_queue,
       master_connections,
+      connections,
       multipaxos_handler,
-      paxos_log,
-      config_endpoints),
+      paxos_log),
     key_space_manager(
       async_queue,
       master_connections,

@@ -29,7 +29,6 @@ namespace slave {
 struct TestingContext {
   TestingContext(
     uni::constants::Constants const& constants,
-    std::vector<uni::net::EndpointId>& config_endpoints,
     std::string ip_string);
 
   std::string ip_string;

@@ -12,22 +12,20 @@ ProductionContext::ProductionContext(
   uni::net::Connections& client_connections,
   uni::net::Connections& slave_connections,
   uni::net::Connections& connections,
-  std::vector<uni::net::EndpointId>& slave_endpoints,
-  std::vector<uni::net::EndpointId>& config_endpoints,
   uni::async::AsyncSchedulerImpl& scheduler)
   : timer_scheduler(background_io_context),
     async_queue(timer_scheduler),
     paxos_log(),
     multipaxos_handler(
       paxos_log,
-      [this, &constants, &connections, &config_endpoints](uni::paxos::index_t index) {
+      [this, &constants, &connections](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
           connections,
           paxos_log,
           index,
-          [&config_endpoints](){
-            return config_endpoints;
+          [&connections](){
+            return connections.get_all_endpoints();
           },
           [](proto::paxos::PaxosMessage* paxos_message){
             auto message_wrapper = proto::message::MessageWrapper();
@@ -42,8 +40,8 @@ ProductionContext::ProductionContext(
       connections,
       timer_scheduler,
       paxos_log,
-      [&config_endpoints](){
-        return config_endpoints;
+      [&connections](){
+        return connections.get_all_endpoints();
       },
       [](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
@@ -73,7 +71,8 @@ ProductionContext::ProductionContext(
     master_handler.handle(message);
   });
   auto group_id = uni::server::SlaveGroupId{ "slave_group_0" };
-  group_config_manager.set_first_config(group_id, slave_endpoints);
+  auto endpoints = slave_connections.get_all_endpoints();
+  group_config_manager.set_first_config(group_id, endpoints);
   key_space_manager.set_first_config(group_id);
 }
 
