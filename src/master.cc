@@ -15,12 +15,14 @@ using boost::asio::ip::tcp;
 
 int main(int argc, char* argv[]) {
   auto hostnames = parse_hostnames(argc, argv);
+  auto master_hostnames = std::vector<std::string>(hostnames.begin(), hostnames.end() - 5); // Make 5 into a constant.
+  auto slave_hostnames = std::vector<std::string>(hostnames.end() - 5, hostnames.end());
   auto main_serving_hostname = hostnames[0];
 
   // Initialize constants
   auto const constants = initialize_constants();
   uni::logging::get_log_level() = uni::logging::Level::TRACE1;
-  LOG(uni::logging::Level::INFO, "Starting main server on: " + main_serving_hostname + ":" + std::to_string(constants.slave_port))
+  LOG(uni::logging::Level::INFO, "Starting main server on: " + main_serving_hostname + ":" + std::to_string(constants.master_port))
 
   // Initialize io_context for background thread (for managing the network
   // and dispatching requests to the server thread).
@@ -37,7 +39,7 @@ int main(int argc, char* argv[]) {
 
   // Schedule main acceptor
   auto connections = uni::net::Connections(server_async_scheduler);
-  auto main_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.slave_port));
+  auto main_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.master_port));
   auto server_connection_handler = uni::server::ConnectionHandler(connections, main_acceptor);
   auto resolver = tcp::resolver(background_io_context);
 
@@ -47,13 +49,14 @@ int main(int argc, char* argv[]) {
   server_connection_handler.async_accept();
 
   std::vector<uni::net::EndpointId> config_endpoints;
-  for (auto i = 1; i < hostnames.size(); i++) {
-    auto endpoints = resolver.resolve(hostnames[i], std::to_string(constants.slave_port));
+  for (auto i = 1; i < master_hostnames.size(); i++) {
+    auto endpoints = resolver.resolve(master_hostnames[i], std::to_string(constants.master_port));
     auto socket = tcp::socket(background_io_context);
     boost::asio::connect(socket, endpoints);
     auto channel = std::make_unique<uni::net::ChannelImpl>(std::move(socket));
     config_endpoints.push_back(channel->endpoint_id());
     connections.add_channel(std::move(channel));
+    LOG(uni::logging::Level::INFO, "Connected to master node: " + master_hostnames[i]);
   }
   auto channel = std::make_unique<uni::net::SelfChannel>();
   config_endpoints.push_back(channel->endpoint_id());
@@ -63,15 +66,26 @@ int main(int argc, char* argv[]) {
   auto client_connections = uni::net::Connections(server_async_scheduler);
   auto client_connection_handler = uni::server::ConnectionHandler(client_connections, client_acceptor);
   
-  // Slave connections TODO do this
-  auto slave_client_connections = uni::net::Connections(server_async_scheduler);
+  // Slave connections
+  std::vector<uni::net::EndpointId> slave_endpoints;
+  auto slave_connections = uni::net::Connections(server_async_scheduler);
+  for (auto const& slave_hostname: slave_hostnames) {
+    auto endpoints = resolver.resolve(slave_hostname, std::to_string(constants.master_port));
+    auto socket = tcp::socket(background_io_context);
+    boost::asio::connect(socket, endpoints);
+    auto channel = std::make_unique<uni::net::ChannelImpl>(std::move(socket));
+    slave_endpoints.push_back(channel->endpoint_id());
+    slave_connections.add_channel(std::move(channel));
+    LOG(uni::logging::Level::INFO, "Connected to slave node: " + slave_hostname);
+  }
 
   auto production_context = uni::master::ProductionContext(
     background_io_context,
     constants,
     client_connections,
-    slave_client_connections,
+    slave_connections,
     connections,
+    slave_endpoints,
     config_endpoints,
     server_async_scheduler);
 

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(UniversalDB)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
 
 # This commands lets us to do `#include <net/Channel.h>` in the
 # source code to use the file ./net/Channel.h. Using include_directories

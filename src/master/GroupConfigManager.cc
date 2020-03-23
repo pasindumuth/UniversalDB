@@ -15,5 +15,26 @@ GroupConfigManager::GroupConfigManager(
     _multipaxos_handler(multipaxos_handler),
     _paxos_log(paxos_log) {}
 
+void GroupConfigManager::set_first_config(
+  uni::server::SlaveGroupId group_id,
+  std::vector<uni::net::EndpointId>& slave_endpoints
+) {
+  _slave_group_config.insert({group_id, Config{slave_endpoints, 0}});
+}
+
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
+std::vector<uni::net::EndpointId> GroupConfigManager::get_endpoints(
+  uni::server::SlaveGroupId const& group_id
+) {
+  std::vector<uni::net::EndpointId> slave;
+  std::visit(overloaded {
+    [&slave](Config config){ slave = config.slaves; },
+    [&slave](NewConfig new_config){ slave = new_config.slaves; }
+  }, _slave_group_config[group_id]);
+  return slave;
+}
+
 } // namespace master
 } // namespace uni

@@ -25,6 +25,10 @@ class GroupConfigManager {
     uni::paxos::MultiPaxosHandler& multipaxos_handler,
     uni::paxos::PaxosLog& paxos_log);
 
+  void set_first_config(uni::server::SlaveGroupId group_id, std::vector<uni::net::EndpointId>& slave_endpoints);
+
+  std::vector<uni::net::EndpointId> get_endpoints(uni::server::SlaveGroupId const& group_id);
+
  private:
   uni::async::AsyncQueue& _async_queue;
   uni::net::Connections& _connections;

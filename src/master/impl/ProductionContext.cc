@@ -1,6 +1,7 @@
 #include "ProductionContext.h"
 
 #include <net/IncomingMessage.h>
+#include <server/SlaveGroupId.h>
 
 namespace uni {
 namespace master {
@@ -11,6 +12,7 @@ ProductionContext::ProductionContext(
   uni::net::Connections& client_connections,
   uni::net::Connections& slave_connections,
   uni::net::Connections& connections,
+  std::vector<uni::net::EndpointId>& slave_endpoints,
   std::vector<uni::net::EndpointId>& config_endpoints,
   uni::async::AsyncSchedulerImpl& scheduler)
   : timer_scheduler(background_io_context),
@@ -70,6 +72,9 @@ ProductionContext::ProductionContext(
   scheduler.set_callback([this](uni::net::IncomingMessage message){
     master_handler.handle(message);
   });
+  auto group_id = uni::server::SlaveGroupId{ "slave_group_0" };
+  group_config_manager.set_first_config(group_id, slave_endpoints);
+  key_space_manager.set_first_config(group_id);
 }
 
 } // namespace master

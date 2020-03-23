@@ -13,5 +13,9 @@ KeySpaceManager::KeySpaceManager(
     _multipaxos_handler(multipaxos_handler),
     _paxos_log(paxos_log) {}
 
+void KeySpaceManager::set_first_config(uni::server::SlaveGroupId group_id) {
+  _slave_group_ranges.insert({group_id, KeySpace{{}, 0}});
+}
+
 } // namespace master
 } // namespace uni

@@ -24,6 +24,8 @@ class KeySpaceManager {
     uni::paxos::MultiPaxosHandler& multipaxos_handler,
     uni::paxos::PaxosLog& paxos_log);
 
+  void set_first_config(uni::server::SlaveGroupId group_id);
+
  private:
    uni::async::AsyncQueue& _async_queue;
    uni::net::Connections& _connections;

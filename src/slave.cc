@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
     auto channel = std::make_unique<uni::net::ChannelImpl>(std::move(socket));
     config_endpoints.push_back(channel->endpoint_id());
     connections.add_channel(std::move(channel));
+    LOG(uni::logging::Level::INFO, "Connected to slave node: " + hostnames[i]);
   }
   auto channel = std::make_unique<uni::net::SelfChannel>();
   config_endpoints.push_back(channel->endpoint_id());
