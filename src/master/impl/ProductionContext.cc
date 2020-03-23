@@ -54,13 +54,13 @@ ProductionContext::ProductionContext(
       }),
     group_config_manager(
       async_queue,
-      connections,
       slave_connections,
       multipaxos_handler,
       paxos_log),
     key_space_manager(
       async_queue,
-      connections,
+      group_config_manager,
+      slave_connections,
       multipaxos_handler,
       paxos_log),
     master_handler(

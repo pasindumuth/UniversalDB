@@ -5,11 +5,13 @@ namespace master {
 
 KeySpaceManager::KeySpaceManager(
   uni::async::AsyncQueue& async_queue,
-  uni::net::Connections& connections,
+  uni::master::GroupConfigManager& config_manager,
+  uni::net::Connections& slave_connections,
   uni::paxos::MultiPaxosHandler& multipaxos_handler,
   uni::paxos::PaxosLog& paxos_log):
     _async_queue(async_queue),
-    _connections(connections),
+    _config_manager(config_manager),
+    _slave_connections(slave_connections),
     _multipaxos_handler(multipaxos_handler),
     _paxos_log(paxos_log) {}
 

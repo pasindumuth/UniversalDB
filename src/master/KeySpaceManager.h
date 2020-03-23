@@ -8,6 +8,7 @@
 #include <common/common.h>
 
 #include <async/AsyncQueue.h>
+#include <master/GroupConfigManager.h>
 #include <net/Connections.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <server/KeySpaceRange.h>
@@ -20,7 +21,8 @@ class KeySpaceManager {
  public:
   KeySpaceManager(
     uni::async::AsyncQueue& async_queue,
-    uni::net::Connections& connections,
+    uni::master::GroupConfigManager& config_manager,
+    uni::net::Connections& slave_connections,
     uni::paxos::MultiPaxosHandler& multipaxos_handler,
     uni::paxos::PaxosLog& paxos_log);
 
@@ -28,7 +30,8 @@ class KeySpaceManager {
 
  private:
    uni::async::AsyncQueue& _async_queue;
-   uni::net::Connections& _connections;
+   uni::master::GroupConfigManager& _config_manager;
+   uni::net::Connections& _slave_connections;
    uni::paxos::MultiPaxosHandler& _multipaxos_handler;
    uni::paxos::PaxosLog& _paxos_log;
 
