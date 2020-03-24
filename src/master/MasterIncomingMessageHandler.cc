@@ -27,6 +27,14 @@ void MasterIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mes
     } else {
       LOG(uni::logging::Level::WARN, "Unkown client message type.")
     }
+  } else if (message_wrapper.has_slave_message()) {
+    auto const& slave_message = message_wrapper.slave_message();
+    if (slave_message.has_key_space_changed()) {
+      LOG(uni::logging::Level::TRACE2, "Key Space Changed Message gotten.")
+      _key_space_manager.handle_key_space_changed(endpoint_id, slave_message.key_space_changed());
+    } else {
+      LOG(uni::logging::Level::WARN, "Unkown client message type.")
+    }
   } else if (message_wrapper.has_master_message()) {
     auto const& master_message = message_wrapper.master_message();
     if (master_message.has_paxos_message()) {

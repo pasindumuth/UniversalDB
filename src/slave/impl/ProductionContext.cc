@@ -87,7 +87,8 @@ ProductionContext::ProductionContext(
       },
       heartbeat_tracker,
       log_syncer,
-      key_space_manager)
+      key_space_manager,
+      multipaxos_handler)
 {
   // We subtract 2 from the number of supported threads to account for the
   // LTM thread and background thread are started up manually.

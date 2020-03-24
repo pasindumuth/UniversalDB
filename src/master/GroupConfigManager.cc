@@ -26,12 +26,30 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 std::vector<uni::net::EndpointId> GroupConfigManager::get_endpoints(
   uni::server::SlaveGroupId const& group_id
 ) {
-  std::vector<uni::net::EndpointId> slave;
+  auto slave = std::vector<uni::net::EndpointId>();
   std::visit(overloaded {
     [&slave](Config config){ slave = config.slaves; },
     [&slave](NewConfig new_config){ slave = new_config.slaves; }
   }, _slave_group_config[group_id]);
   return slave;
+}
+
+boost::optional<uni::server::SlaveGroupId> GroupConfigManager::get_group_id(
+  uni::net::EndpointId const& endpoint_id
+) {
+  for (auto const& [group_id, config_state] : _slave_group_config) {
+    auto slave = std::vector<uni::net::EndpointId>();
+    std::visit(overloaded {
+      [&slave](Config config){ slave = config.slaves; },
+      [&slave](NewConfig new_config){ slave = new_config.slaves; }
+    }, config_state);
+    auto const& it = std::find(slave.begin(), slave.end(), endpoint_id);
+    if (it != slave.end()) {
+      // The input endpoint_id is in the list of slaves.
+      return group_id;
+    }
+  }
+  return boost::none;
 }
 
 } // namespace master

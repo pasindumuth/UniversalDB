@@ -9,6 +9,7 @@
 #include <boost/asio.hpp>
 
 #include <common/common.h>
+#include <paxos/MultiPaxosHandler.h>
 #include <server/LogSyncer.h>
 #include <server/HeartbeatTracker.h>
 #include <slave/SlaveKeySpaceManager.h>
@@ -23,7 +24,8 @@ class SlaveIncomingMessageHandler {
     std::function<uni::custom_unique_ptr<uni::slave::TabletParticipant>(uni::slave::TabletId)> tp_provider,
     uni::server::HeartbeatTracker& heartbeat_tracker,
     uni::server::LogSyncer& log_syncer,
-    uni::slave::SlaveKeySpaceManager& key_space_manager);
+    uni::slave::SlaveKeySpaceManager& key_space_manager,
+    uni::paxos::MultiPaxosHandler& multipaxos_handler);
 
   void handle(uni::net::IncomingMessage incoming_message);
 
@@ -34,6 +36,7 @@ class SlaveIncomingMessageHandler {
   uni::server::HeartbeatTracker& _heartbeat_tracker;
   uni::server::LogSyncer& _log_syncer;
   uni::slave::SlaveKeySpaceManager& _key_space_manager;
+  uni::paxos::MultiPaxosHandler& _multipaxos_handler;
 
   std::unordered_map<TabletId, uni::custom_unique_ptr<uni::slave::TabletParticipant>> _tp_map;
 

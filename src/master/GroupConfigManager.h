@@ -5,9 +5,10 @@
 #include <variant>
 #include <vector>
 
-#include <common/common.h>
+#include <boost/optional.hpp>
 
 #include <async/AsyncQueue.h>
+#include <common/common.h>
 #include <server/SlaveGroupId.h>
 #include <net/Connections.h>
 #include <net/EndpointId.h>
@@ -27,6 +28,8 @@ class GroupConfigManager {
   void set_first_config(uni::server::SlaveGroupId group_id, std::vector<uni::net::EndpointId>& slave_endpoints);
 
   std::vector<uni::net::EndpointId> get_endpoints(uni::server::SlaveGroupId const& group_id);
+
+  boost::optional<uni::server::SlaveGroupId> get_group_id(uni::net::EndpointId const& endpoint_id);
 
  private:
   uni::async::AsyncQueue& _async_queue;

@@ -73,7 +73,8 @@ TestingContext::TestingContext(
       },
       heartbeat_tracker,
       log_syncer,
-      key_space_manager)
+      key_space_manager,
+      multipaxos_handler)
 {
   scheduler.set_callback([this](uni::net::IncomingMessage message){
     slave_handler.handle(message);

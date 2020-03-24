@@ -20,7 +20,11 @@ SlaveKeySpaceManager::SlaveKeySpaceManager(
     _async_queue(async_queue),
     _master_connections(master_connections),
     _multipaxos_handler(multipaxos_handler),
-    _paxos_log(paxos_log)
+    _paxos_log(paxos_log),
+    _ranges{
+      std::vector<uni::server::KeySpaceRange>(),
+      0
+    }
 {
   paxos_log.add_callback([this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry){
     if (entry.has_key_space_changed()) {

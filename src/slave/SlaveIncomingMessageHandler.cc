@@ -22,11 +22,13 @@ SlaveIncomingMessageHandler::SlaveIncomingMessageHandler(
   std::function<uni::custom_unique_ptr<uni::slave::TabletParticipant>(uni::slave::TabletId)> tp_provider,
   uni::server::HeartbeatTracker& heartbeat_tracker,
   uni::server::LogSyncer& log_syncer,
-  uni::slave::SlaveKeySpaceManager& key_space_manager)
+  uni::slave::SlaveKeySpaceManager& key_space_manager,
+  uni::paxos::MultiPaxosHandler& multipaxos_handler)
   : _tp_provider(tp_provider),
     _heartbeat_tracker(heartbeat_tracker),
     _log_syncer(log_syncer),
-    _key_space_manager(key_space_manager) {}
+    _key_space_manager(key_space_manager),
+    _multipaxos_handler(multipaxos_handler) {}
 
 void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_message) {
   auto endpoint_id = incoming_message.endpoint_id;
@@ -66,6 +68,9 @@ void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mess
       } else {
         LOG(uni::logging::Level::WARN, "Unkown sync message type.")
       }
+    } else if (slave_message.has_paxos_message()) {
+      LOG(uni::logging::Level::TRACE2, "Paxos Message gotten.")
+      _multipaxos_handler.handle_incoming_message(endpoint_id, slave_message.paxos_message());
     } else {
       LOG(uni::logging::Level::WARN, "Unkown slave message type.")
     }

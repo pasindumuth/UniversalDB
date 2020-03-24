@@ -12,6 +12,7 @@ namespace uni {
 namespace master {
 
 int const KeySpaceManager::RETRY_LIMIT = 3;
+int const KeySpaceManager::WAIT_FOR_COMMIT_INSERTED = 100;
 int const KeySpaceManager::WAIT_FOR_COMMIT = 100;
 int const KeySpaceManager::WAIT_FOR_FREE = 100;
 int const KeySpaceManager::WAIT_FOR_NEW_KEY_SPACE = 100;
@@ -118,7 +119,7 @@ void KeySpaceManager::handle_find_key(
             auto endpoints = _config_manager.get_endpoints(group_id);
             auto wrapper = build_new_key_space_selected_message(*key_space);
             _slave_connections.broadcast(endpoints, wrapper.SerializeAsString());
-            return WAIT_FOR_COMMIT; // Repeatedly bombard the slaves until they have dealt with this message.
+            return WAIT_FOR_COMMIT_INSERTED; // Repeatedly bombard the slaves until they have dealt with this message.
           }
         }
       }
@@ -162,6 +163,33 @@ void KeySpaceManager::handle_find_key(
     _multipaxos_handler.propose(log_entry);
     *retry_count += 1;
     return WAIT_FOR_NEW_KEY_SPACE;
+  });
+}
+
+void KeySpaceManager::handle_key_space_changed(
+  uni::net::EndpointId endpoint_id,
+  proto::slave::KeySpaceChanged const& message
+) {
+  // We don't need to worry about retrying here, the one branch where
+  // the job lives on will eventually evaluate to false, ending the job automatically.
+  _async_queue.add_task([this, message, endpoint_id]() {
+    if (auto group_id = _config_manager.get_group_id(endpoint_id)) {
+      auto const& state = _slave_group_ranges[group_id.get()];
+      if (auto const& new_key_space = std::get_if<NewKeySpace>(&state)) {
+        if (new_key_space->generation == message.generation()) {
+          auto log_entry = proto::paxos::PaxosLogEntry();
+          auto commit = new proto::paxos::master::KeySpaceCommit;
+          commit->set_generation(message.generation());
+          log_entry.set_allocated_key_space_commit(commit);
+          _multipaxos_handler.propose(log_entry);
+          return WAIT_FOR_COMMIT;
+        }
+      }
+    }
+    // If we get here, then either the group_id doesn't exist, the current state
+    // is KeySpace (instead of NewKeySpace), or the generation numbers are off.
+    // Either way, we can't complete this step, so just terminate the job.
+    return uni::async::AsyncQueue::TERMINATE;
   });
 }
 

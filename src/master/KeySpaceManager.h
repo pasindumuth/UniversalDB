@@ -13,6 +13,7 @@
 #include <paxos/MultiPaxosHandler.h>
 #include <proto/client.pb.h>
 #include <proto/message.pb.h>
+#include <proto/slave.pb.h>
 #include <server/KeySpaceRange.h>
 #include <server/SlaveGroupId.h>
 
@@ -22,6 +23,7 @@ namespace master {
 class KeySpaceManager {
  public:
   static int const RETRY_LIMIT;
+  static int const WAIT_FOR_COMMIT_INSERTED;
   static int const WAIT_FOR_COMMIT;
   static int const WAIT_FOR_FREE;
   static int const WAIT_FOR_NEW_KEY_SPACE;
@@ -39,6 +41,10 @@ class KeySpaceManager {
   void handle_find_key(
     uni::net::EndpointId endpoint_id,
     proto::client::FindKeyRangeRequest const& message);
+
+  void handle_key_space_changed(
+    uni::net::EndpointId endpoint_id,
+    proto::slave::KeySpaceChanged const& message);
 
  private:
   uni::async::AsyncQueue& _async_queue;
