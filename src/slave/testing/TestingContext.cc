@@ -72,7 +72,8 @@ TestingContext::TestingContext(
         );
       },
       heartbeat_tracker,
-      log_syncer)
+      log_syncer,
+      key_space_manager)
 {
   scheduler.set_callback([this](uni::net::IncomingMessage message){
     slave_handler.handle(message);

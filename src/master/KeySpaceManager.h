@@ -68,8 +68,6 @@ class KeySpaceManager {
   proto::message::MessageWrapper build_new_key_space_selected_message(NewKeySpace const& key_space);
 
   proto::paxos::master::NewKeySpaceSelected* build_new_key_space_selected_paxos(uni::server::SlaveGroupId group_id, NewKeySpace const& key_space);
-
-  uni::server::KeySpaceRange extract_range(proto::common::KeySpaceRange const& proto_range);
 };
 
 } // namespace master

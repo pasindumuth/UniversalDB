@@ -11,6 +11,7 @@
 #include <common/common.h>
 #include <server/LogSyncer.h>
 #include <server/HeartbeatTracker.h>
+#include <slave/SlaveKeySpaceManager.h>
 #include <slave/TabletParticipant.h>
 
 namespace uni {
@@ -21,7 +22,8 @@ class SlaveIncomingMessageHandler {
   SlaveIncomingMessageHandler(
     std::function<uni::custom_unique_ptr<uni::slave::TabletParticipant>(uni::slave::TabletId)> tp_provider,
     uni::server::HeartbeatTracker& heartbeat_tracker,
-    uni::server::LogSyncer& log_syncer);
+    uni::server::LogSyncer& log_syncer,
+    uni::slave::SlaveKeySpaceManager& key_space_manager);
 
   void handle(uni::net::IncomingMessage incoming_message);
 
@@ -31,6 +33,7 @@ class SlaveIncomingMessageHandler {
   std::function<uni::custom_unique_ptr<uni::slave::TabletParticipant>(uni::slave::TabletId)> _tp_provider;
   uni::server::HeartbeatTracker& _heartbeat_tracker;
   uni::server::LogSyncer& _log_syncer;
+  uni::slave::SlaveKeySpaceManager& _key_space_manager;
 
   std::unordered_map<TabletId, uni::custom_unique_ptr<uni::slave::TabletParticipant>> _tp_map;
 

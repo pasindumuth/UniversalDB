@@ -51,7 +51,12 @@ KeySpaceManager::KeySpaceManager(
       };
 
       for (auto const& range: key_space_selected.new_ranges()) {
-        new_key_space.new_ranges.push_back(extract_range(range));
+        new_key_space.new_ranges.push_back({
+          range.database_id(),
+          range.table_id(),
+          range.has_start_key() ? range.start_key().value() : boost::optional<std::string>(),
+          range.has_end_key() ? range.end_key().value() : boost::optional<std::string>()
+        });
       }
 
       _slave_group_ranges[group_id] = new_key_space;
@@ -204,15 +209,6 @@ proto::paxos::master::NewKeySpaceSelected* KeySpaceManager::build_new_key_space_
   new_key_space_message->set_generation(key_space.generation);
   new_key_space_message->set_slave_group_id(group_id.id);
   return new_key_space_message;
-}
-
-uni::server::KeySpaceRange KeySpaceManager::extract_range(proto::common::KeySpaceRange const& proto_range) {
-  return {
-    proto_range.database_id(),
-    proto_range.table_id(),
-    proto_range.has_start_key() ? proto_range.start_key().value() : boost::optional<std::string>(),
-    proto_range.has_end_key() ? proto_range.end_key().value() : boost::optional<std::string>()
-  };
 }
 
 } // namespace master

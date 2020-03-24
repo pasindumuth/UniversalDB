@@ -10,6 +10,7 @@
 #include <async/AsyncQueue.h>
 #include <net/Connections.h>
 #include <paxos/MultiPaxosHandler.h>
+#include <proto/master.pb.h>
 #include <server/KeySpaceRange.h>
 #include <server/SlaveGroupId.h>
 
@@ -18,11 +19,17 @@ namespace slave {
 
 class SlaveKeySpaceManager {
  public:
+  static int const WAIT_FOR_PAXOS;
+
   SlaveKeySpaceManager(
     uni::async::AsyncQueue& async_queue,
     uni::net::Connections& master_connections,
     uni::paxos::MultiPaxosHandler& multipaxos_handler,
     uni::paxos::PaxosLog& paxos_log);
+
+   void handle_key_space_change(
+     uni::net::EndpointId endpoint_id,
+     proto::master::NewKeySpaceSelected const& message);
 
  private:
    uni::async::AsyncQueue& _async_queue;
@@ -35,7 +42,7 @@ class SlaveKeySpaceManager {
       uint32_t generation;
    };
 
-   std::variant<KeySpace> _ranges;
+   KeySpace _ranges;
 };
 
 } // namespace slave
