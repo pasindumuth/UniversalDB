@@ -1,10 +1,11 @@
+// Messages sent out by the client
+
 syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
 
 package proto.client;
 
-// Message sent from client applications to the Universal slaves.
 message ClientRequest {
   enum Type {
     UNSET = 0;

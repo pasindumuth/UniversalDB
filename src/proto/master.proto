@@ -1,6 +1,10 @@
+// Messages sent out by the master
+
 syntax = "proto3";
 
 import "common.proto";
+import "paxos.proto";
+import "sync.proto";
 
 package proto.master;
 
@@ -11,6 +15,8 @@ message NewKeySpaceSelected {
 
 message MasterMessage {
   oneof master_message {
-    NewKeySpaceSelected key_space_selected = 1;
+    proto.paxos.PaxosMessage paxos_message = 1;
+    proto.sync.SyncMessage sync_message = 2;
+    NewKeySpaceSelected key_space_selected = 3;
   }
 }

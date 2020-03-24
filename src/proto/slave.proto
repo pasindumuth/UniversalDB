@@ -1,3 +1,5 @@
+// Messages sent out by the slave
+
 syntax = "proto3";
 
 import "paxos.proto";

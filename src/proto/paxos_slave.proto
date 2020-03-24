@@ -1,3 +1,7 @@
+// Messages inserted into the slaves's paxos logs
+// TODO: have a paxos_tablet.proto file, containing all proto definitions
+// for reading and writing.
+
 syntax = "proto3";
 
 import "common.proto";

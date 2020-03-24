@@ -1,3 +1,5 @@
+// Messages inserted into the master's paxos log
+
 syntax = "proto3";
 
 import "common.proto";
