@@ -35,6 +35,38 @@ struct SendFindKeyRangeResponse {
   uni::net::Connections& _client_connections;
 };
 
+struct SendPaxos {
+  proto::message::MessageWrapper operator()(proto::paxos::PaxosMessage* paxos_message){
+    auto message_wrapper = proto::message::MessageWrapper();
+    auto master_message = new proto::master::MasterMessage;
+    master_message->set_allocated_paxos_message(paxos_message);
+    message_wrapper.set_allocated_master_message(master_message);
+    return message_wrapper;
+  }
+};
+
+struct SendSync {
+  proto::message::MessageWrapper operator()(proto::sync::SyncMessage* sync_message){
+    auto message_wrapper = proto::message::MessageWrapper();
+    auto master_message = new proto::master::MasterMessage;
+    master_message->set_allocated_sync_message(sync_message);
+    message_wrapper.set_allocated_master_message(master_message);
+    return message_wrapper;
+  }
+};
+
+struct GetEndpoints {
+  GetEndpoints(uni::net::Connections& connections):
+    _connections(connections) {}
+
+  std::vector<uni::net::EndpointId> operator()(){
+    return _connections.get_all_endpoints();
+  }
+
+ private:
+  uni::net::Connections& _connections;
+};
+
 } // namespace master
 } // namespace uni
 

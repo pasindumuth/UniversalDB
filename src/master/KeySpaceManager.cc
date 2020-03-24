@@ -107,7 +107,7 @@ void KeySpaceManager::handle_find_key(
       // key range assigned. If there is, then send the corresponding slaves a
       // NewKeySpaceSelected message.
       if (auto const& key_space = std::get_if<NewKeySpace>(&v)) {
-        for (auto const& range : key_space->ranges) {
+        for (auto const& range : key_space->new_ranges) {
           if (within_range(range, message)) {
             // We have found a group_id where the requested key exists in the KeySpaceRange
             auto endpoints = _config_manager.get_endpoints(group_id);

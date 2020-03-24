@@ -1,8 +1,9 @@
 #include "ProductionContext.h"
 
+#include <functional>
+
 #include <master/functors.h>
 #include <net/IncomingMessage.h>
-#include <proto/client.pb.h>
 #include <server/SlaveGroupId.h>
 
 namespace uni {
@@ -26,32 +27,16 @@ ProductionContext::ProductionContext(
           connections,
           paxos_log,
           index,
-          [&connections](){
-            return connections.get_all_endpoints();
-          },
-          [](proto::paxos::PaxosMessage* paxos_message){
-            auto message_wrapper = proto::message::MessageWrapper();
-            auto slave_message = new proto::slave::SlaveMessage;
-            slave_message->set_allocated_paxos_message(paxos_message);
-            message_wrapper.set_allocated_slave_message(slave_message);
-            return message_wrapper;
-          });
+          uni::master::GetEndpoints(connections),
+          uni::master::SendPaxos());
       }),
     log_syncer(
       constants,
       connections,
       timer_scheduler,
       paxos_log,
-      [&connections](){
-        return connections.get_all_endpoints();
-      },
-      [](proto::sync::SyncMessage* sync_message){
-        auto message_wrapper = proto::message::MessageWrapper();
-        auto slave_message = new proto::slave::SlaveMessage;
-        slave_message->set_allocated_sync_message(sync_message); // TODO: Must replace "slave_message"
-        message_wrapper.set_allocated_slave_message(slave_message);
-        return message_wrapper;
-      }),
+      uni::master::GetEndpoints(connections),
+      uni::master::SendSync()),
     group_config_manager(
       async_queue,
       slave_connections,

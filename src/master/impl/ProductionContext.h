@@ -1,11 +1,6 @@
 #ifndef UNI_MASTER_PRODUCTIONCONTEXT_H
 #define UNI_MASTER_PRODUCTIONCONTEXT_H
 
-#include <functional>
-#include <memory>
-#include <thread>
-#include <vector>
-
 #include <boost/asio.hpp>
 
 #include <async/impl/TimerAsyncSchedulerImpl.h>

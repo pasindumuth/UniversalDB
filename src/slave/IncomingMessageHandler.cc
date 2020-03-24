@@ -24,7 +24,7 @@ void IncomingMessageHandler::handle(uni::net::IncomingMessage incoming_message) 
       LOG(uni::logging::Level::TRACE2, "Client Request gotten.")
       _client_request_handler.handle_request(endpoint_id, client_message.request());
     } else {
-      LOG(uni::logging::Level::TRACE2, "Unkown client message type.")
+      LOG(uni::logging::Level::WARN, "Unkown client message type.")
     }
   } else if (message_wrapper.has_tablet_message()) {
     auto tablet_message = message_wrapper.tablet_message();
@@ -40,10 +40,10 @@ void IncomingMessageHandler::handle(uni::net::IncomingMessage incoming_message) 
         LOG(uni::logging::Level::TRACE2, "Sync Response gotten.")
         _log_syncer.handle_sync_response(sync_message.sync_response());
       } else {
-        LOG(uni::logging::Level::TRACE2, "Unkown sync message type.")
+        LOG(uni::logging::Level::WARN, "Unkown sync message type.")
       }
     } else {
-      LOG(uni::logging::Level::TRACE2, "Unkown tablet message type.")
+      LOG(uni::logging::Level::WARN, "Unkown tablet message type.")
     }
   } else {
     LOG(uni::logging::Level::WARN, "Unkown message type in IncomingMessageHandler.")

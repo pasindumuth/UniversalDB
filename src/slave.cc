@@ -66,11 +66,13 @@ int main(int argc, char* argv[]) {
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
   auto client_connections = uni::net::Connections(server_async_scheduler);
   auto client_connection_handler = uni::server::ConnectionHandler(client_connections, client_acceptor);
+  client_connection_handler.async_accept();
 
   // Add the datamaster connection handler. The datamasters will initiate the connections.
   auto master_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.master_port));
   auto master_connections = uni::net::Connections(server_async_scheduler);
   auto master_connection_handler = uni::server::ConnectionHandler(master_connections, master_acceptor);
+  master_connection_handler.async_accept();
 
   auto production_context = uni::slave::ProductionContext(
     background_io_context,
@@ -79,8 +81,6 @@ int main(int argc, char* argv[]) {
     master_connections,
     connections,
     server_async_scheduler);
-
-  client_connection_handler.async_accept();
 
   LOG(uni::logging::Level::INFO, "Setup finished")
   auto server_work_guard = boost::asio::make_work_guard(server_io_context);

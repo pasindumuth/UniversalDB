@@ -28,32 +28,16 @@ TestingContext::TestingContext(
           connections,
           paxos_log,
           index,
-          [&config_endpoints](){
-            return config_endpoints;
-          },
-          [](proto::paxos::PaxosMessage* paxos_message){
-            auto message_wrapper = proto::message::MessageWrapper();
-            auto slave_message = new proto::slave::SlaveMessage;
-            slave_message->set_allocated_paxos_message(paxos_message);
-            message_wrapper.set_allocated_slave_message(slave_message);
-            return message_wrapper;
-          });
+          [&config_endpoints](){ return config_endpoints; },
+          uni::master::SendPaxos());
       }),
     log_syncer(
       constants,
       connections,
       timer_scheduler,
       paxos_log,
-      [&config_endpoints](){
-        return config_endpoints;
-      },
-      [](proto::sync::SyncMessage* sync_message){
-        auto message_wrapper = proto::message::MessageWrapper();
-        auto slave_message = new proto::slave::SlaveMessage;
-        slave_message->set_allocated_sync_message(sync_message);
-        message_wrapper.set_allocated_slave_message(slave_message);
-        return message_wrapper;
-      }),
+      [&config_endpoints](){ return config_endpoints; },
+      uni::master::SendSync()),
     group_config_manager(
       async_queue,
       slave_connections,
@@ -71,7 +55,11 @@ TestingContext::TestingContext(
       multipaxos_handler,
       group_config_manager,
       key_space_manager)
-{}
+{
+  scheduler.set_callback([this](uni::net::IncomingMessage message){
+    master_handler.handle(message);
+  });
+}
 
 } // namespace master
 } // namespace uni

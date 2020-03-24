@@ -39,7 +39,7 @@ void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mess
         client_message.request().table_id().value(),
         incoming_message);
     } else {
-      LOG(uni::logging::Level::TRACE2, "Unkown client message type.")
+      LOG(uni::logging::Level::WARN, "Unkown client message type.")
     }
   } else if (message_wrapper.has_tablet_message()) {
     LOG(uni::logging::Level::TRACE2, "TabletMessage at SlaveIncomingMessageHandler gotten.")
@@ -62,10 +62,10 @@ void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mess
         LOG(uni::logging::Level::TRACE2, "Sync Response at SlaveIncomingMessageHandler gotten.")
         _log_syncer.handle_sync_response(sync_message.sync_response());
       } else {
-        LOG(uni::logging::Level::TRACE2, "Unkown sync message type.")
+        LOG(uni::logging::Level::WARN, "Unkown sync message type.")
       }
     } else {
-      LOG(uni::logging::Level::TRACE2, "Unkown slave message type.")
+      LOG(uni::logging::Level::WARN, "Unkown slave message type.")
     }
   } else {
     LOG(uni::logging::Level::WARN, "Unkown message type in SlaveIncomingMessageHandler.")

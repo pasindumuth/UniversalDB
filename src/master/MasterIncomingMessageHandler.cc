@@ -25,7 +25,7 @@ void MasterIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mes
       LOG(uni::logging::Level::TRACE2, "Client FindKeyRange message gotten.")
       _key_space_manager.handle_find_key(endpoint_id, client_message.find_key_range_request());
     } else {
-      LOG(uni::logging::Level::TRACE2, "Unkown client message type.")
+      LOG(uni::logging::Level::WARN, "Unkown client message type.")
     }
   } else if (message_wrapper.has_master_message()) {
     auto const& master_message = message_wrapper.master_message();
@@ -41,10 +41,10 @@ void MasterIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mes
         LOG(uni::logging::Level::TRACE2, "Sync Response at gotten.")
         _log_syncer.handle_sync_response(sync_message.sync_response());
       } else {
-        LOG(uni::logging::Level::TRACE2, "Unkown sync message type.")
+        LOG(uni::logging::Level::WARN, "Unkown sync message type.")
       }
     } else {
-      LOG(uni::logging::Level::TRACE2, "Unkown master message type.")
+      LOG(uni::logging::Level::WARN, "Unkown master message type.")
     }
   } else {
     LOG(uni::logging::Level::WARN, "Unkown message type in MasterIncomingMessageHandler.")

@@ -54,9 +54,9 @@ void ChannelImpl::recv() {
   void* header_buf = malloc(4);
   boost::asio::async_read(_socket, boost::asio::buffer(header_buf, 4),
       [this, header_buf](const boost::system::error_code&, size_t bytes_transferred) {
-   LOG(uni::logging::TRACE2, "Header bytes received: " + std::to_string(bytes_transferred))
+   LOG(uni::logging::Level::TRACE2, "Header bytes received: " + std::to_string(bytes_transferred))
     if (bytes_transferred == 0) {
-     LOG(uni::logging::TRACE2, "Remove socket closed")
+     LOG(uni::logging::Level::TRACE2, "Remove socket closed")
       free(header_buf);
       for (auto callback: _close_callbacks) {
         callback();
@@ -67,7 +67,7 @@ void ChannelImpl::recv() {
       void* buf = malloc(length);
       boost::asio::async_read(_socket, boost::asio::buffer(buf, length),
           [this, buf, length](const boost::system::error_code&, size_t bytes_transferred) {
-       LOG(uni::logging::TRACE2, "Body bytes received: " + std::to_string(bytes_transferred))
+       LOG(uni::logging::Level::TRACE2, "Body bytes received: " + std::to_string(bytes_transferred))
         std::string serialized((char*) buf, length);
         free(buf);
         for (auto callback: _receive_callbacks) {
