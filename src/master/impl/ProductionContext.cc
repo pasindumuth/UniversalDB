@@ -1,7 +1,5 @@
 #include "ProductionContext.h"
 
-#include <functional>
-
 #include <master/functors.h>
 #include <net/IncomingMessage.h>
 #include <server/SlaveGroupId.h>
@@ -16,7 +14,10 @@ ProductionContext::ProductionContext(
   uni::net::Connections& slave_connections,
   uni::net::Connections& connections,
   uni::async::AsyncSchedulerImpl& scheduler)
-  : timer_scheduler(background_io_context),
+  : async_queue_provider([this](){
+      return uni::async::AsyncQueue(timer_scheduler);
+    }),
+    timer_scheduler(background_io_context),
     async_queue(timer_scheduler),
     paxos_log(),
     multipaxos_handler(
@@ -44,6 +45,7 @@ ProductionContext::ProductionContext(
       paxos_log),
     key_space_manager(
       async_queue,
+      async_queue_provider,
       group_config_manager,
       slave_connections,
       multipaxos_handler,

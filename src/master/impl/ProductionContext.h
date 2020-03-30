@@ -1,6 +1,8 @@
 #ifndef UNI_MASTER_PRODUCTIONCONTEXT_H
 #define UNI_MASTER_PRODUCTIONCONTEXT_H
 
+#include <functional>
+
 #include <boost/asio.hpp>
 
 #include <async/impl/TimerAsyncSchedulerImpl.h>
@@ -30,6 +32,10 @@ struct ProductionContext {
     uni::net::Connections& connections,
     uni::async::AsyncSchedulerImpl& scheduler);
 
+  // Providers
+  std::function<uni::async::AsyncQueue()> async_queue_provider;
+
+  // Singletons
   uni::async::TimerAsyncSchedulerImpl timer_scheduler;
   uni::async::AsyncQueue async_queue;
   uni::paxos::PaxosLog paxos_log;

@@ -1,7 +1,5 @@
 #include "TestingContext.h"
 
-#include <functional>
-
 #include <master/functors.h>
 
 namespace uni {
@@ -11,7 +9,10 @@ TestingContext::TestingContext(
   uni::constants::Constants const& constants,
   std::vector<uni::net::EndpointId>& config_endpoints,
   std::string ip_string)
-  : ip_string(ip_string),
+  : async_queue_provider([this](){
+      return uni::async::AsyncQueue(timer_scheduler);
+    }),
+    ip_string(ip_string),
     scheduler(),
     client_connections(scheduler),
     slave_connections(scheduler),
@@ -45,6 +46,7 @@ TestingContext::TestingContext(
       paxos_log),
     key_space_manager(
       async_queue,
+      async_queue_provider,
       group_config_manager,
       slave_connections,
       multipaxos_handler,

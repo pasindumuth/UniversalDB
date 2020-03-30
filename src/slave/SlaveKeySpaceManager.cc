@@ -79,7 +79,7 @@ void SlaveKeySpaceManager::handle_key_space_change(
       return WAIT_FOR_PAXOS;
     } else if (_ranges.generation == message.generation()) {
       // This means that the slave nodes have updated the key space ranges to that
-      // requested by this incoming message, so just just reply to the master with a 
+      // requested by this incoming message, so just reply to the master with a 
       // commit message.
       auto message_wrapper = proto::message::MessageWrapper();
       auto slave_message = new proto::slave::SlaveMessage;

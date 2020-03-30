@@ -30,6 +30,7 @@ class KeySpaceManager {
 
   KeySpaceManager(
     uni::async::AsyncQueue& async_queue,
+    std::function<uni::async::AsyncQueue()>& async_queue_provider,
     uni::master::GroupConfigManager& config_manager,
     uni::net::Connections& slave_connections,
     uni::paxos::MultiPaxosHandler& multipaxos_handler,
@@ -54,6 +55,8 @@ class KeySpaceManager {
   uni::paxos::PaxosLog& _paxos_log;
   uni::master::SendFindKeyRangeResponse _respond;
 
+  uni::async::AsyncQueue _local_async_queue;
+
   struct KeySpace {
     std::vector<uni::server::KeySpaceRange> ranges;
     uint32_t generation;
@@ -67,13 +70,21 @@ class KeySpaceManager {
 
   std::unordered_map<uni::server::SlaveGroupId, std::variant<KeySpace, NewKeySpace>> _slave_group_ranges;
 
-  bool within_range(uni::server::KeySpaceRange const& key_space_range, proto::client::FindKeyRangeRequest const& message);
+  bool within_range(
+    uni::server::KeySpaceRange const& key_space_range,
+    proto::client::FindKeyRangeRequest const& message);
 
-  void build_range(proto::common::KeySpaceRange *const, uni::server::KeySpaceRange const& range);
+  void build_range(
+    proto::common::KeySpaceRange *const,
+    uni::server::KeySpaceRange const& range);
 
-  proto::message::MessageWrapper build_new_key_space_selected_message(NewKeySpace const& key_space);
+  proto::message::MessageWrapper build_new_key_space_selected_message(
+    NewKeySpace const& key_space);
 
-  proto::paxos::master::NewKeySpaceSelected* build_new_key_space_selected_paxos(uni::server::SlaveGroupId group_id, NewKeySpace const& key_space);
+  proto::paxos::master::NewKeySpaceSelected* build_new_key_space_selected_paxos(
+    uni::server::SlaveGroupId group_id,
+    std::vector<uni::server::KeySpaceRange> const& new_ranges,
+    uint32_t generation);
 };
 
 } // namespace master

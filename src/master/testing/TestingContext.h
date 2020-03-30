@@ -1,6 +1,7 @@
 #ifndef UNI_MASTER_TESTINGCONTEXT_H
 #define UNI_MASTER_TESTINGCONTEXT_H
 
+#include <functional>
 #include <string>
 
 #include <async/AsyncQueue.h>
@@ -27,6 +28,10 @@ struct TestingContext {
     std::vector<uni::net::EndpointId>& config_endpoints,
     std::string ip_string);
 
+  // Providers
+  std::function<uni::async::AsyncQueue()> async_queue_provider;
+
+  // Singletons
   std::string ip_string;
   uni::async::AsyncSchedulerTesting scheduler;
   uni::net::Connections client_connections;

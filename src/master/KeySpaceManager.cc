@@ -19,6 +19,7 @@ int const KeySpaceManager::WAIT_FOR_NEW_KEY_SPACE = 100;
 
 KeySpaceManager::KeySpaceManager(
   uni::async::AsyncQueue& async_queue,
+  std::function<uni::async::AsyncQueue()>& async_queue_provider,
   uni::master::GroupConfigManager& config_manager,
   uni::net::Connections& slave_connections,
   uni::paxos::MultiPaxosHandler& multipaxos_handler,
@@ -29,7 +30,8 @@ KeySpaceManager::KeySpaceManager(
     _slave_connections(slave_connections),
     _multipaxos_handler(multipaxos_handler),
     _paxos_log(paxos_log),
-    _respond(respond)
+    _respond(respond),
+    _local_async_queue(async_queue_provider())
 {
   paxos_log.add_callback([this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry){
     if (entry.has_key_space_selected()) {
@@ -77,7 +79,7 @@ KeySpaceManager::KeySpaceManager(
         "The generation of the KeySpaceCommit should be equals to that of the current new key space");
       
       _slave_group_ranges[group_id] = KeySpace{
-        new_key_space.ranges,
+        new_key_space.new_ranges,
         new_key_space.generation
       };
     }
@@ -118,7 +120,8 @@ void KeySpaceManager::handle_find_key(
             // We have found a group_id where the requested key exists in the KeySpaceRange
             auto endpoints = _config_manager.get_endpoints(group_id);
             auto wrapper = build_new_key_space_selected_message(*key_space);
-            _slave_connections.broadcast(endpoints, wrapper.SerializeAsString());
+            // TODO we should be broadcasting this message to all slaves.
+            _slave_connections.broadcast({endpoints[0]}, wrapper.SerializeAsString());
             return WAIT_FOR_COMMIT_INSERTED; // Repeatedly bombard the slaves until they have dealt with this message.
           }
         }
@@ -151,14 +154,9 @@ void KeySpaceManager::handle_find_key(
     auto const& key_space = std::get<KeySpace>(it->second);
     auto new_ranges = key_space.ranges;
     new_ranges.push_back({message.database_id(), message.table_id(), boost::none, boost::none});
-    auto new_key_space = NewKeySpace{
-      key_space.ranges,
-      new_ranges,
-      key_space.generation + 1
-    };
 
     auto log_entry = proto::paxos::PaxosLogEntry();
-    auto new_key_space_message = build_new_key_space_selected_paxos(it->first, new_key_space);
+    auto new_key_space_message = build_new_key_space_selected_paxos(it->first, new_ranges, key_space.generation + 1);
     log_entry.set_allocated_key_space_selected(new_key_space_message);
     _multipaxos_handler.propose(log_entry);
     *retry_count += 1;
@@ -172,7 +170,7 @@ void KeySpaceManager::handle_key_space_changed(
 ) {
   // We don't need to worry about retrying here, the one branch where
   // the job lives on will eventually evaluate to false, ending the job automatically.
-  _async_queue.add_task([this, message, endpoint_id]() {
+  _local_async_queue.add_task([this, message, endpoint_id]() {
     if (auto group_id = _config_manager.get_group_id(endpoint_id)) {
       auto const& state = _slave_group_ranges[group_id.get()];
       if (auto const& new_key_space = std::get_if<NewKeySpace>(&state)) {
@@ -180,6 +178,7 @@ void KeySpaceManager::handle_key_space_changed(
           auto log_entry = proto::paxos::PaxosLogEntry();
           auto commit = new proto::paxos::master::KeySpaceCommit;
           commit->set_generation(message.generation());
+          commit->set_slave_group_id(group_id.get().id);
           log_entry.set_allocated_key_space_commit(commit);
           _multipaxos_handler.propose(log_entry);
           return WAIT_FOR_COMMIT;
@@ -226,15 +225,17 @@ proto::message::MessageWrapper KeySpaceManager::build_new_key_space_selected_mes
   message_wrapper.set_allocated_master_message(master_message);
   return message_wrapper;
 }
+
 proto::paxos::master::NewKeySpaceSelected* KeySpaceManager::build_new_key_space_selected_paxos(
   uni::server::SlaveGroupId group_id,
-  NewKeySpace const& key_space
+  std::vector<uni::server::KeySpaceRange> const& new_ranges,
+  uint32_t generation
 ) {
   auto new_key_space_message = new proto::paxos::master::NewKeySpaceSelected();
-  for (auto const& range : key_space.new_ranges) {
+  for (auto const& range : new_ranges) {
     build_range(new_key_space_message->add_new_ranges(), range);
   }
-  new_key_space_message->set_generation(key_space.generation);
+  new_key_space_message->set_generation(generation);
   new_key_space_message->set_slave_group_id(group_id.id);
   return new_key_space_message;
 }
