@@ -16,6 +16,7 @@
 #include <net/Connections.h>
 #include <paxos/PaxosLog.h>
 #include <paxos/MultiPaxosHandler.h>
+#include <random/impl/RandomImpl.h>
 #include <server/FailureDetector.h>
 #include <server/HeartbeatTracker.h>
 #include <server/LogSyncer.h>
@@ -31,6 +32,9 @@ struct ProductionContext {
     uni::net::Connections& slave_connections,
     uni::net::Connections& connections,
     uni::async::AsyncSchedulerImpl& scheduler);
+
+  // Helper classes
+  uni::random::RandomImpl random;
 
   // Providers
   std::function<uni::async::AsyncQueue()> async_queue_provider;

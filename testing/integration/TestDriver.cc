@@ -23,7 +23,8 @@ void TestDriver::run_test(TestFunction test) {
     slaves.push_back(
       std::make_unique<uni::slave::TestingContext>(
         constants,
-        "universal" + std::to_string(i)
+        "universal" + std::to_string(i),
+        i
       )
     );
   }

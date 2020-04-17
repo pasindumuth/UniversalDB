@@ -20,7 +20,8 @@ ProductionContext::ProductionContext(
   uni::net::Connections& master_connections,
   uni::net::Connections& connections,
   uni::async::AsyncSchedulerImpl& scheduler)
-  : timer_scheduler(background_io_context),
+  : random(),
+    timer_scheduler(background_io_context),
     async_queue(timer_scheduler),
     heartbeat_tracker(),
     failure_detector(
@@ -72,6 +73,7 @@ ProductionContext::ProductionContext(
             [&thread_and_context](){
               return std::make_unique<uni::async::AsyncSchedulerImpl>(thread_and_context->io_context);
             },
+            std::make_unique<uni::random::RandomImpl>(),
             constants,
             connections,
             client_connections,

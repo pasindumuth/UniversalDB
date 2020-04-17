@@ -14,6 +14,7 @@
 #include <net/Connections.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosLog.h>
+#include <random/Random.h>
 #include <slave/ClientRequestHandler.h>
 #include <slave/IncomingMessageHandler.h>
 #include <slave/SlaveConfigManager.h>
@@ -36,8 +37,12 @@ struct TabletParticipant {
   uni::server::LogSyncer log_syncer;
   uni::slave::IncomingMessageHandler incoming_message_handler;
 
+  // Helper classes
+  std::unique_ptr<uni::random::Random> random;
+
   TabletParticipant(
     std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
+    std::unique_ptr<uni::random::Random> random_ptr,
     uni::constants::Constants const& constants,
     uni::net::Connections& connections,
     uni::net::Connections& client_connections,

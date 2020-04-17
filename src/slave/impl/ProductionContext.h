@@ -16,6 +16,7 @@
 #include <net/Connections.h>
 #include <net/EndpointId.h>
 #include <paxos/PaxosLog.h>
+#include <random/impl/RandomImpl.h>
 #include <server/FailureDetector.h>
 #include <server/HeartbeatTracker.h>
 #include <server/LogSyncer.h>
@@ -42,6 +43,10 @@ struct ProductionContext {
     uni::net::Connections& connections,
     uni::async::AsyncSchedulerImpl& scheduler);
 
+  // Helper classes
+  uni::random::RandomImpl random;
+
+  // Singletons
   uni::async::TimerAsyncSchedulerImpl timer_scheduler;
   uni::async::AsyncQueue async_queue;
   uni::server::HeartbeatTracker heartbeat_tracker;

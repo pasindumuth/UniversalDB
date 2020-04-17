@@ -8,11 +8,13 @@ namespace master {
 TestingContext::TestingContext(
   uni::constants::Constants const& constants,
   std::vector<uni::net::EndpointId>& config_endpoints,
-  std::string ip_string)
-  : async_queue_provider([this](){
+  std::string ip,
+  unsigned random_seed)
+  : ip_string(ip),
+    random(random_seed),
+    async_queue_provider([this](){
       return uni::async::AsyncQueue(timer_scheduler);
     }),
-    ip_string(ip_string),
     scheduler(),
     client_connections(scheduler),
     slave_connections(scheduler),

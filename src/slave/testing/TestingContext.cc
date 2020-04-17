@@ -7,8 +7,10 @@ namespace slave {
 
 TestingContext::TestingContext(
   uni::constants::Constants const& constants,
-  std::string ip_string)
-  : ip_string(ip_string),
+  std::string ip,
+  unsigned random_seed)
+  : ip_string(ip),
+    random(random_seed),
     scheduler(),
     client_connections(scheduler),
     master_connections(scheduler),
@@ -59,6 +61,7 @@ TestingContext::TestingContext(
             [](){
               return std::make_unique<uni::async::AsyncSchedulerTesting>();
             },
+            std::make_unique<uni::random::RandomTesting>(random.rng()()),
             constants,
             connections,
             client_connections,

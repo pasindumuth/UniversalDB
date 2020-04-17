@@ -17,6 +17,7 @@
 #include <net/EndpointId.h>
 #include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosLog.h>
+#include <random/testing/RandomTesting.h>
 #include <server/LogSyncer.h>
 
 namespace uni {
@@ -26,13 +27,19 @@ struct TestingContext {
   TestingContext(
     uni::constants::Constants const& constants,
     std::vector<uni::net::EndpointId>& config_endpoints,
-    std::string ip_string);
+    std::string ip,
+    unsigned random_seed);
+
+  // Primitives
+  std::string ip_string;
+
+  // Helper classes
+  uni::random::RandomTesting random;
 
   // Providers
   std::function<uni::async::AsyncQueue()> async_queue_provider;
 
   // Singletons
-  std::string ip_string;
   uni::async::AsyncSchedulerTesting scheduler;
   uni::net::Connections client_connections;
   uni::net::Connections slave_connections;

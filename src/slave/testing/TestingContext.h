@@ -15,6 +15,7 @@
 #include <net/Connections.h>
 #include <net/EndpointId.h>
 #include <paxos/PaxosLog.h>
+#include <random/testing/RandomTesting.h>
 #include <server/FailureDetector.h>
 #include <server/HeartbeatTracker.h>
 #include <server/LogSyncer.h>
@@ -29,9 +30,16 @@ namespace slave {
 struct TestingContext {
   TestingContext(
     uni::constants::Constants const& constants,
-    std::string ip_string);
+    std::string ip,
+    unsigned random_seed);
 
+  // Primitives
   std::string ip_string;
+
+  // Helper classes
+  uni::random::RandomTesting random;
+
+  // Singletons
   uni::async::AsyncSchedulerTesting scheduler;
   uni::net::Connections client_connections;
   uni::net::Connections master_connections;

@@ -14,7 +14,8 @@ ProductionContext::ProductionContext(
   uni::net::Connections& slave_connections,
   uni::net::Connections& connections,
   uni::async::AsyncSchedulerImpl& scheduler)
-  : async_queue_provider([this](){
+  : random(),
+    async_queue_provider([this](){
       return uni::async::AsyncQueue(timer_scheduler);
     }),
     timer_scheduler(background_io_context),

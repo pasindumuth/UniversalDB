@@ -17,6 +17,7 @@ namespace slave {
 
 TabletParticipant::TabletParticipant(
   std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
+  std::unique_ptr<uni::random::Random> random_ptr,
   uni::constants::Constants const& constants,
   uni::net::Connections& connections,
   uni::net::Connections& client_connections,
@@ -25,6 +26,7 @@ TabletParticipant::TabletParticipant(
   uni::slave::SlaveConfigManager& config_manager,
   uni::slave::TabletId& tid)
   : scheduler(scheduler_provider()),
+    random(std::move(random_ptr)),
     tablet_id(tid),
     paxos_log(),
     multipaxos_handler(
