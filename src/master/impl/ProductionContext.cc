@@ -28,6 +28,7 @@ ProductionContext::ProductionContext(
           constants,
           connections,
           paxos_log,
+          random,
           index,
           uni::master::GetEndpoints(connections),
           uni::master::SendPaxos());

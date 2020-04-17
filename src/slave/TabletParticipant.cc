@@ -36,6 +36,7 @@ TabletParticipant::TabletParticipant(
           constants,
           connections,
           paxos_log,
+          *random,
           index,
           uni::slave::GetEndpoints(config_manager),
           [this](proto::paxos::PaxosMessage* paxos_message){

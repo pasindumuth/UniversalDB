@@ -15,6 +15,7 @@
 #include <paxos/PaxosTypes.h>
 #include <proto/message.pb.h>
 #include <proto/paxos.pb.h>
+#include <random/Random.h>
 #include <slave/TabletId.h>
 
 namespace uni {
@@ -34,6 +35,7 @@ class SinglePaxosHandler {
       uni::constants::Constants const& constants,
       uni::net::Connections& connections,
       uni::paxos::PaxosLog& paxos_log,
+      uni::random::Random& random,
       index_t paxos_log_index,
       std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
       std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper);
@@ -67,6 +69,7 @@ class SinglePaxosHandler {
   uni::constants::Constants const& _constants;
   uni::net::Connections& _connections;
   uni::paxos::PaxosLog& _paxos_log;
+  uni::random::Random& _random;
   // The index of the Paxos Log that this Paxos Instance is trying to populate.
   index_t const _paxos_log_index;
   std::function<std::vector<uni::net::EndpointId>()> _get_endpoints;

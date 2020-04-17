@@ -32,6 +32,7 @@ TestingContext::TestingContext(
           constants,
           connections,
           paxos_log,
+          random,
           index,
           uni::slave::GetEndpoints(config_manager),
           uni::slave::SendPaxos());

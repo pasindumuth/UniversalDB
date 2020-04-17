@@ -30,6 +30,7 @@ TestingContext::TestingContext(
           constants,
           connections,
           paxos_log,
+          random,
           index,
           [&config_endpoints](){ return config_endpoints; },
           uni::master::SendPaxos());

@@ -1,6 +1,5 @@
 #include "SinglePaxosHandler.h"
 
-#include <cmath>
 #include <vector>
 
 #include <assert/assert.h>
@@ -14,18 +13,20 @@ SinglePaxosHandler::SinglePaxosHandler(
     uni::constants::Constants const& constants,
     uni::net::Connections& connections,
     uni::paxos::PaxosLog& paxos_log,
+    uni::random::Random& random,
     index_t paxos_log_index,
     std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
     std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper)
       : _constants(constants),
         _connections(connections),
         _paxos_log(paxos_log),
+        _random(random),
         _paxos_log_index(paxos_log_index),
         _get_endpoints(get_endpoints),
         _paxos_message_to_wrapper(paxos_message_to_wrapper) {}
 
 crnd_t SinglePaxosHandler::next_proposal_number() {
-  return _proposer_state.latest + std::rand() % 1000;
+  return _proposer_state.latest + _random.rand_uniform(0, 999);
 }
 
 uint32_t SinglePaxosHandler::majority_threshold() {
