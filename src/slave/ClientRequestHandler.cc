@@ -88,7 +88,7 @@ void ClientRequestHandler::handle_request(
 
     if (message.request_type() == proto::client::ClientRequest::WRITE) {
       // If the write is illegal, then return an error
-      auto lat = _kvstore.read_lat(message.key().value());
+      auto lat = _kvstore.read_lat(message.key());
       if (message.timestamp().value() <= lat) {
         // The timestamp trying to be inserted to is not strictly greater than lat
         auto client_response = new proto::client::ClientResponse();

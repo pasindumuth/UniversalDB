@@ -57,10 +57,7 @@ void TabletParticipantManager::handle_client_request(
   uni::net::IncomingMessage incoming_message)
 {
   for (auto& [tablet_id, tp] : _tp_map) {
-    if (tablet_id.database_id == client_request.database_id().value()
-     && tablet_id.table_id == client_request.table_id().value()
-     && (!tablet_id.start_key || tablet_id.start_key.get() <= client_request.key().value())
-     && (!tablet_id.end_key || client_request.key().value() < tablet_id.end_key.get())) {
+    if (uni::server::within_range(tablet_id, client_request)) {
       tp->_scheduler->queue_message(incoming_message);
       return;
     }
@@ -76,13 +73,8 @@ void TabletParticipantManager::handle_tablet_message(
   proto::tablet::TabletMessage tablet_message,
   uni::net::IncomingMessage incoming_message)
 {
-  auto start_key = tablet_message.start_key().value();
-  auto end_key = tablet_message.end_key().value();
   for (auto& [tablet_id, tp] : _tp_map) {
-    if (tablet_id.database_id == tablet_message.database_id().value()
-     && tablet_id.table_id == tablet_message.table_id().value()
-     && ((!tablet_id.start_key && start_key.size() == 0) || tablet_id.start_key.get() == start_key)
-     && ((!tablet_id.end_key && end_key.size() == 0) || tablet_id.end_key.get() == end_key)) {
+    if (tablet_id == uni::server::convert(tablet_message.range())) {
       tp->_scheduler->queue_message(incoming_message);
       return;
     }

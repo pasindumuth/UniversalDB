@@ -42,8 +42,7 @@ TabletParticipant::TabletParticipant(
           [this](proto::paxos::PaxosMessage* paxos_message){
             auto message_wrapper = proto::message::MessageWrapper();
             auto tablet_message = new proto::tablet::TabletMessage;
-            tablet_message->set_allocated_database_id(uni::utils::pb::string(_tablet_id.database_id));
-            tablet_message->set_allocated_table_id(uni::utils::pb::string(_tablet_id.table_id));
+            tablet_message->set_allocated_range(uni::server::convert(_tablet_id));
             tablet_message->set_allocated_paxos_message(paxos_message);
             message_wrapper.set_allocated_tablet_message(tablet_message);
             return message_wrapper;
@@ -66,14 +65,7 @@ TabletParticipant::TabletParticipant(
       [this](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
         auto tablet_message = new proto::tablet::TabletMessage;
-        tablet_message->set_allocated_database_id(uni::utils::pb::string(_tablet_id.database_id));
-        tablet_message->set_allocated_table_id(uni::utils::pb::string(_tablet_id.table_id));
-        if (_tablet_id.start_key) {
-          tablet_message->set_allocated_start_key(uni::utils::pb::string(_tablet_id.start_key.get()));
-        }
-        if (_tablet_id.end_key) {
-          tablet_message->set_allocated_end_key(uni::utils::pb::string(_tablet_id.end_key.get()));
-        }
+        tablet_message->set_allocated_range(uni::server::convert(_tablet_id));
         tablet_message->set_allocated_sync_message(sync_message);
         message_wrapper.set_allocated_tablet_message(tablet_message);
         return message_wrapper;

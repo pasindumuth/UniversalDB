@@ -55,12 +55,7 @@ KeySpaceManager::KeySpaceManager(
       };
 
       for (auto const& range: key_space_selected.new_ranges()) {
-        new_key_space.new_ranges.push_back({
-          range.database_id(),
-          range.table_id(),
-          range.has_start_key() ? range.start_key().value() : boost::optional<std::string>(),
-          range.has_end_key() ? range.end_key().value() : boost::optional<std::string>()
-        });
+        new_key_space.new_ranges.push_back(uni::server::convert(range));
       }
 
       _slave_group_ranges[group_id] = new_key_space;
@@ -108,7 +103,7 @@ void KeySpaceManager::handle_find_key(
     for (auto const& [group_id, v] : _slave_group_ranges) {
       if (auto const& key_space = std::get_if<KeySpace>(&v)) {
         for (auto const& range : key_space->ranges) {
-          if (within_range(range, message)) {
+          if (uni::server::within_range(range, message)) {
             // We have found a group_id where the requested key exists in the KeySpaceRange
             auto client_response = new proto::client::FindKeyRangeResponse();
             client_response->set_slave_group_id(group_id.id);
@@ -123,7 +118,7 @@ void KeySpaceManager::handle_find_key(
       // NewKeySpaceSelected message.
       if (auto const& key_space = std::get_if<NewKeySpace>(&v)) {
         for (auto const& range : key_space->new_ranges) {
-          if (within_range(range, message)) {
+          if (uni::server::within_range(range, message)) {
             // We have found a group_id where the requested key exists in the KeySpaceRange
             auto endpoints = _config_manager.get_endpoints(group_id);
             auto wrapper = build_new_key_space_selected_message(*key_space);
@@ -199,33 +194,12 @@ void KeySpaceManager::handle_key_space_changed(
   });
 }
 
-bool KeySpaceManager::within_range(
-  uni::server::KeySpaceRange const& range,
-  proto::client::FindKeyRangeRequest const& message
-) {
-  if (range.database_id != message.database_id()) return false;
-  if (range.table_id != message.table_id()) return false;
-  if (range.start_key != boost::none && range.start_key.get() > message.key()) return false;
-  if (range.end_key != boost::none && range.end_key.get() <= message.key()) return false;
-  return true;
-}
-
-void KeySpaceManager::build_range(
-  proto::common::KeySpaceRange *const proto_range,
-  uni::server::KeySpaceRange const& range
-) {
-  proto_range->set_database_id(range.database_id);
-  proto_range->set_table_id(range.table_id);
-  if (range.start_key) proto_range->set_allocated_start_key(uni::utils::pb::string(range.start_key.get()));
-  if (range.end_key) proto_range->set_allocated_end_key(uni::utils::pb::string(range.end_key.get()));
-}
-
 proto::message::MessageWrapper KeySpaceManager::build_new_key_space_selected_message(NewKeySpace const& key_space) {
   auto message_wrapper = proto::message::MessageWrapper();
   auto master_message = new proto::master::MasterMessage();
   auto new_key_space_message = new proto::master::NewKeySpaceSelected();
   for (auto const& range : key_space.new_ranges) {
-    build_range(new_key_space_message->add_new_ranges(), range);
+    uni::server::build_range(new_key_space_message->add_new_ranges(), range);
   }
   new_key_space_message->set_generation(key_space.generation);
   master_message->set_allocated_key_space_selected(new_key_space_message);
@@ -240,7 +214,7 @@ proto::paxos::master::NewKeySpaceSelected* KeySpaceManager::build_new_key_space_
 ) {
   auto new_key_space_message = new proto::paxos::master::NewKeySpaceSelected();
   for (auto const& range : new_ranges) {
-    build_range(new_key_space_message->add_new_ranges(), range);
+    uni::server::build_range(new_key_space_message->add_new_ranges(), range);
   }
   new_key_space_message->set_generation(generation);
   new_key_space_message->set_slave_group_id(group_id.id);

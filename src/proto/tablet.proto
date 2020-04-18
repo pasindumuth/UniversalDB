@@ -1,19 +1,15 @@
 syntax = "proto3";
 
-import "google/protobuf/wrappers.proto";
-
 import "paxos.proto";
 import "sync.proto";
+import "common.proto";
 
 package proto.tablet;
 
 message TabletMessage {
-  google.protobuf.StringValue database_id = 1;
-  google.protobuf.StringValue table_id = 2;
-  google.protobuf.StringValue start_key = 3;
-  google.protobuf.StringValue end_key = 4;
+  proto.common.KeySpaceRange range = 1;
   oneof tablet_message {
-    proto.paxos.PaxosMessage paxos_message = 5;
-    proto.sync.SyncMessage sync_message = 6;
+    proto.paxos.PaxosMessage paxos_message = 2;
+    proto.sync.SyncMessage sync_message = 3;
   }
 }

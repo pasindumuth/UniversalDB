@@ -105,9 +105,9 @@ int main(int argc, char* argv[]) {
       auto request_message = new proto::client::ClientRequest();
       request_message->set_request_id(std::to_string(request_id));
       request_message->set_request_type(proto::client::ClientRequest::WRITE);
-      request_message->set_allocated_database_id(uni::utils::pb::string(parsed_output[1]));
-      request_message->set_allocated_table_id(uni::utils::pb::string(parsed_output[2]));
-      request_message->set_allocated_key(uni::utils::pb::string(parsed_output[3]));
+      request_message->set_database_id(parsed_output[1]);
+      request_message->set_table_id(parsed_output[2]);
+      request_message->set_key(parsed_output[3]);
       request_message->set_allocated_value(uni::utils::pb::string(parsed_output[4]));
       request_message->set_allocated_timestamp(uni::utils::pb::uint64(std::time(nullptr)));
       client_message->set_allocated_request(request_message);

@@ -41,12 +41,7 @@ SlaveKeySpaceManager::SlaveKeySpaceManager(
       };
 
       for (auto const& range: changed_message.new_ranges()) {
-        _ranges.ranges.push_back({
-          range.database_id(),
-          range.table_id(),
-          range.has_start_key() ? range.start_key().value() : boost::optional<std::string>(),
-          range.has_end_key() ? range.end_key().value() : boost::optional<std::string>()
-        });
+        _ranges.ranges.push_back(uni::server::convert(range));
       }
 
       // Update the Tablet Participants with any new ranges that have been added.
