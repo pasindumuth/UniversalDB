@@ -93,7 +93,6 @@ TabletParticipant::TabletParticipant(
   _scheduler->set_callback([this](uni::net::IncomingMessage message){
     _incoming_message_handler.handle(message);
   });
-  _paxos_log.add_callback(_kvstore.get_paxos_callback());
 }
 
 } // namespace slave

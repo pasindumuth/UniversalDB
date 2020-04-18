@@ -33,8 +33,9 @@ KeySpaceManager::KeySpaceManager(
     _respond(respond),
     _local_async_queue(async_queue_provider())
 {
-  paxos_log.add_callback([this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry){
-    if (entry.has_key_space_selected()) {
+  paxos_log.add_callback(
+    proto::paxos::PaxosLogEntry::EntryContentCase::kKeySpaceSelected,
+    [this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry) {
       auto const& key_space_selected = entry.key_space_selected();
       auto const& group_id = uni::server::SlaveGroupId{key_space_selected.slave_group_id()};
       UNIVERSAL_ASSERT_MESSAGE(_slave_group_ranges.find(group_id) != _slave_group_ranges.end(),
@@ -63,9 +64,11 @@ KeySpaceManager::KeySpaceManager(
       }
 
       _slave_group_ranges[group_id] = new_key_space;
-    }
+    });
 
-    if (entry.has_key_space_commit()) {
+  paxos_log.add_callback(
+    proto::paxos::PaxosLogEntry::EntryContentCase::kKeySpaceCommit,
+    [this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry) {
       auto const& key_space_commit = entry.key_space_commit();
       auto const& group_id = uni::server::SlaveGroupId{key_space_commit.slave_group_id()};
       UNIVERSAL_ASSERT_MESSAGE(_slave_group_ranges.find(group_id) != _slave_group_ranges.end(),
@@ -82,8 +85,7 @@ KeySpaceManager::KeySpaceManager(
         new_key_space.new_ranges,
         new_key_space.generation
       };
-    }
-  });
+    });
 }
 
 void KeySpaceManager::set_first_config(uni::server::SlaveGroupId group_id) {

@@ -1,0 +1,20 @@
+// Messages inserted into the tablet's paxos logs
+
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+package proto.paxos.tablet;
+
+message Read {
+  google.protobuf.StringValue request_id = 1;
+  google.protobuf.StringValue key = 2;
+  google.protobuf.UInt64Value timestamp = 3;
+}
+
+message Write {
+  google.protobuf.StringValue request_id = 1;
+  google.protobuf.StringValue key = 2;
+  google.protobuf.StringValue value = 3;
+  google.protobuf.UInt64Value timestamp = 4;
+}

@@ -26,8 +26,9 @@ SlaveKeySpaceManager::SlaveKeySpaceManager(
       0
     }
 {
-  paxos_log.add_callback([this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry){
-    if (entry.has_key_space_changed()) {
+  paxos_log.add_callback(
+    proto::paxos::PaxosLogEntry::EntryContentCase::kKeySpaceChanged,
+    [this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry) {
       auto const& changed_message = entry.key_space_changed();
       UNIVERSAL_ASSERT_MESSAGE(changed_message.generation() == _ranges.generation + 1,
         "The generation of the KeySpaceChanged message should be 1 greater than the current.")
@@ -45,8 +46,7 @@ SlaveKeySpaceManager::SlaveKeySpaceManager(
           range.has_end_key() ? range.end_key().value() : boost::optional<std::string>()
         });
       }
-    }
-  });
+    });
 }
 
 void SlaveKeySpaceManager::handle_key_space_change(

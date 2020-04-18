@@ -29,7 +29,7 @@ class PaxosLog {
   void set_entry(index_t index, proto::paxos::PaxosLogEntry const entry);
 
   // Add callback to the list of callbacks to invoke when an entry is added.
-  void add_callback(std::function<void(index_t, proto::paxos::PaxosLogEntry)> callback);
+  void add_callback(proto::paxos::PaxosLogEntry::EntryContentCase content_case, std::function<void(index_t, proto::paxos::PaxosLogEntry)> callback);
 
   // Gets the lowest available index.
   index_t next_available_index() const;
@@ -56,7 +56,14 @@ class PaxosLog {
   // Callbacks to invoke everytime a new entry is entered into the PaxosLog.
   // Note that we don't invoke these for entries that aren't yet connected to
   // all contiguously received entries.
-  std::vector<std::function<void(index_t, proto::paxos::PaxosLogEntry)>> _callbacks;
+  // 
+  // We index each list of callbacks by type of the PaxosLogEntry, since almost all
+  // callbacks usually handle only type (and even if a callback handles multiple
+  // types, they can be split up for each type)
+  std::unordered_map<
+    proto::paxos::PaxosLogEntry::EntryContentCase,
+    std::vector<std::function<void(index_t, proto::paxos::PaxosLogEntry)>>
+  > _callbacks;
 };
 
 } // namespace paxos

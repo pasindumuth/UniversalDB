@@ -5,6 +5,7 @@
 #include <assert/assert.h>
 #include <proto/message.pb.h>
 #include <proto/paxos.pb.h>
+#include <proto/paxos_tablet.pb.h>
 #include <utils/pbutil.h>
 
 namespace uni {
@@ -24,10 +25,20 @@ ClientRequestHandler::ClientRequestHandler(
         _async_queue(async_queue),
         _kvstore(kvstore),
         _respond(respond) {
-  _paxos_log.add_callback([this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry){
-    if (entry.request_id().value().length() > 0) {
-      _request_id_map.insert({ entry.request_id().value(), index });
-    }
+  _paxos_log.add_callback(
+    proto::paxos::PaxosLogEntry::EntryContentCase::kRead,
+    [this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry) {
+      auto read_entry = entry.read();
+      _request_id_map.insert({ read_entry.request_id().value(), index });
+      _kvstore.read(read_entry.key().value(), read_entry.timestamp().value());
+  });
+
+  _paxos_log.add_callback(
+    proto::paxos::PaxosLogEntry::EntryContentCase::kWrite,
+    [this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry) {
+      auto write_entry = entry.write();
+      _request_id_map.insert({ write_entry.request_id().value(), index });
+      _kvstore.write(write_entry.key().value(), write_entry.value().value(), write_entry.timestamp().value());
   });
 }
 
@@ -48,11 +59,22 @@ void ClientRequestHandler::handle_request(
     if (entry_index != _request_id_map.end()) {
       // The request was fullfilled in the last retry
       auto client_response = new proto::client::ClientResponse();
-      client_response->set_error_code(proto::client::Code::SUCCESS);
       if (message.request_type() == proto::client::ClientRequest::READ) {
         // Populate the value of the read
-        auto entry = _paxos_log.get_entry(entry_index->second);
-        client_response->set_allocated_value(uni::utils::pb::string(entry.get().value()));
+        auto read_entry = _paxos_log.get_entry(entry_index->second).get().read();
+        auto value = _kvstore.read(read_entry.key().value(), read_entry.timestamp().value());
+        if (value) {
+          // The value exists and the read was a success
+          client_response->set_error_code(proto::client::Code::SUCCESS);
+          client_response->set_allocated_value(uni::utils::pb::string(value.get()));
+        } else {
+          // The value doesn't exist and the read was a error
+          client_response->set_error_code(proto::client::Code::ERROR);
+        }
+      } else if (message.request_type() == proto::client::ClientRequest::WRITE) {
+        client_response->set_error_code(proto::client::Code::SUCCESS);
+      } else {
+        UNIVERSAL_TERMINATE("Client request type should be READ or WRITE")
       }
       _respond(endpoint_id, client_response);
       return uni::async::AsyncQueue::TERMINATE;
@@ -77,20 +99,22 @@ void ClientRequestHandler::handle_request(
     }
 
     auto log_entry = proto::paxos::PaxosLogEntry();
-    log_entry.set_allocated_request_id(uni::utils::pb::string(message.request_id()));
-    switch (message.request_type()) {
-      case proto::client::ClientRequest::WRITE:
-        log_entry.set_type(proto::paxos::PaxosLogEntry::WRITE);
-        break;
-      case proto::client::ClientRequest::READ:
-        log_entry.set_type(proto::paxos::PaxosLogEntry::READ);
-        break;
-      default:
-        UNIVERSAL_ASSERT_MESSAGE(false, "Client request type should be READ or WRITE")
+    if (message.request_type() == proto::client::ClientRequest::WRITE) {
+      auto write = new proto::paxos::tablet::Write();
+      write->set_allocated_request_id(uni::utils::pb::string(message.request_id()));
+      write->set_allocated_key(uni::utils::pb::string(message.key()));
+      write->set_allocated_value(uni::utils::pb::string(message.value()));
+      write->set_allocated_timestamp(uni::utils::pb::uint64(message.timestamp()));
+      log_entry.set_allocated_write(write);
+    } else if (message.request_type() == proto::client::ClientRequest::READ) {
+      auto read = new proto::paxos::tablet::Read();
+      read->set_allocated_request_id(uni::utils::pb::string(message.request_id()));
+      read->set_allocated_key(uni::utils::pb::string(message.key()));
+      read->set_allocated_timestamp(uni::utils::pb::uint64(message.timestamp()));
+      log_entry.set_allocated_read(read);
+    } else {
+      UNIVERSAL_TERMINATE("Client request type should be READ or WRITE")
     }
-    log_entry.set_allocated_key(uni::utils::pb::string(message.key()));
-    log_entry.set_allocated_value(uni::utils::pb::string(message.value()));
-    log_entry.set_allocated_timestamp(uni::utils::pb::uint64(message.timestamp()));
     _multi_paxos_handler.propose(log_entry);
     *retry_count += 1;
     return WAIT_FOR_PAXOS;

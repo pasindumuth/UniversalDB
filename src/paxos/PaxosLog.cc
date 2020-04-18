@@ -57,15 +57,27 @@ void PaxosLog::set_entry(uni::paxos::index_t index, proto::paxos::PaxosLogEntry 
     // This means that the we can fill out more of the derived
     // state. So invoke the callbacks for all new PaxosLogEntries
     for (auto i = first_available_index; i < next_first_available_index; i++) {
-      for (auto const& callback: _callbacks) {
-        callback(i, _log[i]);
+      auto it = _callbacks.find(_log[i].entry_content_case());
+      if (it != _callbacks.end()) {
+        for (auto const& callback : it->second) {
+         callback(i, _log[i]);
+        }
       }
     }
   }
 }
 
-void PaxosLog::add_callback(std::function<void(uni::paxos::index_t, proto::paxos::PaxosLogEntry)> callback) {
-  _callbacks.push_back(callback);
+void PaxosLog::add_callback(
+  proto::paxos::PaxosLogEntry::EntryContentCase content_case,
+  std::function<void(uni::paxos::index_t, proto::paxos::PaxosLogEntry)> callback
+) {
+  if (_callbacks.find(content_case) == _callbacks.end()) {
+    _callbacks.insert({
+      content_case,
+      std::vector<std::function<void(uni::paxos::index_t, proto::paxos::PaxosLogEntry)>>()
+    });
+  }
+  _callbacks[content_case].push_back(callback);
 }
 
 uni::paxos::index_t PaxosLog::next_available_index() const {

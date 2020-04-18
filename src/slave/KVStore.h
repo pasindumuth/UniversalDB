@@ -76,15 +76,6 @@ class KVStore {
   boost::optional<timestamp_t> read_lat(std::string key);
 
   /**
-   * @brief Get a callback that can be registered with a uni::paxos::PaxosLog
-   * 
-   * This callback is used in the uni::paxos::PaxosLog to update the KVStore when
-   * a proto::paxos::PaxosLogEntry is entered into the uni::paxos::PaxosLog. This includes
-   * both writes as well as reads (which updates the last access time).
-   */
-  std::function<void(uni::paxos::index_t, proto::paxos::PaxosLogEntry)> get_paxos_callback();
-
-  /**
    * @brief generated a pretty printed debug string (JSON-like indentation).
    */
   std::string debug_string() const;

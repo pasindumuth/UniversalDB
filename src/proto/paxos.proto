@@ -1,46 +1,19 @@
 syntax = "proto3";
 
-import "google/protobuf/wrappers.proto";
 import "paxos_master.proto";
 import "paxos_slave.proto";
+import "paxos_tablet.proto";
 
 package proto.paxos;
 
-// The fields that must be populated in PaxosLogEntry when the EntryType is READ.
-// Thus, when the EntryType is READ, we can convert the PaxosLogEntry to a Read
-// message to make the entry safer to work with.
-message Read {
-  string key = 1;
-  uint64 timestamp = 2;
-}
-
-// The fields that must be populated in PaxosLogEntry when the EntryType is WRITE.
-// Thus, when the EntryType is WRITE, we can convert the PaxosLogEntry to a Write
-// message to make the entry safer to work with.
-message Write {
-  string key = 1;
-  string value = 2;
-  uint64 timestamp = 3;
-}
-
 // The values that appear in the Paxos log.
 message PaxosLogEntry {
-  enum EntryType {
-    UNSET = 0;
-    READ = 1;
-    WRITE = 2;
-  }
-
-  google.protobuf.StringValue request_id = 1;
-  EntryType type = 2;
-  google.protobuf.StringValue key = 3;
-  google.protobuf.StringValue value = 4;
-  google.protobuf.UInt64Value timestamp = 5;
-
   oneof entry_content {
-    proto.paxos.master.NewKeySpaceSelected key_space_selected = 6;
-    proto.paxos.master.KeySpaceCommit key_space_commit = 7;
-    proto.paxos.slave.KeySpaceChanged key_space_changed = 8;
+    proto.paxos.master.NewKeySpaceSelected key_space_selected = 1;
+    proto.paxos.master.KeySpaceCommit key_space_commit = 2;
+    proto.paxos.slave.KeySpaceChanged key_space_changed = 3;
+    proto.paxos.tablet.Read read = 4;
+    proto.paxos.tablet.Write write = 5;
   }
 }
 

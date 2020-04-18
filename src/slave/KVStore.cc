@@ -55,22 +55,6 @@ boost::optional<timestamp_t> KVStore::read_lat(std::string key) {
   }
 }
 
-std::function<void(uni::paxos::index_t, proto::paxos::PaxosLogEntry)> KVStore::get_paxos_callback() {
-  return [this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry) {
-    switch (entry.type()) {
-      case proto::paxos::PaxosLogEntry::WRITE:
-        write(entry.key().value(), entry.value().value(), entry.timestamp().value());
-        break;
-      case proto::paxos::PaxosLogEntry::READ:
-        read(entry.key().value(), entry.timestamp().value());
-        break;
-      default:
-        // No-op
-        break;
-    }
-  };
-}
-
 std::string KVStore::debug_string() const {
   auto ss = std::stringstream();
   ss << "KVStore: {" << std::endl;
