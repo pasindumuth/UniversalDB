@@ -57,6 +57,12 @@ void TestDriver::run_test(TestFunction test) {
     }
   }
 
+  // TODO this just instatiates the tablet participants manually, since we don't have the datamaster
+  // working with the tests yet. Get rid of this going forward.
+  for (auto const& slave: slaves) {
+    slave->_tablet_manager.handle_key_space_change({{"", "", boost::none, boost::none}});
+  }
+
   try {
     test(constants, slaves, all_channels, nonempty_channels);
     LOG(uni::logging::Level::INFO, "[TEST PASSED]")

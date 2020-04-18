@@ -54,8 +54,9 @@ TestingContext::TestingContext(
       _async_queue,
       _master_connections,
       _multipaxos_handler,
-      _paxos_log),
-    _slave_handler(
+      _paxos_log,
+      _tablet_manager),
+    _tablet_manager(
       [this, &constants](uni::slave::TabletId tablet_id) {
         return uni::custom_unique_ptr<uni::slave::TabletParticipant>(
           new uni::slave::TabletParticipant(
@@ -75,6 +76,11 @@ TestingContext::TestingContext(
           }
         );
       },
+      _client_connections,
+      uni::slave::ClientRespond(_client_connections)
+    ),
+    _slave_handler(
+      _tablet_manager,
       _heartbeat_tracker,
       _log_syncer,
       _key_space_manager,

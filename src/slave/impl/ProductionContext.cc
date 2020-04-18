@@ -59,8 +59,9 @@ ProductionContext::ProductionContext(
       _async_queue,
       master_connections,
       _multipaxos_handler,
-      _paxos_log),
-    _slave_handler(
+      _paxos_log,
+      _tablet_manager),
+    _tablet_manager(
       [this, &constants, &client_connections, &connections](uni::slave::TabletId tablet_id) {
         auto min_index = std::distance(
           _participants_per_thread.begin(),
@@ -88,6 +89,11 @@ ProductionContext::ProductionContext(
           }
         );
       },
+      client_connections,
+      uni::slave::ClientRespond(client_connections)
+    ),
+    _slave_handler(
+      _tablet_manager,
       _heartbeat_tracker,
       _log_syncer,
       _key_space_manager,

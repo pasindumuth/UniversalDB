@@ -16,7 +16,8 @@ SlaveKeySpaceManager::SlaveKeySpaceManager(
   uni::async::AsyncQueue& async_queue,
   uni::net::Connections& master_connections,
   uni::paxos::MultiPaxosHandler& multipaxos_handler,
-  uni::paxos::PaxosLog& paxos_log):
+  uni::paxos::PaxosLog& paxos_log,
+  uni::slave::TabletParticipantManager& participant_manager):
     _async_queue(async_queue),
     _master_connections(master_connections),
     _multipaxos_handler(multipaxos_handler),
@@ -24,7 +25,8 @@ SlaveKeySpaceManager::SlaveKeySpaceManager(
     _ranges{
       std::vector<uni::server::KeySpaceRange>(),
       0
-    }
+    },
+    _participant_manager(participant_manager)
 {
   paxos_log.add_callback(
     proto::paxos::PaxosLogEntry::EntryContentCase::kKeySpaceChanged,
@@ -47,6 +49,10 @@ SlaveKeySpaceManager::SlaveKeySpaceManager(
         });
       }
 
+      // Update the Tablet Participants with any new ranges that have been added.
+      _participant_manager.handle_key_space_change(_ranges.ranges);
+
+      // Reply back to the DMs.
       auto message_wrapper = proto::message::MessageWrapper();
       auto slave_message = new proto::slave::SlaveMessage;
       auto key_space_changed = new proto::slave::KeySpaceChanged;
@@ -79,8 +85,12 @@ void SlaveKeySpaceManager::handle_key_space_change(
         auto range_to_add = paxos_key_space_changed->add_new_ranges();
         range_to_add->set_database_id(range.database_id());
         range_to_add->set_table_id(range.table_id());
-        range_to_add->set_allocated_start_key(uni::utils::pb::string(range.start_key()));
-        range_to_add->set_allocated_end_key(uni::utils::pb::string(range.end_key()));
+        if (range.has_start_key()) {
+          range_to_add->set_allocated_start_key(uni::utils::pb::string(range.start_key()));
+        }
+        if (range.has_end_key()) {
+          range_to_add->set_allocated_end_key(uni::utils::pb::string(range.end_key()));
+        }
       }
       paxos_key_space_changed->set_generation(message.generation());
       log_entry.set_allocated_key_space_changed(paxos_key_space_changed);

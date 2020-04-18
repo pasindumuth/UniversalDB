@@ -11,6 +11,7 @@
 #include <paxos/PaxosTypes.h>
 #include <async/AsyncQueue.h>
 #include <slave/KVStore.h>
+#include <slave/functors.h>
 
 #include <proto/client.pb.h>
 
@@ -27,7 +28,7 @@ class ClientRequestHandler {
       uni::paxos::PaxosLog& paxos_log,
       uni::async::AsyncQueue& async_queue,
       uni::slave::KVStore& kvstore,
-      std::function<void(uni::net::EndpointId, proto::client::ClientResponse*)> respond);
+      uni::slave::ClientRespond respond_callback);
 
   void handle_request(
     uni::net::EndpointId endpoint_id,
@@ -38,8 +39,7 @@ class ClientRequestHandler {
   uni::paxos::PaxosLog& _paxos_log;
   uni::async::AsyncQueue& _async_queue;
   uni::slave::KVStore& _kvstore;
-  // This function consumes the ClientResponse; it deletes it from memory
-  std::function<void(uni::net::EndpointId, proto::client::ClientResponse*)> _respond;
+  uni::slave::ClientRespond _respond_callback;
 
   // Another thing to maintain, another thing that could result in a memory leak.
   std::unordered_map<std::string, uni::paxos::index_t> _request_id_map;

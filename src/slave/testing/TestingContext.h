@@ -54,6 +54,7 @@ struct TestingContext {
   uni::server::LogSyncer _log_syncer;
   uni::slave::SlaveConfigManager _config_manager;
   uni::slave::SlaveKeySpaceManager _key_space_manager;
+  uni::slave::TabletParticipantManager _tablet_manager;
   uni::slave::SlaveIncomingMessageHandler _slave_handler;
 };
 

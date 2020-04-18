@@ -22,6 +22,7 @@
 #include <server/LogSyncer.h>
 #include <slave/SlaveConfigManager.h>
 #include <slave/SlaveIncomingMessageHandler.h>
+#include <slave/TabletParticipantManager.h>
 #include <slave/SlaveKeySpaceManager.h>
 
 namespace uni {
@@ -56,6 +57,7 @@ struct ProductionContext {
   uni::server::LogSyncer _log_syncer;
   uni::slave::SlaveConfigManager _config_manager;
   uni::slave::SlaveKeySpaceManager _key_space_manager;
+  uni::slave::TabletParticipantManager _tablet_manager;
   uni::slave::SlaveIncomingMessageHandler _slave_handler;
 
  private:

@@ -56,21 +56,7 @@ TabletParticipant::TabletParticipant(
       _paxos_log,
       _async_queue,
       _kvstore,
-      [&client_connections](
-        uni::net::EndpointId endpoint_id,
-        proto::client::ClientResponse* client_response
-      ) {
-        auto message_wrapper = proto::message::MessageWrapper();
-        auto client_message = new proto::client::ClientMessage();
-        client_message->set_allocated_response(client_response);
-        message_wrapper.set_allocated_client_message(client_message);
-        auto channel = client_connections.get_channel(endpoint_id);
-        if (channel) {
-          channel.get().queue_send(message_wrapper.SerializeAsString());
-        } else {
-          LOG(uni::logging::Level::WARN, "Client Channel to reply to no longer exists.");
-        }
-      }),
+      uni::slave::ClientRespond(client_connections)),
     _log_syncer(
       constants,
       connections,
@@ -82,6 +68,12 @@ TabletParticipant::TabletParticipant(
         auto tablet_message = new proto::tablet::TabletMessage;
         tablet_message->set_allocated_database_id(uni::utils::pb::string(_tablet_id.database_id));
         tablet_message->set_allocated_table_id(uni::utils::pb::string(_tablet_id.table_id));
+        if (_tablet_id.start_key) {
+          tablet_message->set_allocated_start_key(uni::utils::pb::string(_tablet_id.start_key.get()));
+        }
+        if (_tablet_id.end_key) {
+          tablet_message->set_allocated_end_key(uni::utils::pb::string(_tablet_id.end_key.get()));
+        }
         tablet_message->set_allocated_sync_message(sync_message);
         message_wrapper.set_allocated_tablet_message(tablet_message);
         return message_wrapper;

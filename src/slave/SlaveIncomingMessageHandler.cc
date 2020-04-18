@@ -1,9 +1,5 @@
 #include "SlaveIncomingMessageHandler.h"
 
-#include <boost/asio.hpp>
-#include <boost/system/error_code.hpp>
-#include <boost/optional.hpp>
-
 #include <common/common.h>
 #include <net/EndpointId.h>
 #include <net/IncomingMessage.h>
@@ -13,18 +9,17 @@
 #include <proto/tablet.pb.h>
 #include <server/LogSyncer.h>
 #include <slave/TabletId.h>
-#include <slave/TabletParticipant.h>
 
 namespace uni {
 namespace slave {
 
 SlaveIncomingMessageHandler::SlaveIncomingMessageHandler(
-  std::function<uni::custom_unique_ptr<uni::slave::TabletParticipant>(uni::slave::TabletId)> tp_provider,
+  TabletParticipantManager& participant_manager,
   uni::server::HeartbeatTracker& heartbeat_tracker,
   uni::server::LogSyncer& log_syncer,
   uni::slave::SlaveKeySpaceManager& key_space_manager,
   uni::paxos::MultiPaxosHandler& multipaxos_handler)
-  : _tp_provider(tp_provider),
+  : _participant_manager(participant_manager),
     _heartbeat_tracker(heartbeat_tracker),
     _log_syncer(log_syncer),
     _key_space_manager(key_space_manager),
@@ -38,20 +33,14 @@ void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mess
     auto const& client_message = message_wrapper.client_message();
     if (client_message.has_request()) {
       LOG(uni::logging::Level::TRACE2, "Client Request at SlaveIncomingMessageHandler gotten.")
-      forward_message(
-        client_message.request().database_id().value(),
-        client_message.request().table_id().value(),
-        incoming_message);
+      _participant_manager.handle(incoming_message);
     } else {
       LOG(uni::logging::Level::WARN, "Unkown client message type.")
     }
   } else if (message_wrapper.has_tablet_message()) {
     LOG(uni::logging::Level::TRACE2, "TabletMessage at SlaveIncomingMessageHandler gotten.")
     auto tablet_message = message_wrapper.tablet_message();
-    forward_message(
-      tablet_message.database_id().value(),
-      tablet_message.table_id().value(),
-      incoming_message);
+    _participant_manager.handle(incoming_message);
   } else if (message_wrapper.has_slave_message()) {
     auto const& slave_message = message_wrapper.slave_message();
     if (slave_message.has_heartbeat()) {
@@ -85,22 +74,6 @@ void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mess
   } else {
     LOG(uni::logging::Level::WARN, "Unkown message type in SlaveIncomingMessageHandler.")
   }
-}
-
-std::unordered_map<TabletId, uni::custom_unique_ptr<uni::slave::TabletParticipant>> const& SlaveIncomingMessageHandler::get_tps() const {
-  return _tp_map;
-}
-
-void SlaveIncomingMessageHandler::forward_message(
-  std::string database_id,
-  std::string table_id,
-  uni::net::IncomingMessage incoming_message
-) {
-  TabletId tablet_id = { database_id, table_id, boost::none, boost::none};
-  if (_tp_map.find(tablet_id) == _tp_map.end()) {
-    _tp_map.insert({tablet_id, _tp_provider(tablet_id)});
-  }
-  _tp_map[tablet_id]->_scheduler->queue_message(incoming_message);
 }
 
 } // namespace slave

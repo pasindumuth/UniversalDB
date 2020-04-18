@@ -226,7 +226,7 @@ TestFunction Tests::test4() {
 
     UNIVERSAL_ASSERT_MESSAGE(initial_equal_logs < final_equal_logs,
           "Paxos Logs should all be equal.")
-    for (auto const& [tablet_id, tp] : slaves[0]->_slave_handler.get_tps()) {
+    for (auto const& [tablet_id, tp] : slaves[0]->_tablet_manager.get_tps()) {
       LOG(uni::logging::Level::DEBUG, tp->_kvstore.debug_string());
     }
   };
@@ -321,7 +321,7 @@ std::vector<std::vector<boost::optional<uni::paxos::PaxosLog*>>> Tests::get_alig
   auto tablet_ids = std::vector<uni::slave::TabletId>();
   for (auto const& slave : slaves) {
     slave_paxos_logs.push_back(&slave->_paxos_log);
-    for (auto const& [tablet_id, tp] : slave->_slave_handler.get_tps()) {
+    for (auto const& [tablet_id, tp] : slave->_tablet_manager.get_tps()) {
       tablet_ids.push_back(tablet_id);
     }
   }
@@ -329,7 +329,7 @@ std::vector<std::vector<boost::optional<uni::paxos::PaxosLog*>>> Tests::get_alig
   for (auto const& tablet_id : tablet_ids) {
     auto paxos_logs = std::vector<boost::optional<uni::paxos::PaxosLog*>>();
     for (auto const& slave : slaves) {
-      auto const& tp_map = slave->_slave_handler.get_tps();
+      auto const& tp_map = slave->_tablet_manager.get_tps();
       auto const& it = tp_map.find(tablet_id);
       if (it != tp_map.end()) {
         paxos_logs.push_back(&it->second->_paxos_log);
@@ -390,7 +390,7 @@ bool Tests::verify_paxos_logs(std::vector<uni::paxos::PaxosLog*> paxos_logs) {
 void Tests::print_paxos_logs(std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves) {
   for (auto const& slave: slaves) {
     LOG(uni::logging::Level::DEBUG, slave->_paxos_log.debug_string())
-    for (auto const& [tablet_id, tp] : slave->_slave_handler.get_tps()) {
+    for (auto const& [tablet_id, tp] : slave->_tablet_manager.get_tps()) {
       LOG(uni::logging::Level::DEBUG, tp->_paxos_log.debug_string())
     }
   }

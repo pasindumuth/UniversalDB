@@ -19,12 +19,12 @@ ClientRequestHandler::ClientRequestHandler(
     uni::paxos::PaxosLog& paxos_log,
     uni::async::AsyncQueue& async_queue,
     uni::slave::KVStore& kvstore,
-    std::function<void(uni::net::EndpointId, proto::client::ClientResponse*)> respond)
+    uni::slave::ClientRespond respond_callback)
       : _multi_paxos_handler(multi_paxos_handler),
         _paxos_log(paxos_log),
         _async_queue(async_queue),
         _kvstore(kvstore),
-        _respond(respond) {
+        _respond_callback(respond_callback) {
   _paxos_log.add_callback(
     proto::paxos::PaxosLogEntry::EntryContentCase::kRead,
     [this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry) {
@@ -76,13 +76,13 @@ void ClientRequestHandler::handle_request(
       } else {
         UNIVERSAL_TERMINATE("Client request type should be READ or WRITE")
       }
-      _respond(endpoint_id, client_response);
+      _respond_callback(endpoint_id, client_response);
       return uni::async::AsyncQueue::TERMINATE;
     } else if (*retry_count == RETRY_LIMIT) {
       // Maximum number of retries have been reached
       auto client_response = new proto::client::ClientResponse();
       client_response->set_error_code(proto::client::Code::ERROR);
-      _respond(endpoint_id, client_response);
+      _respond_callback(endpoint_id, client_response);
       return uni::async::AsyncQueue::TERMINATE;
     }
 
@@ -93,7 +93,7 @@ void ClientRequestHandler::handle_request(
         // The timestamp trying to be inserted to is not strictly greater than lat
         auto client_response = new proto::client::ClientResponse();
         client_response->set_error_code(proto::client::Code::ERROR);
-        _respond(endpoint_id, client_response);
+        _respond_callback(endpoint_id, client_response);
         return uni::async::AsyncQueue::TERMINATE;
       }
     }
