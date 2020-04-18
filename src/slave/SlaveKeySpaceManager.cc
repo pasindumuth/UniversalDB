@@ -46,6 +46,15 @@ SlaveKeySpaceManager::SlaveKeySpaceManager(
           range.has_end_key() ? range.end_key().value() : boost::optional<std::string>()
         });
       }
+
+      auto message_wrapper = proto::message::MessageWrapper();
+      auto slave_message = new proto::slave::SlaveMessage;
+      auto key_space_changed = new proto::slave::KeySpaceChanged;
+      key_space_changed->set_generation(_ranges.generation);
+      slave_message->set_allocated_key_space_changed(key_space_changed);
+      message_wrapper.set_allocated_slave_message(slave_message);
+      auto endpoints = _master_connections.get_all_endpoints();
+      _master_connections.broadcast({endpoints[0]}, message_wrapper.SerializeAsString());
     });
 }
 

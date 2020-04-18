@@ -64,6 +64,11 @@ KeySpaceManager::KeySpaceManager(
       }
 
       _slave_group_ranges[group_id] = new_key_space;
+
+      auto endpoints = _config_manager.get_endpoints(group_id);
+      auto wrapper = build_new_key_space_selected_message(new_key_space);
+      // TODO we should be broadcasting this message to all slaves.
+      _slave_connections.broadcast({endpoints[0]}, wrapper.SerializeAsString());
     });
 
   paxos_log.add_callback(
