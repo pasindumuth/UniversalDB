@@ -8,6 +8,7 @@ namespace constants {
 
 struct Constants {
   uint32_t const num_slave_servers;
+  uint32_t const num_master_servers; // TODO should these be here?
   uint32_t const slave_port; // Slaves communicates with slaves through this port.
   uint32_t const client_port; // Client communicates with slaves through this port.
   uint32_t const master_port; // Master communicates with slaves through this port.
@@ -24,6 +25,7 @@ struct Constants {
       uint32_t const heartbeat_failure_threshold,
       int64_t const log_syncer_period)
         : num_slave_servers(num_slave_servers),
+          num_master_servers(num_slave_servers),
           slave_port(slave_port),
           client_port(client_port),
           master_port(master_port),

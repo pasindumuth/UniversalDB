@@ -7,6 +7,7 @@
 
 #include <common/common.h>
 #include <constants/constants.h>
+#include <master/testing/TestingContext.h>
 #include <net/testing/ChannelTesting.h>
 #include <slave/testing/TestingContext.h>
 
@@ -14,11 +15,27 @@ namespace uni {
 namespace testing {
 namespace integration {
 
-using TestFunction = std::function<void(
-    uni::constants::Constants const&,
-    std::vector<std::unique_ptr<uni::slave::TestingContext>>&,
-    std::vector<std::vector<uni::net::ChannelTesting*>>&,
-    std::vector<uni::net::ChannelTesting*>&)>;
+struct TestParams {
+  uni::constants::Constants const& constants;
+
+  // A single Slave Group
+  std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves;
+  std::vector<std::vector<uni::net::ChannelTesting*>>& slave_channels;
+  std::vector<uni::net::ChannelTesting*>& slave_nonempty_channels;
+
+  // The Master Group
+  std::vector<std::unique_ptr<uni::master::TestingContext>>& masters;
+  std::vector<std::vector<uni::net::ChannelTesting*>>& master_channels;
+  std::vector<uni::net::ChannelTesting*>& master_nonempty_channels;
+
+  // The connections between Masters and Slaves
+  std::vector<std::vector<uni::net::ChannelTesting*>>& master_slave_channels;
+  std::vector<uni::net::ChannelTesting*>& master_slave_nonempty_channels;
+  std::vector<std::vector<uni::net::ChannelTesting*>>& slave_master_channels;
+  std::vector<uni::net::ChannelTesting*>& slave_master_nonempty_channels;
+};
+
+using TestFunction = std::function<void(TestParams)>;
 
 /**
  * Recall the simulation testing method we use for testing Paxos

@@ -30,6 +30,8 @@ crnd_t SinglePaxosHandler::next_proposal_number() {
 }
 
 uint32_t SinglePaxosHandler::majority_threshold() {
+  // TODO decouple this from slaves. We should really be looking at the configuration
+  // to determine this number.
   return std::floor(_constants.num_slave_servers / 2) + 1;
 }
 
