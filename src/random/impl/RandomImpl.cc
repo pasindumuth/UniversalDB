@@ -4,11 +4,11 @@ namespace uni {
 namespace random {
 
 RandomImpl::RandomImpl()
-  : seeder(std::random_device()),
-    random_number_engine(std::mt19937(seeder())) {}
+  : _seeder(std::random_device()),
+    _rng(std::mt19937(_seeder())) {}
 
 std::mt19937& RandomImpl::rng() {
-  return random_number_engine;
+  return _rng;
 }
 
 } // namespace random

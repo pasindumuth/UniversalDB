@@ -17,7 +17,7 @@ namespace slave {
 
 TabletParticipant::TabletParticipant(
   std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
-  std::unique_ptr<uni::random::Random> random_ptr,
+  std::unique_ptr<uni::random::Random> random,
   uni::constants::Constants const& constants,
   uni::net::Connections& connections,
   uni::net::Connections& client_connections,
@@ -25,37 +25,37 @@ TabletParticipant::TabletParticipant(
   uni::server::FailureDetector& failure_detector,
   uni::slave::SlaveConfigManager& config_manager,
   uni::slave::TabletId& tid)
-  : scheduler(scheduler_provider()),
-    random(std::move(random_ptr)),
-    tablet_id(tid),
-    paxos_log(),
-    multipaxos_handler(
-      paxos_log,
+  : _scheduler(scheduler_provider()),
+    _random(std::move(random)),
+    _tablet_id(tid),
+    _paxos_log(),
+    _multipaxos_handler(
+      _paxos_log,
       [this, &constants, &connections, &config_manager](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
           connections,
-          paxos_log,
-          *random,
+          _paxos_log,
+          *_random,
           index,
           uni::slave::GetEndpoints(config_manager),
           [this](proto::paxos::PaxosMessage* paxos_message){
             auto message_wrapper = proto::message::MessageWrapper();
             auto tablet_message = new proto::tablet::TabletMessage;
-            tablet_message->set_allocated_database_id(uni::utils::pb::string(tablet_id.database_id));
-            tablet_message->set_allocated_table_id(uni::utils::pb::string(tablet_id.table_id));
+            tablet_message->set_allocated_database_id(uni::utils::pb::string(_tablet_id.database_id));
+            tablet_message->set_allocated_table_id(uni::utils::pb::string(_tablet_id.table_id));
             tablet_message->set_allocated_paxos_message(paxos_message);
             message_wrapper.set_allocated_tablet_message(tablet_message);
             return message_wrapper;
           });
       }),
-    async_queue(timer_scheduler),
-    kvstore(),
-    client_request_handler(
-      multipaxos_handler,
-      paxos_log,
-      async_queue,
-      kvstore,
+    _async_queue(timer_scheduler),
+    _kvstore(),
+    _client_request_handler(
+      _multipaxos_handler,
+      _paxos_log,
+      _async_queue,
+      _kvstore,
       [&client_connections](
         uni::net::EndpointId endpoint_id,
         proto::client::ClientResponse* client_response
@@ -71,29 +71,29 @@ TabletParticipant::TabletParticipant(
           LOG(uni::logging::Level::WARN, "Client Channel to reply to no longer exists.");
         }
       }),
-    log_syncer(
+    _log_syncer(
       constants,
       connections,
       timer_scheduler,
-      paxos_log,
+      _paxos_log,
       uni::slave::GetEndpoints(config_manager),
       [this](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
         auto tablet_message = new proto::tablet::TabletMessage;
-        tablet_message->set_allocated_database_id(uni::utils::pb::string(tablet_id.database_id));
-        tablet_message->set_allocated_table_id(uni::utils::pb::string(tablet_id.table_id));
+        tablet_message->set_allocated_database_id(uni::utils::pb::string(_tablet_id.database_id));
+        tablet_message->set_allocated_table_id(uni::utils::pb::string(_tablet_id.table_id));
         tablet_message->set_allocated_sync_message(sync_message);
         message_wrapper.set_allocated_tablet_message(tablet_message);
         return message_wrapper;
       }),
-    incoming_message_handler(
-      client_request_handler,
-      log_syncer,
-      multipaxos_handler) {
-  scheduler->set_callback([this](uni::net::IncomingMessage message){
-    incoming_message_handler.handle(message);
+    _incoming_message_handler(
+      _client_request_handler,
+      _log_syncer,
+      _multipaxos_handler) {
+  _scheduler->set_callback([this](uni::net::IncomingMessage message){
+    _incoming_message_handler.handle(message);
   });
-  paxos_log.add_callback(kvstore.get_paxos_callback());
+  _paxos_log.add_callback(_kvstore.get_paxos_callback());
 }
 
 } // namespace slave

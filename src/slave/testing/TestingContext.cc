@@ -7,81 +7,81 @@ namespace slave {
 
 TestingContext::TestingContext(
   uni::constants::Constants const& constants,
-  std::string ip,
+  std::string ip_string,
   unsigned random_seed)
-  : ip_string(ip),
-    random(random_seed),
-    scheduler(),
-    client_connections(scheduler),
-    master_connections(scheduler),
-    connections(scheduler),
-    clock(),
-    timer_scheduler(clock),
-    heartbeat_tracker(),
-    failure_detector(
-      heartbeat_tracker,
-      connections,
-      timer_scheduler,
-      uni::slave::GetEndpoints(config_manager)),
-    paxos_log(),
-    async_queue(timer_scheduler),
-    multipaxos_handler(
-      paxos_log,    
+  : _ip_string(ip_string),
+    _random(random_seed),
+    _scheduler(),
+    _client_connections(_scheduler),
+    _master_connections(_scheduler),
+    _connections(_scheduler),
+    _clock(),
+    _timer_scheduler(_clock),
+    _heartbeat_tracker(),
+    _failure_detector(
+      _heartbeat_tracker,
+      _connections,
+      _timer_scheduler,
+      uni::slave::GetEndpoints(_config_manager)),
+    _paxos_log(),
+    _async_queue(_timer_scheduler),
+    _multipaxos_handler(
+      _paxos_log,    
       [this, &constants](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
-          connections,
-          paxos_log,
-          random,
+          _connections,
+          _paxos_log,
+          _random,
           index,
-          uni::slave::GetEndpoints(config_manager),
+          uni::slave::GetEndpoints(_config_manager),
           uni::slave::SendPaxos());
       }),
-    log_syncer(
+    _log_syncer(
       constants,
-      connections,
-      timer_scheduler,
-      paxos_log,
-      uni::slave::GetEndpoints(config_manager),
+      _connections,
+      _timer_scheduler,
+      _paxos_log,
+      uni::slave::GetEndpoints(_config_manager),
       uni::slave::SendSync()),
-    config_manager(
-      async_queue,
-      master_connections,
-      connections,
-      multipaxos_handler,
-      paxos_log),
-    key_space_manager(
-      async_queue,
-      master_connections,
-      multipaxos_handler,
-      paxos_log),
-    slave_handler(
+    _config_manager(
+      _async_queue,
+      _master_connections,
+      _connections,
+      _multipaxos_handler,
+      _paxos_log),
+    _key_space_manager(
+      _async_queue,
+      _master_connections,
+      _multipaxos_handler,
+      _paxos_log),
+    _slave_handler(
       [this, &constants](uni::slave::TabletId tablet_id) {
         return uni::custom_unique_ptr<uni::slave::TabletParticipant>(
           new uni::slave::TabletParticipant(
             [](){
               return std::make_unique<uni::async::AsyncSchedulerTesting>();
             },
-            std::make_unique<uni::random::RandomTesting>(random.rng()()),
+            std::make_unique<uni::random::RandomTesting>(_random.rng()()),
             constants,
-            connections,
-            client_connections,
-            timer_scheduler,
-            failure_detector,
-            config_manager,
+            _connections,
+            _client_connections,
+            _timer_scheduler,
+            _failure_detector,
+            _config_manager,
             tablet_id
           ), [this](uni::slave::TabletParticipant* tp) {
             delete tp;
           }
         );
       },
-      heartbeat_tracker,
-      log_syncer,
-      key_space_manager,
-      multipaxos_handler)
+      _heartbeat_tracker,
+      _log_syncer,
+      _key_space_manager,
+      _multipaxos_handler)
 {
-  scheduler.set_callback([this](uni::net::IncomingMessage message){
-    slave_handler.handle(message);
+  _scheduler.set_callback([this](uni::net::IncomingMessage message){
+    _slave_handler.handle(message);
   });
 }
 

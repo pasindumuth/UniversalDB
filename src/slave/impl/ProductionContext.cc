@@ -7,10 +7,10 @@ namespace uni {
 namespace slave {
 
 ProductionContext::ThreadAndContext::ThreadAndContext()
-  : io_context(),
-    thread([this] {
-      auto work_guard = boost::asio::make_work_guard(io_context);
-      io_context.run();
+  : _io_context(),
+    _thread([this] {
+      auto work_guard = boost::asio::make_work_guard(_io_context);
+      _io_context.run();
     }) {}
 
 ProductionContext::ProductionContext(
@@ -20,47 +20,47 @@ ProductionContext::ProductionContext(
   uni::net::Connections& master_connections,
   uni::net::Connections& connections,
   uni::async::AsyncSchedulerImpl& scheduler)
-  : random(),
-    timer_scheduler(background_io_context),
-    async_queue(timer_scheduler),
-    heartbeat_tracker(),
-    failure_detector(
-      heartbeat_tracker,
+  : _random(),
+    _timer_scheduler(background_io_context),
+    _async_queue(_timer_scheduler),
+    _heartbeat_tracker(),
+    _failure_detector(
+      _heartbeat_tracker,
       connections,
-      timer_scheduler,
-      uni::slave::GetEndpoints(config_manager)),
-    paxos_log(),
-    multipaxos_handler(
-      paxos_log,
+      _timer_scheduler,
+      uni::slave::GetEndpoints(_config_manager)),
+    _paxos_log(),
+    _multipaxos_handler(
+      _paxos_log,
       [this, &constants, &connections](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
           connections,
-          paxos_log,
-          random,
+          _paxos_log,
+          _random,
           index,
-          uni::slave::GetEndpoints(config_manager),
+          uni::slave::GetEndpoints(_config_manager),
           uni::slave::SendPaxos());
       }),
-    log_syncer(
+    _log_syncer(
       constants,
       connections,
-      timer_scheduler,
-      paxos_log,
-      uni::slave::GetEndpoints(config_manager),
+      _timer_scheduler,
+      _paxos_log,
+      uni::slave::GetEndpoints(_config_manager),
       uni::slave::SendSync()),
-    config_manager(
-      async_queue,
+    _config_manager(
+      _async_queue,
       master_connections,
       connections,
-      multipaxos_handler,
-      paxos_log),
-    key_space_manager(
-      async_queue,
+      _multipaxos_handler,
+      _paxos_log),
+    _key_space_manager(
+      _async_queue,
       master_connections,
-      multipaxos_handler,
-      paxos_log),
-    slave_handler(
+      _multipaxos_handler,
+      _paxos_log),
+    _slave_handler(
       [this, &constants, &client_connections, &connections](uni::slave::TabletId tablet_id) {
         auto min_index = std::distance(
           _participants_per_thread.begin(),
@@ -72,15 +72,15 @@ ProductionContext::ProductionContext(
         return uni::custom_unique_ptr<uni::slave::TabletParticipant>(
           new uni::slave::TabletParticipant(
             [&thread_and_context](){
-              return std::make_unique<uni::async::AsyncSchedulerImpl>(thread_and_context->io_context);
+              return std::make_unique<uni::async::AsyncSchedulerImpl>(thread_and_context->_io_context);
             },
             std::make_unique<uni::random::RandomImpl>(),
             constants,
             connections,
             client_connections,
-            timer_scheduler,
-            failure_detector,
-            config_manager,
+            _timer_scheduler,
+            _failure_detector,
+            _config_manager,
             tablet_id
           ), [this, &min_index](uni::slave::TabletParticipant* tp) {
             _participants_per_thread[min_index]--;
@@ -88,10 +88,10 @@ ProductionContext::ProductionContext(
           }
         );
       },
-      heartbeat_tracker,
-      log_syncer,
-      key_space_manager,
-      multipaxos_handler)
+      _heartbeat_tracker,
+      _log_syncer,
+      _key_space_manager,
+      _multipaxos_handler)
 {
   // We subtract 2 from the number of supported threads to account for the
   // LTM thread and background thread are started up manually.
@@ -101,7 +101,7 @@ ProductionContext::ProductionContext(
     _participants_per_thread.push_back(0);
   }
   scheduler.set_callback([this](uni::net::IncomingMessage message){
-    slave_handler.handle(message);
+    _slave_handler.handle(message);
   });
 }
 

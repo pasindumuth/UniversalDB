@@ -30,31 +30,31 @@ namespace slave {
 struct TestingContext {
   TestingContext(
     uni::constants::Constants const& constants,
-    std::string ip,
+    std::string ip_string,
     unsigned random_seed);
 
   // Primitives
-  std::string ip_string;
+  std::string _ip_string;
 
   // Helper classes
-  uni::random::RandomTesting random;
+  uni::random::RandomTesting _random;
 
   // Singletons
-  uni::async::AsyncSchedulerTesting scheduler;
-  uni::net::Connections client_connections;
-  uni::net::Connections master_connections;
-  uni::net::Connections connections;
-  uni::async::ClockTesting clock;
-  uni::async::TimerAsyncSchedulerTesting timer_scheduler;
-  uni::server::HeartbeatTracker heartbeat_tracker;
-  uni::server::FailureDetector failure_detector;
-  uni::paxos::PaxosLog paxos_log;
-  uni::async::AsyncQueue async_queue;
-  uni::paxos::MultiPaxosHandler multipaxos_handler;
-  uni::server::LogSyncer log_syncer;
-  uni::slave::SlaveConfigManager config_manager;
-  uni::slave::SlaveKeySpaceManager key_space_manager;
-  uni::slave::SlaveIncomingMessageHandler slave_handler;
+  uni::async::AsyncSchedulerTesting _scheduler;
+  uni::net::Connections _client_connections;
+  uni::net::Connections _master_connections;
+  uni::net::Connections _connections;
+  uni::async::ClockTesting _clock;
+  uni::async::TimerAsyncSchedulerTesting _timer_scheduler;
+  uni::server::HeartbeatTracker _heartbeat_tracker;
+  uni::server::FailureDetector _failure_detector;
+  uni::paxos::PaxosLog _paxos_log;
+  uni::async::AsyncQueue _async_queue;
+  uni::paxos::MultiPaxosHandler _multipaxos_handler;
+  uni::server::LogSyncer _log_syncer;
+  uni::slave::SlaveConfigManager _config_manager;
+  uni::slave::SlaveKeySpaceManager _key_space_manager;
+  uni::slave::SlaveIncomingMessageHandler _slave_handler;
 };
 
 } // namespace slave

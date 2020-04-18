@@ -8,61 +8,61 @@ namespace master {
 TestingContext::TestingContext(
   uni::constants::Constants const& constants,
   std::vector<uni::net::EndpointId>& config_endpoints,
-  std::string ip,
+  std::string ip_string,
   unsigned random_seed)
-  : ip_string(ip),
-    random(random_seed),
-    async_queue_provider([this](){
-      return uni::async::AsyncQueue(timer_scheduler);
+  : _ip_string(ip_string),
+    _random(random_seed),
+    _async_queue_provider([this](){
+      return uni::async::AsyncQueue(_timer_scheduler);
     }),
-    scheduler(),
-    client_connections(scheduler),
-    slave_connections(scheduler),
-    connections(scheduler),
-    clock(),
-    timer_scheduler(clock),
-    paxos_log(),
-    async_queue(timer_scheduler),
-    multipaxos_handler(
-      paxos_log,    
+    _scheduler(),
+    _client_connections(_scheduler),
+    _slave_connections(_scheduler),
+    _connections(_scheduler),
+    _clock(),
+    _timer_scheduler(_clock),
+    _paxos_log(),
+    _async_queue(_timer_scheduler),
+    _multipaxos_handler(
+      _paxos_log,    
       [this, &constants, &config_endpoints](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
-          connections,
-          paxos_log,
-          random,
+          _connections,
+          _paxos_log,
+          _random,
           index,
           [&config_endpoints](){ return config_endpoints; },
           uni::master::SendPaxos());
       }),
-    log_syncer(
+    _log_syncer(
       constants,
-      connections,
-      timer_scheduler,
-      paxos_log,
+      _connections,
+      _timer_scheduler,
+      _paxos_log,
       [&config_endpoints](){ return config_endpoints; },
       uni::master::SendSync()),
-    group_config_manager(
-      async_queue,
-      slave_connections,
-      multipaxos_handler,
-      paxos_log),
-    key_space_manager(
-      async_queue,
-      async_queue_provider,
-      group_config_manager,
-      slave_connections,
-      multipaxos_handler,
-      paxos_log,
-      uni::master::SendFindKeyRangeResponse(client_connections)),
-    master_handler(
-      log_syncer,
-      multipaxos_handler,
-      group_config_manager,
-      key_space_manager)
+    _group_config_manager(
+      _async_queue,
+      _slave_connections,
+      _multipaxos_handler,
+      _paxos_log),
+    _key_space_manager(
+      _async_queue,
+      _async_queue_provider,
+      _group_config_manager,
+      _slave_connections,
+      _multipaxos_handler,
+      _paxos_log,
+      uni::master::SendFindKeyRangeResponse(_client_connections)),
+    _master_handler(
+      _log_syncer,
+      _multipaxos_handler,
+      _group_config_manager,
+      _key_space_manager)
 {
-  scheduler.set_callback([this](uni::net::IncomingMessage message){
-    master_handler.handle(message);
+  _scheduler.set_callback([this](uni::net::IncomingMessage message){
+    _master_handler.handle(message);
   });
 }
 

@@ -29,8 +29,8 @@ namespace slave {
 
 struct ProductionContext {
   struct ThreadAndContext {
-    boost::asio::io_context io_context;
-    std::thread thread;
+    boost::asio::io_context _io_context;
+    std::thread _thread;
 
     ThreadAndContext();
   };
@@ -44,19 +44,19 @@ struct ProductionContext {
     uni::async::AsyncSchedulerImpl& scheduler);
 
   // Helper classes
-  uni::random::RandomImpl random;
+  uni::random::RandomImpl _random;
 
   // Singletons
-  uni::async::TimerAsyncSchedulerImpl timer_scheduler;
-  uni::async::AsyncQueue async_queue;
-  uni::server::HeartbeatTracker heartbeat_tracker;
-  uni::server::FailureDetector failure_detector;
-  uni::paxos::PaxosLog paxos_log;
-  uni::paxos::MultiPaxosHandler multipaxos_handler;
-  uni::server::LogSyncer log_syncer;
-  uni::slave::SlaveConfigManager config_manager;
-  uni::slave::SlaveKeySpaceManager key_space_manager;
-  uni::slave::SlaveIncomingMessageHandler slave_handler;
+  uni::async::TimerAsyncSchedulerImpl _timer_scheduler;
+  uni::async::AsyncQueue _async_queue;
+  uni::server::HeartbeatTracker _heartbeat_tracker;
+  uni::server::FailureDetector _failure_detector;
+  uni::paxos::PaxosLog _paxos_log;
+  uni::paxos::MultiPaxosHandler _multipaxos_handler;
+  uni::server::LogSyncer _log_syncer;
+  uni::slave::SlaveConfigManager _config_manager;
+  uni::slave::SlaveKeySpaceManager _key_space_manager;
+  uni::slave::SlaveIncomingMessageHandler _slave_handler;
 
  private:
   std::vector<unsigned> _participants_per_thread;

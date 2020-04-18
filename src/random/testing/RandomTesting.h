@@ -15,7 +15,7 @@ class RandomTesting : public uni::random::Random {
   std::mt19937& rng() override;
 
  private:
-  std::mt19937 random_number_engine;
+  std::mt19937 _rng;
 };
 
 } // namespace random

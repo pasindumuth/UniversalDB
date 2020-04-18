@@ -41,13 +41,13 @@ void TestDriver::run_test(TestFunction test) {
     // the other Slaves, take their Aysnc Schedulers (which receive messages relative
     // to the current Slave), and create the uni::net::ChannelTesting object with that.
     for (auto j = 0; j < constants.num_slave_servers; j++) {
-      auto& receiver_async_sheduler = slaves[j]->scheduler;
+      auto& receiver_async_sheduler = slaves[j]->_scheduler;
       auto channel = std::make_unique<uni::net::ChannelTesting>(
-        slaves[j]->ip_string,
+        slaves[j]->_ip_string,
         nonempty_channels
       );
       channels.push_back(channel.get());
-      slaves[i]->connections.add_channel(std::move(channel));
+      slaves[i]->_connections.add_channel(std::move(channel));
     }
   }
 

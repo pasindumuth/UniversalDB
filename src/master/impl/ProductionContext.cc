@@ -14,58 +14,58 @@ ProductionContext::ProductionContext(
   uni::net::Connections& slave_connections,
   uni::net::Connections& connections,
   uni::async::AsyncSchedulerImpl& scheduler)
-  : random(),
-    async_queue_provider([this](){
-      return uni::async::AsyncQueue(timer_scheduler);
+  : _random(),
+    _async_queue_provider([this](){
+      return uni::async::AsyncQueue(_timer_scheduler);
     }),
-    timer_scheduler(background_io_context),
-    async_queue(timer_scheduler),
-    paxos_log(),
-    multipaxos_handler(
-      paxos_log,
+    _timer_scheduler(background_io_context),
+    _async_queue(_timer_scheduler),
+    _paxos_log(),
+    _multipaxos_handler(
+      _paxos_log,
       [this, &constants, &connections](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
           connections,
-          paxos_log,
-          random,
+          _paxos_log,
+          _random,
           index,
           uni::master::GetEndpoints(connections),
           uni::master::SendPaxos());
       }),
-    log_syncer(
+    _log_syncer(
       constants,
       connections,
-      timer_scheduler,
-      paxos_log,
+      _timer_scheduler,
+      _paxos_log,
       uni::master::GetEndpoints(connections),
       uni::master::SendSync()),
-    group_config_manager(
-      async_queue,
+    _group_config_manager(
+      _async_queue,
       slave_connections,
-      multipaxos_handler,
-      paxos_log),
-    key_space_manager(
-      async_queue,
-      async_queue_provider,
-      group_config_manager,
+      _multipaxos_handler,
+      _paxos_log),
+    _key_space_manager(
+      _async_queue,
+      _async_queue_provider,
+      _group_config_manager,
       slave_connections,
-      multipaxos_handler,
-      paxos_log,
+      _multipaxos_handler,
+      _paxos_log,
       uni::master::SendFindKeyRangeResponse(client_connections)),
-    master_handler(
-      log_syncer,
-      multipaxos_handler,
-      group_config_manager,
-      key_space_manager)
+    _master_handler(
+      _log_syncer,
+      _multipaxos_handler,
+      _group_config_manager,
+      _key_space_manager)
 {
   scheduler.set_callback([this](uni::net::IncomingMessage message){
-    master_handler.handle(message);
+    _master_handler.handle(message);
   });
   auto group_id = uni::server::SlaveGroupId{ "slave_group_0" };
   auto endpoints = slave_connections.get_all_endpoints();
-  group_config_manager.set_first_config(group_id, endpoints);
-  key_space_manager.set_first_config(group_id);
+  _group_config_manager.set_first_config(group_id, endpoints);
+  _key_space_manager.set_first_config(group_id);
 }
 
 } // namespace master

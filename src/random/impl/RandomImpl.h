@@ -15,8 +15,8 @@ class RandomImpl : public uni::random::Random {
   std::mt19937& rng() override;
 
  private:
-  std::random_device seeder;
-  std::mt19937 random_number_engine;
+  std::random_device _seeder;
+  std::mt19937 _rng;
 };
 
 } // namespace random

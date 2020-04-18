@@ -98,7 +98,7 @@ TestFunction Tests::test3() {
     // Wait one heartbeat cycle so that the nodes can send each other a heartbeat
     for (auto i = 0; i < constants.heartbeat_period; i++) {
       for (auto j = 0; j < slaves.size(); j++) {
-        slaves[j]->clock.increment_time(1);
+        slaves[j]->_clock.increment_time(1);
       }
       // Exchange all the messages that need to be exchanged
       while (nonempty_channels.size() > 0) {
@@ -108,7 +108,7 @@ TestFunction Tests::test3() {
     // All failure detectors should report that all of the slaves are still alive.
     for (auto const& slave : slaves) {
       UNIVERSAL_ASSERT_MESSAGE(
-        slave->heartbeat_tracker.alive_endpoints().size() == slaves.size(),
+        slave->_heartbeat_tracker.alive_endpoints().size() == slaves.size(),
         "The Paxos Logs should agree with one another.")
     }
     // Now kill one of the slaves
@@ -117,7 +117,7 @@ TestFunction Tests::test3() {
     // they will detect the failure
     for (auto i = 0; i < constants.heartbeat_failure_threshold * constants.heartbeat_period; i++) {
       for (auto j = 1; j < slaves.size(); j++) {
-        slaves[j]->clock.increment_time(1);
+        slaves[j]->_clock.increment_time(1);
       }
       // Exchange all the messages that need to be exchanged
       while (nonempty_channels.size() > 0) {
@@ -126,7 +126,7 @@ TestFunction Tests::test3() {
     }
     for (auto i = 1; i < slaves.size(); i++) {
       UNIVERSAL_ASSERT_MESSAGE(
-        slaves[i]->heartbeat_tracker.alive_endpoints().size() == slaves.size() - 1,
+        slaves[i]->_heartbeat_tracker.alive_endpoints().size() == slaves.size() - 1,
         "All failure detectors should report that one slave is dead.")
     }
   };
@@ -226,8 +226,8 @@ TestFunction Tests::test4() {
 
     UNIVERSAL_ASSERT_MESSAGE(initial_equal_logs < final_equal_logs,
           "Paxos Logs should all be equal.")
-    for (auto const& [tablet_id, tp] : slaves[0]->slave_handler.get_tps()) {
-      LOG(uni::logging::Level::DEBUG, tp->kvstore.debug_string());
+    for (auto const& [tablet_id, tp] : slaves[0]->_slave_handler.get_tps()) {
+      LOG(uni::logging::Level::DEBUG, tp->_kvstore.debug_string());
     }
   };
 }
@@ -254,7 +254,7 @@ proto::message::MessageWrapper Tests::build_client_request(std::string message) 
 bool Tests::some_async_queue_nonempty(
   std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves) {
     for (auto const& slave: slaves) {
-      if (!slave->async_queue.empty()) {
+      if (!slave->_async_queue.empty()) {
         return true;
       }
     }
@@ -281,7 +281,7 @@ void Tests::run_for_milliseconds(
         if (std::rand() % 100 < 99) {
           // This if statement helps simulate unsynchronized clocks. This is a fairly
           // naive method; it doesn't simulate clocks that have slightly different speeds.
-          slave->clock.increment_time(1); 
+          slave->_clock.increment_time(1); 
         }
       }
       auto channels_sent = std::unordered_set<uni::net::ChannelTesting*>();
@@ -320,8 +320,8 @@ std::vector<std::vector<boost::optional<uni::paxos::PaxosLog*>>> Tests::get_alig
   auto slave_paxos_logs = std::vector<boost::optional<uni::paxos::PaxosLog*>>();
   auto tablet_ids = std::vector<uni::slave::TabletId>();
   for (auto const& slave : slaves) {
-    slave_paxos_logs.push_back(&slave->paxos_log);
-    for (auto const& [tablet_id, tp] : slave->slave_handler.get_tps()) {
+    slave_paxos_logs.push_back(&slave->_paxos_log);
+    for (auto const& [tablet_id, tp] : slave->_slave_handler.get_tps()) {
       tablet_ids.push_back(tablet_id);
     }
   }
@@ -329,10 +329,10 @@ std::vector<std::vector<boost::optional<uni::paxos::PaxosLog*>>> Tests::get_alig
   for (auto const& tablet_id : tablet_ids) {
     auto paxos_logs = std::vector<boost::optional<uni::paxos::PaxosLog*>>();
     for (auto const& slave : slaves) {
-      auto const& tp_map = slave->slave_handler.get_tps();
+      auto const& tp_map = slave->_slave_handler.get_tps();
       auto const& it = tp_map.find(tablet_id);
       if (it != tp_map.end()) {
-        paxos_logs.push_back(&it->second->paxos_log);
+        paxos_logs.push_back(&it->second->_paxos_log);
       } else {
         paxos_logs.push_back(boost::none);
       }
@@ -389,9 +389,9 @@ bool Tests::verify_paxos_logs(std::vector<uni::paxos::PaxosLog*> paxos_logs) {
 
 void Tests::print_paxos_logs(std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves) {
   for (auto const& slave: slaves) {
-    LOG(uni::logging::Level::DEBUG, slave->paxos_log.debug_string())
-    for (auto const& [tablet_id, tp] : slave->slave_handler.get_tps()) {
-      LOG(uni::logging::Level::DEBUG, tp->paxos_log.debug_string())
+    LOG(uni::logging::Level::DEBUG, slave->_paxos_log.debug_string())
+    for (auto const& [tablet_id, tp] : slave->_slave_handler.get_tps()) {
+      LOG(uni::logging::Level::DEBUG, tp->_paxos_log.debug_string())
     }
   }
 }
@@ -435,12 +435,12 @@ std::unique_ptr<uni::net::ChannelTesting> Tests::create_client_connection(
     nonempty_channels
   );
   auto client_channel = std::make_unique<uni::net::ChannelTesting>(
-    slave.ip_string,
+    slave._ip_string,
     nonempty_channels
   );
   channel->set_other_end(client_channel.get());
   client_channel->set_other_end(channel.get());
-  slave.client_connections.add_channel(std::move(channel));
+  slave._client_connections.add_channel(std::move(channel));
   return client_channel;
 }
 

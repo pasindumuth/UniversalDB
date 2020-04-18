@@ -27,22 +27,9 @@ namespace uni {
 namespace slave {
 
 struct TabletParticipant {
-  std::unique_ptr<uni::async::AsyncScheduler> scheduler;
-  uni::slave::TabletId tablet_id;
-  uni::paxos::PaxosLog paxos_log;
-  uni::paxos::MultiPaxosHandler multipaxos_handler;
-  uni::async::AsyncQueue async_queue;
-  uni::slave::KVStore kvstore;
-  uni::slave::ClientRequestHandler client_request_handler;
-  uni::server::LogSyncer log_syncer;
-  uni::slave::IncomingMessageHandler incoming_message_handler;
-
-  // Helper classes
-  std::unique_ptr<uni::random::Random> random;
-
   TabletParticipant(
     std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
-    std::unique_ptr<uni::random::Random> random_ptr,
+    std::unique_ptr<uni::random::Random> random,
     uni::constants::Constants const& constants,
     uni::net::Connections& connections,
     uni::net::Connections& client_connections,
@@ -50,6 +37,20 @@ struct TabletParticipant {
     uni::server::FailureDetector& failure_detector,
     uni::slave::SlaveConfigManager& config_manager,
     uni::slave::TabletId& tid);
+
+  // Helper classes
+  std::unique_ptr<uni::random::Random> _random;
+
+  // Singletons
+  std::unique_ptr<uni::async::AsyncScheduler> _scheduler;
+  uni::slave::TabletId _tablet_id;
+  uni::paxos::PaxosLog _paxos_log;
+  uni::paxos::MultiPaxosHandler _multipaxos_handler;
+  uni::async::AsyncQueue _async_queue;
+  uni::slave::KVStore _kvstore;
+  uni::slave::ClientRequestHandler _client_request_handler;
+  uni::server::LogSyncer _log_syncer;
+  uni::slave::IncomingMessageHandler _incoming_message_handler;
 };
 
 } // namespace slave

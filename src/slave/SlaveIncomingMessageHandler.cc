@@ -100,7 +100,7 @@ void SlaveIncomingMessageHandler::forward_message(
   if (_tp_map.find(tablet_id) == _tp_map.end()) {
     _tp_map.insert({tablet_id, _tp_provider(tablet_id)});
   }
-  _tp_map[tablet_id]->scheduler->queue_message(incoming_message);
+  _tp_map[tablet_id]->_scheduler->queue_message(incoming_message);
 }
 
 } // namespace slave

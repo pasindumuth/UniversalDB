@@ -4,10 +4,10 @@ namespace uni {
 namespace random {
 
 RandomTesting::RandomTesting(unsigned seed)
-  : random_number_engine(std::mt19937(seed)) {}
+  : _rng(std::mt19937(seed)) {}
 
 std::mt19937& RandomTesting::rng() {
-  return random_number_engine;
+  return _rng;
 }
 
 } // namespace random

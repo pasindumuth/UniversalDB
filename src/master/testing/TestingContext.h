@@ -27,32 +27,32 @@ struct TestingContext {
   TestingContext(
     uni::constants::Constants const& constants,
     std::vector<uni::net::EndpointId>& config_endpoints,
-    std::string ip,
+    std::string ip_string,
     unsigned random_seed);
 
   // Primitives
-  std::string ip_string;
+  std::string _ip_string;
 
   // Helper classes
-  uni::random::RandomTesting random;
+  uni::random::RandomTesting _random;
 
   // Providers
-  std::function<uni::async::AsyncQueue()> async_queue_provider;
+  std::function<uni::async::AsyncQueue()> _async_queue_provider;
 
   // Singletons
-  uni::async::AsyncSchedulerTesting scheduler;
-  uni::net::Connections client_connections;
-  uni::net::Connections slave_connections;
-  uni::net::Connections connections;
-  uni::async::ClockTesting clock;
-  uni::async::TimerAsyncSchedulerTesting timer_scheduler;
-  uni::paxos::PaxosLog paxos_log;
-  uni::async::AsyncQueue async_queue;
-  uni::paxos::MultiPaxosHandler multipaxos_handler;
-  uni::server::LogSyncer log_syncer;
-  uni::master::GroupConfigManager group_config_manager;
-  uni::master::KeySpaceManager key_space_manager;
-  uni::master::MasterIncomingMessageHandler master_handler;
+  uni::async::AsyncSchedulerTesting _scheduler;
+  uni::net::Connections _client_connections;
+  uni::net::Connections _slave_connections;
+  uni::net::Connections _connections;
+  uni::async::ClockTesting _clock;
+  uni::async::TimerAsyncSchedulerTesting _timer_scheduler;
+  uni::paxos::PaxosLog _paxos_log;
+  uni::async::AsyncQueue _async_queue;
+  uni::paxos::MultiPaxosHandler _multipaxos_handler;
+  uni::server::LogSyncer _log_syncer;
+  uni::master::GroupConfigManager _group_config_manager;
+  uni::master::KeySpaceManager _key_space_manager;
+  uni::master::MasterIncomingMessageHandler _master_handler;
 };
 
 } // namespace master
