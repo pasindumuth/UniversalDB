@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include <async/testing/ClockTesting.h>
 #include <common/common.h>
 #include <paxos/PaxosLog.h>
 #include <proto/client.pb.h>
@@ -75,19 +76,30 @@ class Tests {
   bool some_async_queue_nonempty(
     std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves);
 
-  // While there are messages in the AsyncQueue at any node, and while are any
-  // messages in the channels, keep increasing the clock on each slave. There is no
-  // message dropping.
-  void run_until_completion(
-    std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
-    std::vector<uni::net::ChannelTesting*>& nonempty_channels);
+  // Create a client connection to a DM, send it a FindKeySpace request with the provided
+  // database_id and table_id, and run the system until a new TP is created in the slaves.
+  std::unique_ptr<uni::net::ChannelTesting> initialize_keyspace(
+    TestParams& p,
+    std::string const& database_id,
+    std::string const& table_id);
 
-  // Runs for the provided number of milliseconds, each millisecond delivering n(n+1)
-  // messages, with a drop rate of 0.1.
-  void run_for_milliseconds(
-    std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
+  // Runs the system for the provided number of milliseconds. Since messages usually go
+  // over the network once every millisecond, we give every channel that has a message
+  // a chance to deliver the message every millisecond. We also increment the clocks of
+  // every server in the system (Masters and Slaves) every millisecond, adding a little
+  // bit of clock skew for realism. Finally, this method takes in a message_drop_rate that
+  // that's used to specify what fraction of messages are dropped. In particular,
+  // 1/message_drop_rate messges are dropped.
+  void run_system(TestParams& p, int32_t milliseconds, uint32_t message_drop_rate = 10);
+
+  // Gives a chance for every Channel in nonempty_channels to deliver its
+  // message with the given drop rate.
+  void exchange_messages(
     std::vector<uni::net::ChannelTesting*>& nonempty_channels,
-    int32_t milliseconds);
+    uint32_t message_drop_rate);
+
+  // Increments the given clock with some simulated skew.
+  void increment_with_skew(uni::async::ClockTesting& clock);
 
   // Checks if 2 paxos logs are equal. This simply compares the maps.
   bool equals(uni::paxos::PaxosLog& paxos_log1, uni::paxos::PaxosLog& paxos_log2);
@@ -101,8 +113,9 @@ class Tests {
   // Create a client connection with the given TestingContext
   std::unique_ptr<uni::net::ChannelTesting> create_client_connection(
     uni::constants::Constants const& constants,
-    std::vector<uni::net::ChannelTesting*>& nonempty_channels,
-    uni::slave::TestingContext& slave);
+    std::vector<uni::net::ChannelTesting*>& server_nonempty_channels,
+    std::string& server_ip,
+    uni::net::Connections& server_client_connections);
 };
 
 } // integration

@@ -21,7 +21,7 @@ void IncomingMessageHandler::handle(uni::net::IncomingMessage incoming_message) 
   if (message_wrapper.has_client_message()) {
     auto const& client_message = message_wrapper.client_message();
     if (client_message.has_request()) {
-      LOG(uni::logging::Level::TRACE2, "Client Request gotten.")
+      LOG(uni::logging::Level::TRACE2, "Client Request at IncomingMessageHandler gotten.")
       _client_request_handler.handle_request(endpoint_id, client_message.request());
     } else {
       LOG(uni::logging::Level::WARN, "Unkown client message type.")
@@ -29,15 +29,15 @@ void IncomingMessageHandler::handle(uni::net::IncomingMessage incoming_message) 
   } else if (message_wrapper.has_tablet_message()) {
     auto tablet_message = message_wrapper.tablet_message();
     if (tablet_message.has_paxos_message()) {
-      LOG(uni::logging::Level::TRACE2, "Paxos Message gotten.")
+      LOG(uni::logging::Level::TRACE2, "Paxos Message at IncomingMessageHandler gotten.")
       _multi_paxos_handler.handle_incoming_message(endpoint_id, tablet_message.paxos_message());
     } else if (tablet_message.has_sync_message()) {
       auto sync_message = tablet_message.sync_message();
       if (sync_message.has_sync_request()) {
-        LOG(uni::logging::Level::TRACE2, "Sync Request gotten.")
+        LOG(uni::logging::Level::TRACE2, "Sync Request at IncomingMessageHandler gotten.")
         _log_syncer.handle_sync_request(endpoint_id, sync_message.sync_request());
       } else if (sync_message.has_sync_response()) {
-        LOG(uni::logging::Level::TRACE2, "Sync Response gotten.")
+        LOG(uni::logging::Level::TRACE2, "Sync Response at IncomingMessageHandler gotten.")
         _log_syncer.handle_sync_response(sync_message.sync_response());
       } else {
         LOG(uni::logging::Level::WARN, "Unkown sync message type.")

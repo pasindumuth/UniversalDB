@@ -58,7 +58,7 @@ void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mess
         LOG(uni::logging::Level::WARN, "Unkown sync message type.")
       }
     } else if (slave_message.has_paxos_message()) {
-      LOG(uni::logging::Level::TRACE2, "Paxos Message gotten.")
+      LOG(uni::logging::Level::TRACE2, "Paxos message at SlaveIncomingMessageHandler gotten.")
       _multipaxos_handler.handle_incoming_message(endpoint_id, slave_message.paxos_message());
     } else {
       LOG(uni::logging::Level::WARN, "Unkown slave message type.")
@@ -66,7 +66,7 @@ void SlaveIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mess
   } else if (message_wrapper.has_master_message()) {
     auto const& master_message = message_wrapper.master_message();
     if (master_message.has_key_space_selected()) {
-      LOG(uni::logging::Level::TRACE2, "New Key Space Selected gotten.")
+      LOG(uni::logging::Level::TRACE2, "New Key Space Selected at SlaveIncomingMessageHandler gotten.")
       _key_space_manager.handle_key_space_change(endpoint_id, master_message.key_space_selected());
     } else {
       LOG(uni::logging::Level::WARN, "Unkown master message type.")

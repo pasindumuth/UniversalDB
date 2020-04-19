@@ -16,7 +16,6 @@ int main(int argc, char* argv[]) {
   auto test_driver = uni::testing::integration::TestDriver();
   auto tests = uni::testing::integration::Tests();
   uni::logging::get_log_level() = uni::logging::Level::DEBUG;
-  std::srand(0); // initialize random numbers
   try {
     test_driver.run_test(tests.test1());
     test_driver.run_test(tests.test2());

@@ -23,6 +23,7 @@ struct SlaveObjects {
 };
 
 struct MasterObjects {
+  std::vector<uni::net::EndpointId> config_endpoints;
   std::vector<std::unique_ptr<uni::master::TestingContext>> masters;
   std::vector<std::vector<uni::net::ChannelTesting*>> master_channels;
   std::vector<uni::net::ChannelTesting*> master_nonempty_channels;
@@ -69,11 +70,16 @@ void initialize_slaves(uni::constants::Constants const& constants, SlaveObjects&
   }
 }
 
-void initialize_masters(uni::constants::Constants const& constants, MasterObjects& mo) {
+void initialize_masters(uni::constants::Constants const& constants, MasterObjects& mo, SlaveObjects& so) {
   // Compute config_endpoints
-  auto config_endpoints = std::vector<uni::net::EndpointId>();
   for (auto i = 0; i < constants.num_master_servers; i++) {
-    config_endpoints.push_back({"master" + std::to_string(i), 0});
+    mo.config_endpoints.push_back({"master" + std::to_string(i), 0});
+  }
+
+  // Compute Slave Endpoints
+  auto slave_endpoints = std::vector<uni::net::EndpointId>();
+  for (auto const& slave : so.slaves) {
+    slave_endpoints.push_back({slave->_ip_string, 0});
   }
 
   // Initialize the Master objects
@@ -81,9 +87,10 @@ void initialize_masters(uni::constants::Constants const& constants, MasterObject
     mo.masters.push_back(
       std::make_unique<uni::master::TestingContext>(
         constants,
-        config_endpoints,
-        config_endpoints[i].ip_string,
-        i
+        mo.config_endpoints,
+        slave_endpoints,
+        mo.config_endpoints[i].ip_string,
+        constants.num_slave_servers + i
       )
     );
   }
@@ -161,16 +168,10 @@ void TestDriver::run_test(TestFunction test) {
   initialize_slaves(constants, so);
 
   auto mo = MasterObjects();
-  initialize_masters(constants, mo);
+  initialize_masters(constants, mo, so);
 
   auto c = MasterSlaveConnections();
   connect_masters_slaves(constants, so, mo, c);
-
-  // TODO this just instantiates the tablet participants manually, since we don't
-  // have the datamaster working with the tests yet. Get rid of this going forward.
-  for (auto const& slave: so.slaves) {
-    slave->_tablet_manager.handle_key_space_change({{"", "", boost::none, boost::none}});
-  }
 
   try {
     test({

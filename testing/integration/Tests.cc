@@ -20,11 +20,13 @@ namespace integration {
 
 TestFunction Tests::test1() {
   return [this](TestParams p) {
+    auto client_dm_channel = initialize_keyspace(p, "", "");
+
     // Send the client message to the first Universal Slave
     auto client_channels = std::vector<std::unique_ptr<uni::net::ChannelTesting>>();
     for (auto i = 0; i < p.slaves.size(); i++) {
       client_channels.push_back(create_client_connection(
-        p.constants, p.slave_nonempty_channels, *p.slaves[i]));
+        p.constants, p.slave_nonempty_channels, p.slaves[i]->_ip_string, p.slaves[i]->_client_connections));
     }
     for (auto i = 0; i < 300; i++) {
       // Send a client message to some node in the Paxos Group. The node is
@@ -32,7 +34,7 @@ TestFunction Tests::test1() {
       client_channels[std::rand() % client_channels.size()]->queue_send(
         build_client_request("m" + std::to_string(i)).SerializeAsString());
       // Run the nodes and network for 1ms.
-      run_for_milliseconds(p.slaves, p.slave_nonempty_channels, 1);
+      run_system(p, 1);
     }
     // Now that the simulation is done, print out the Paxos Log and see what we have.
     print_paxos_logs(p.slaves);
@@ -45,12 +47,14 @@ TestFunction Tests::test1() {
 
 TestFunction Tests::test2() {
   return [this](TestParams p) {
+    auto client_dm_channel = initialize_keyspace(p, "", "");
+
     auto nodes_failed = 0;
     // Send the client message to the first Universal Slave
     auto client_channels = std::vector<std::unique_ptr<uni::net::ChannelTesting>>();
     for (auto i = 0; i < p.slaves.size(); i++) {
       client_channels.push_back(create_client_connection(
-        p.constants, p.slave_nonempty_channels, *p.slaves[i]));
+        p.constants, p.slave_nonempty_channels, p.slaves[i]->_ip_string, p.slaves[i]->_client_connections));
     }
     for (auto i = 0; i < 300; i++) {
       // Send a client message to some node in the Paxos Group. The node is
@@ -58,7 +62,7 @@ TestFunction Tests::test2() {
       client_channels[std::rand() % client_channels.size()]->queue_send(
         build_client_request("m" + std::to_string(i)).SerializeAsString());
       // Run the nodes and network for 1ms.
-      run_for_milliseconds(p.slaves, p.slave_nonempty_channels, 1);
+      run_system(p, 1);
       // Fail a node if there isn't already a failed node.
       if (nodes_failed < 3 && (std::rand() % 40 == 0)) {
         if (nodes_failed == 0) {
@@ -82,6 +86,8 @@ TestFunction Tests::test2() {
 
 TestFunction Tests::test3() {
   return [this](TestParams p) {
+    auto client_dm_channel = initialize_keyspace(p, "", "");
+
     bool passed = true;
     // Wait one heartbeat cycle so that the nodes can send each other a heartbeat
     for (auto i = 0; i < p.constants.heartbeat_period; i++) {
@@ -123,10 +129,12 @@ TestFunction Tests::test3() {
 // TODO this test is so bad that we don't even need the LogSyncer running for it to pass.
 TestFunction Tests::test4() {
   return [this](TestParams p) {
+    auto client_dm_channel = initialize_keyspace(p, "", "");
+
     auto client_channels = std::vector<std::unique_ptr<uni::net::ChannelTesting>>();
     for (auto i = 0; i < p.slaves.size(); i++) {
       client_channels.push_back(create_client_connection(
-        p.constants, p.slave_nonempty_channels, *p.slaves[i]));
+        p.constants, p.slave_nonempty_channels, p.slaves[i]->_ip_string, p.slaves[i]->_client_connections));
     }
     auto client_request_id = 0;
     auto simulate_client_requests = [&](int32_t request_count, int32_t target_slave) {
@@ -137,7 +145,7 @@ TestFunction Tests::test4() {
         // chosen randomly.
         client_channels[target_slave]->queue_send(
           build_client_request("m" + std::to_string(client_request_id)).SerializeAsString());
-        run_for_milliseconds(p.slaves, p.slave_nonempty_channels, 5);
+        run_system(p, 5);
       }
     };
     mark_node_as_unresponsive(p.slave_channels, 0);
@@ -188,10 +196,10 @@ TestFunction Tests::test4() {
 
     // Make sure that at least one heartbeat is sent to ensure a leader is known
     // (plus an extra 5 milliseconds to make sure all messages are sent).
-    run_for_milliseconds(p.slaves, p.slave_nonempty_channels, p.constants.heartbeat_period + 5);
+    run_system(p, p.constants.heartbeat_period + 5);
     // Make sure one sync message is sent to ensure at least one syncing
     // (plus an extra 5 milliseconds to make sure all messages are sent).
-    run_for_milliseconds(p.slaves, p.slave_nonempty_channels, p.constants.log_syncer_period + 5);
+    run_system(p, p.constants.log_syncer_period + 5);
 
     UNIVERSAL_ASSERT_MESSAGE(verify_all_paxos_logs(p.slaves), "The Paxos Logs should agree with one another.")
     // All of the PaxosLogs should now be equal
@@ -245,56 +253,83 @@ bool Tests::some_async_queue_nonempty(
     return false;
 }
 
-void Tests::run_until_completion(
-  std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
-  std::vector<uni::net::ChannelTesting*>& slave_nonempty_channels) {
-    while (some_async_queue_nonempty(slaves) || slave_nonempty_channels.size() > 0) {
-      run_for_milliseconds(slaves, slave_nonempty_channels, 1);
-    }
+std::unique_ptr<uni::net::ChannelTesting> Tests::initialize_keyspace(
+  TestParams& p,
+  std::string const& database_id,
+  std::string const& table_id
+) {
+  auto client_dm_channel = create_client_connection(
+    p.constants, p.master_nonempty_channels, p.masters[0]->_ip_string, p.masters[0]->_client_connections);
+
+  auto message_wrapper = proto::message::MessageWrapper();
+  auto client_message = new proto::client::ClientMessage();
+  auto find_key_request = new proto::client::FindKeyRangeRequest();
+  find_key_request->set_database_id(database_id);
+  find_key_request->set_table_id(table_id);
+  find_key_request->set_key("key");
+  client_message->set_allocated_find_key_range_request(find_key_request);
+  message_wrapper.set_allocated_client_message(client_message);
+  client_dm_channel->queue_send(message_wrapper.SerializeAsString());
+
+  run_system(p, 200, 1000);
+
+  return client_dm_channel;
 }
 
-void Tests::run_for_milliseconds(
-  std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves,
-  std::vector<uni::net::ChannelTesting*>& slave_nonempty_channels,
-  int32_t milliseconds) {
-    // Since we increase the clocks by 1ms, we assume one message is passed along a
-    // channel on average (remember there 2 channels between 2 nodes, one for each direction).
-    auto n = slaves.size() * (slaves.size() + 1); // the number of messages to exchange
-    for (auto t = 0; t < milliseconds; t++) {
-      for (auto const& slave: slaves) {
-        if (std::rand() % 100 < 99) {
-          // This if statement helps simulate unsynchronized clocks. This is a fairly
-          // naive method; it doesn't simulate clocks that have slightly different speeds.
-          slave->_clock.increment_time(1); 
+void Tests::run_system(TestParams& p, int32_t milliseconds, uint32_t message_drop_rate) {
+  for (auto t = 0; t < milliseconds; t++) {
+    for (auto const& slave: p.slaves) {
+      increment_with_skew(slave->_clock);
+    }
+    for (auto const& master: p.masters) {
+      increment_with_skew(master->_clock);
+    }
+    exchange_messages(p.slave_nonempty_channels, message_drop_rate);
+    exchange_messages(p.master_nonempty_channels, message_drop_rate);
+    exchange_messages(p.master_slave_nonempty_channels, message_drop_rate);
+    exchange_messages(p.slave_master_nonempty_channels, message_drop_rate);
+  }
+}
+
+void Tests::exchange_messages(
+  std::vector<uni::net::ChannelTesting*>& nonempty_channels,
+  uint32_t message_drop_rate
+) {
+  auto n = nonempty_channels.size();
+  auto channels_sent = std::unordered_set<uni::net::ChannelTesting*>();
+  for (auto i = 0; i < n; i++) {
+    if (std::rand() % 10 < 9) {
+      // This if statement helps prevent the exact same number of
+      // of messages being exchanged everytime.
+      auto channels_not_sent = std::vector<uni::net::ChannelTesting*>();
+      for (auto const& channel : nonempty_channels) {
+        if (channels_sent.find(channel) == channels_sent.end()) {
+          channels_not_sent.push_back(channel);
         }
       }
-      auto channels_sent = std::unordered_set<uni::net::ChannelTesting*>();
-      for (auto i = 0; i < n; i++) {
-        if (std::rand() % 10 < 9) {
-          // This if statement helps prevent the exact same number of
-          // of messages being exchanged everytime.
-          auto channels_not_sent = std::vector<uni::net::ChannelTesting*>();
-          for (auto const& channel : slave_nonempty_channels) {
-            if (channels_sent.find(channel) == channels_sent.end()) {
-              channels_not_sent.push_back(channel);
-            }
-          }
-          if (channels_not_sent.size() > 0) {
-            auto& channel = channels_not_sent[std::rand() % channels_not_sent.size()];
-            if (std::rand() % 10 < 9) {
-              // simulate a successful delivery of the message
-              channel->deliver_message();
-            } else {
-              // simulate a drop of the message
-              channel->drop_message();
-            }
-            channels_sent.insert(channel);
-          } else {
-            break;
-          }
+      if (channels_not_sent.size() > 0) {
+        auto& channel = channels_not_sent[std::rand() % channels_not_sent.size()];
+        if (std::rand() % message_drop_rate < (message_drop_rate - 1)) {
+          // simulate a successful delivery of the message
+          channel->deliver_message();
+        } else {
+          // simulate a drop of the message
+          channel->drop_message();
         }
+        channels_sent.insert(channel);
+      } else {
+        break;
       }
     }
+  }
+}
+
+void Tests::increment_with_skew(uni::async::ClockTesting& clock) {
+  if (std::rand() % 100 < 99) {
+    // This is a fairly naive method of producing skew; it doesn't
+    // simulate clocks that have slightly different speeds.
+    clock.increment_time(1); 
+  }
 }
 
 std::vector<std::vector<boost::optional<uni::paxos::PaxosLog*>>> Tests::get_aligned_logs(
@@ -411,20 +446,21 @@ void Tests::mark_node_as_responsive(std::vector<std::vector<uni::net::ChannelTes
 
 std::unique_ptr<uni::net::ChannelTesting> Tests::create_client_connection(
   uni::constants::Constants const& constants,
-  std::vector<uni::net::ChannelTesting*>& slave_nonempty_channels,
-  uni::slave::TestingContext& slave
+  std::vector<uni::net::ChannelTesting*>& server_nonempty_channels,
+  std::string& server_ip,
+  uni::net::Connections& server_client_connections
 ) {
   auto channel = std::make_unique<uni::net::ChannelTesting>(
     "client",
-    slave_nonempty_channels
+    server_nonempty_channels
   );
   auto client_channel = std::make_unique<uni::net::ChannelTesting>(
-    slave._ip_string,
-    slave_nonempty_channels
+    server_ip,
+    server_nonempty_channels
   );
   channel->set_other_end(client_channel.get());
   client_channel->set_other_end(channel.get());
-  slave._client_connections.add_channel(std::move(channel));
+  server_client_connections.add_channel(std::move(channel));
   return client_channel;
 }
 

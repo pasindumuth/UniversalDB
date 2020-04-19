@@ -22,7 +22,7 @@ void MasterIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mes
   if (message_wrapper.has_client_message()) {
     auto const& client_message = message_wrapper.client_message();
     if (client_message.has_find_key_range_request()) {
-      LOG(uni::logging::Level::TRACE2, "Client FindKeyRange message gotten.")
+      LOG(uni::logging::Level::TRACE2, "Client FindKeyRange message at MasterIncomingMessageHandler gotten.")
       _key_space_manager.handle_find_key(endpoint_id, client_message.find_key_range_request());
     } else {
       LOG(uni::logging::Level::WARN, "Unkown client message type.")
@@ -30,7 +30,7 @@ void MasterIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mes
   } else if (message_wrapper.has_slave_message()) {
     auto const& slave_message = message_wrapper.slave_message();
     if (slave_message.has_key_space_changed()) {
-      LOG(uni::logging::Level::TRACE2, "Key Space Changed Message gotten.")
+      LOG(uni::logging::Level::TRACE2, "Key Space Changed message at MasterIncomingMessageHandler gotten.")
       _key_space_manager.handle_key_space_changed(endpoint_id, slave_message.key_space_changed());
     } else {
       LOG(uni::logging::Level::WARN, "Unkown client message type.")
@@ -38,15 +38,15 @@ void MasterIncomingMessageHandler::handle(uni::net::IncomingMessage incoming_mes
   } else if (message_wrapper.has_master_message()) {
     auto const& master_message = message_wrapper.master_message();
     if (master_message.has_paxos_message()) {
-      LOG(uni::logging::Level::TRACE2, "Paxos Message gotten.")
+      LOG(uni::logging::Level::TRACE2, "Paxos message at MasterIncomingMessageHandler gotten.")
       _multi_paxos_handler.handle_incoming_message(endpoint_id, master_message.paxos_message());
     } else if (master_message.has_sync_message()) {
       auto sync_message = master_message.sync_message();
       if (sync_message.has_sync_request()) {
-        LOG(uni::logging::Level::TRACE2, "Sync Request at gotten.")
+        LOG(uni::logging::Level::TRACE2, "Sync Request at MasterIncomingMessageHandler at gotten.")
         _log_syncer.handle_sync_request(endpoint_id, sync_message.sync_request());
       } else if (sync_message.has_sync_response()) {
-        LOG(uni::logging::Level::TRACE2, "Sync Response at gotten.")
+        LOG(uni::logging::Level::TRACE2, "Sync Response at MasterIncomingMessageHandler at gotten.")
         _log_syncer.handle_sync_response(sync_message.sync_response());
       } else {
         LOG(uni::logging::Level::WARN, "Unkown sync message type.")

@@ -27,6 +27,7 @@ struct TestingContext {
   TestingContext(
     uni::constants::Constants const& constants,
     std::vector<uni::net::EndpointId>& config_endpoints,
+    std::vector<uni::net::EndpointId>& slave_endpoints,
     std::string ip_string,
     unsigned random_seed);
 

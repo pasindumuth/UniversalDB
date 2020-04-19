@@ -8,6 +8,7 @@ namespace master {
 TestingContext::TestingContext(
   uni::constants::Constants const& constants,
   std::vector<uni::net::EndpointId>& config_endpoints,
+  std::vector<uni::net::EndpointId>& slave_endpoints,
   std::string ip_string,
   unsigned random_seed)
   : _ip_string(ip_string),
@@ -64,6 +65,9 @@ TestingContext::TestingContext(
   _scheduler.set_callback([this](uni::net::IncomingMessage message){
     _master_handler.handle(message);
   });
+  auto group_id = uni::server::SlaveGroupId{ "slave_group_0" };
+  _group_config_manager.set_first_config(group_id, slave_endpoints);
+  _key_space_manager.set_first_config(group_id);
 }
 
 } // namespace master
