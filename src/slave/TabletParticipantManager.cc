@@ -1,10 +1,10 @@
 #include "TabletParticipantManager.h"
 
 #include <net/EndpointId.h>
-#include <proto/client.pb.h>
-#include <proto/master.pb.h>
+#include <proto/message_client.pb.h>
+#include <proto/message_master.pb.h>
 #include <proto/message.pb.h>
-#include <proto/tablet.pb.h>
+#include <proto/message_tablet.pb.h>
 
 namespace uni {
 namespace slave {
@@ -53,7 +53,7 @@ TabletParticipantManager::TPMapT const& TabletParticipantManager::get_tps() cons
 }
 
 void TabletParticipantManager::handle_client_request(
-  proto::client::ClientRequest client_request,
+  proto::message::client::ClientRequest client_request,
   uni::net::IncomingMessage incoming_message)
 {
   for (auto& [tablet_id, tp] : _tp_map) {
@@ -64,13 +64,13 @@ void TabletParticipantManager::handle_client_request(
   }
   // If we get here, that means there is no TabletParticipant that supports
   // this client message. So send back an error.
-  auto client_response = new proto::client::ClientResponse();
-  client_response->set_error_code(proto::client::Code::ERROR);
+  auto client_response = new proto::message::client::ClientResponse();
+  client_response->set_error_code(proto::message::client::Code::ERROR);
   _respond_callback(incoming_message.endpoint_id, client_response);
 }
 
 void TabletParticipantManager::handle_tablet_message(
-  proto::tablet::TabletMessage tablet_message,
+  proto::message::tablet::TabletMessage tablet_message,
   uni::net::IncomingMessage incoming_message)
 {
   for (auto& [tablet_id, tp] : _tp_map) {

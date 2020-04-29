@@ -7,7 +7,7 @@
 #include <async/testing/ClockTesting.h>
 #include <common/common.h>
 #include <paxos/PaxosLog.h>
-#include <proto/client.pb.h>
+#include <proto/message_client.pb.h>
 #include <proto/message.pb.h>
 #include <integration/TestDriver.h>
 

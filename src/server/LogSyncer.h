@@ -12,7 +12,7 @@
 #include <paxos/PaxosLog.h>
 #include <paxos/PaxosTypes.h>
 #include <proto/message.pb.h>
-#include <proto/slave.pb.h>
+#include <proto/message_slave.pb.h>
 #include <proto/sync.pb.h>
 #include <server/FailureDetector.h>
 

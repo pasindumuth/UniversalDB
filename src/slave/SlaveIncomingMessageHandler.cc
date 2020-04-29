@@ -3,10 +3,10 @@
 #include <common/common.h>
 #include <net/EndpointId.h>
 #include <net/IncomingMessage.h>
-#include <proto/client.pb.h>
-#include <proto/master.pb.h>
+#include <proto/message_client.pb.h>
+#include <proto/message_master.pb.h>
 #include <proto/message.pb.h>
-#include <proto/tablet.pb.h>
+#include <proto/message_tablet.pb.h>
 #include <server/LogSyncer.h>
 #include <slave/TabletId.h>
 

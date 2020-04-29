@@ -50,11 +50,11 @@ class TabletParticipantManager {
   TPMapT _tp_map;
 
   void handle_client_request(
-    proto::client::ClientRequest client_request,
+    proto::message::client::ClientRequest client_request,
     uni::net::IncomingMessage incoming_message);
 
   void handle_tablet_message(
-    proto::tablet::TabletMessage tablet_message,
+    proto::message::tablet::TabletMessage tablet_message,
     uni::net::IncomingMessage incoming_message);
 };
 

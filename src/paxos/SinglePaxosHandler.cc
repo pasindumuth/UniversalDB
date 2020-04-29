@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <assert/assert.h>
-#include <proto/tablet.pb.h>
+#include <proto/message_tablet.pb.h>
 #include <utils/pbutil.h>
 
 namespace uni {

@@ -1,6 +1,6 @@
 #include "FailureDetector.h"
 
-#include <proto/slave.pb.h>
+#include <proto/message_slave.pb.h>
 
 namespace uni {
 namespace server {
@@ -15,8 +15,8 @@ FailureDetector::FailureDetector(
         _timer_scheduler(timer_scheduler),
         _get_endpoints(get_endpoints) {
   // Sub-messages are freed when the _message is freed.  
-  auto slave_message = new proto::slave::SlaveMessage;
-  auto heartbeat_message = new proto::slave::Heartbeat;
+  auto slave_message = new proto::message::slave::SlaveMessage;
+  auto heartbeat_message = new proto::message::slave::Heartbeat;
   slave_message->set_allocated_heartbeat(heartbeat_message);
   _message.set_allocated_slave_message(slave_message);
   schedule_heartbeat();

@@ -4,7 +4,7 @@ syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
 
-package proto.client;
+package proto.message.client;
 
 message ClientRequest {
   enum Type {

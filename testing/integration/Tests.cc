@@ -230,10 +230,10 @@ static int64_t timestamp = 0;
 
 proto::message::MessageWrapper Tests::build_client_request(std::string message) {
   auto message_wrapper = proto::message::MessageWrapper();
-  auto client_message = new proto::client::ClientMessage();
-  auto request_message = new proto::client::ClientRequest();
+  auto client_message = new proto::message::client::ClientMessage();
+  auto request_message = new proto::message::client::ClientRequest();
   request_message->set_request_id(std::to_string(++request_id));
-  request_message->set_request_type(proto::client::ClientRequest::WRITE);
+  request_message->set_request_type(proto::message::client::ClientRequest::WRITE);
   request_message->set_key(std::string("key"));
   request_message->set_allocated_value(uni::utils::pb::string(message));
   request_message->set_allocated_timestamp(uni::utils::pb::uint64(++timestamp));
@@ -262,8 +262,8 @@ std::unique_ptr<uni::net::ChannelTesting> Tests::initialize_keyspace(
     p.constants, p.master_nonempty_channels, p.masters[0]->_ip_string, p.masters[0]->_client_connections);
 
   auto message_wrapper = proto::message::MessageWrapper();
-  auto client_message = new proto::client::ClientMessage();
-  auto find_key_request = new proto::client::FindKeyRangeRequest();
+  auto client_message = new proto::message::client::ClientMessage();
+  auto find_key_request = new proto::message::client::FindKeyRangeRequest();
   find_key_request->set_database_id(database_id);
   find_key_request->set_table_id(table_id);
   find_key_request->set_key("key");

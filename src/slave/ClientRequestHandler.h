@@ -13,7 +13,7 @@
 #include <slave/KVStore.h>
 #include <slave/functors.h>
 
-#include <proto/client.pb.h>
+#include <proto/message_client.pb.h>
 
 namespace uni {
 namespace slave {
@@ -32,7 +32,7 @@ class ClientRequestHandler {
 
   void handle_request(
     uni::net::EndpointId endpoint_id,
-    proto::client::ClientRequest const& message);
+    proto::message::client::ClientRequest const& message);
 
  private:
   uni::paxos::MultiPaxosHandler& _multi_paxos_handler;

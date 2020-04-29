@@ -3,7 +3,7 @@
 #include <boost/optional.hpp>
 
 #include <assert/UniversalException.h>
-#include <proto/slave.pb.h>
+#include <proto/message_slave.pb.h>
 
 namespace uni {
 namespace testing {

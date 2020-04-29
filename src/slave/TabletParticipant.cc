@@ -4,10 +4,10 @@
 #include <net/IncomingMessage.h>
 #include <paxos/PaxosTypes.h>
 #include <paxos/SinglePaxosHandler.h>
-#include <proto/client.pb.h>
-#include <proto/master.pb.h>
+#include <proto/message_client.pb.h>
+#include <proto/message_master.pb.h>
 #include <proto/message.pb.h>
-#include <proto/tablet.pb.h>
+#include <proto/message_tablet.pb.h>
 #include <proto/sync.pb.h>
 #include <slave/functors.h>
 #include <utils/pbutil.h>
@@ -41,7 +41,7 @@ TabletParticipant::TabletParticipant(
           uni::slave::GetEndpoints(config_manager),
           [this](proto::paxos::PaxosMessage* paxos_message){
             auto message_wrapper = proto::message::MessageWrapper();
-            auto tablet_message = new proto::tablet::TabletMessage;
+            auto tablet_message = new proto::message::tablet::TabletMessage;
             tablet_message->set_allocated_range(uni::server::convert(_tablet_id));
             tablet_message->set_allocated_paxos_message(paxos_message);
             message_wrapper.set_allocated_tablet_message(tablet_message);
@@ -64,7 +64,7 @@ TabletParticipant::TabletParticipant(
       uni::slave::GetEndpoints(config_manager),
       [this](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
-        auto tablet_message = new proto::tablet::TabletMessage;
+        auto tablet_message = new proto::message::tablet::TabletMessage;
         tablet_message->set_allocated_range(uni::server::convert(_tablet_id));
         tablet_message->set_allocated_sync_message(sync_message);
         message_wrapper.set_allocated_tablet_message(tablet_message);

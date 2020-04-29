@@ -3,7 +3,7 @@
 #include <assert/assert.h>
 #include <proto/message.pb.h>
 #include <proto/paxos_slave.pb.h>
-#include <proto/slave.pb.h>
+#include <proto/message_slave.pb.h>
 
 #include <utils/pbutil.h>
 
@@ -49,8 +49,8 @@ SlaveKeySpaceManager::SlaveKeySpaceManager(
 
       // Reply back to the DMs.
       auto message_wrapper = proto::message::MessageWrapper();
-      auto slave_message = new proto::slave::SlaveMessage;
-      auto key_space_changed = new proto::slave::KeySpaceChanged;
+      auto slave_message = new proto::message::slave::SlaveMessage;
+      auto key_space_changed = new proto::message::slave::KeySpaceChanged;
       key_space_changed->set_generation(_ranges.generation);
       slave_message->set_allocated_key_space_changed(key_space_changed);
       message_wrapper.set_allocated_slave_message(slave_message);
@@ -61,7 +61,7 @@ SlaveKeySpaceManager::SlaveKeySpaceManager(
 
 void SlaveKeySpaceManager::handle_key_space_change(
   uni::net::EndpointId endpoint_id,
-  proto::master::NewKeySpaceSelected const& message
+  proto::message::master::NewKeySpaceSelected const& message
 ) {
   // We don't need to worry about retrying here, because the _ranges.generation
   // here will eventually get to a point that executes a branch that terminates the job.
@@ -96,8 +96,8 @@ void SlaveKeySpaceManager::handle_key_space_change(
       // requested by this incoming message, so just reply to the master with a 
       // commit message.
       auto message_wrapper = proto::message::MessageWrapper();
-      auto slave_message = new proto::slave::SlaveMessage;
-      auto key_space_changed = new proto::slave::KeySpaceChanged;
+      auto slave_message = new proto::message::slave::SlaveMessage;
+      auto key_space_changed = new proto::message::slave::KeySpaceChanged;
       key_space_changed->set_generation(message.generation());
       slave_message->set_allocated_key_space_changed(key_space_changed);
       message_wrapper.set_allocated_slave_message(slave_message);

@@ -6,7 +6,7 @@ import "common.proto";
 import "paxos.proto";
 import "sync.proto";
 
-package proto.master;
+package proto.message.master;
 
 message NewKeySpaceSelected {
   repeated proto.common.KeySpaceRange new_ranges = 1;

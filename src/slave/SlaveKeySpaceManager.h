@@ -10,7 +10,7 @@
 #include <async/AsyncQueue.h>
 #include <net/Connections.h>
 #include <paxos/MultiPaxosHandler.h>
-#include <proto/master.pb.h>
+#include <proto/message_master.pb.h>
 #include <server/KeySpaceRange.h>
 #include <server/SlaveGroupId.h>
 #include <slave/TabletParticipantManager.h>
@@ -31,7 +31,7 @@ class SlaveKeySpaceManager {
 
   void handle_key_space_change(
     uni::net::EndpointId endpoint_id,
-    proto::master::NewKeySpaceSelected const& message);
+    proto::message::master::NewKeySpaceSelected const& message);
 
  private:
   uni::async::AsyncQueue& _async_queue;

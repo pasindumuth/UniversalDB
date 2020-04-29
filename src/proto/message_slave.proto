@@ -5,7 +5,7 @@ syntax = "proto3";
 import "paxos.proto";
 import "sync.proto";
 
-package proto.slave;
+package proto.message.slave;
 
 message Heartbeat {}
 

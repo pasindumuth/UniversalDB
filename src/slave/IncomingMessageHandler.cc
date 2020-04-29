@@ -1,6 +1,6 @@
 #include "IncomingMessageHandler.h"
 
-#include <proto/client.pb.h>
+#include <proto/message_client.pb.h>
 #include <proto/message.pb.h>
 
 namespace uni {

@@ -52,27 +52,27 @@ ClientRequestHandler::ClientRequestHandler(
 // if there are already blocking jobs in the proposer queue).
 void ClientRequestHandler::handle_request(
     uni::net::EndpointId endpoint_id,
-    proto::client::ClientRequest const& message) {
+    proto::message::client::ClientRequest const& message) {
   auto retry_count = std::make_shared<int>(0);
   _async_queue.add_task([this, retry_count, message, endpoint_id](){
     auto entry_index = _request_id_map.find(message.request_id());
     if (entry_index != _request_id_map.end()) {
       // The request was fullfilled in the last retry
-      auto client_response = new proto::client::ClientResponse();
-      if (message.request_type() == proto::client::ClientRequest::READ) {
+      auto client_response = new proto::message::client::ClientResponse();
+      if (message.request_type() == proto::message::client::ClientRequest::READ) {
         // Populate the value of the read
         auto read_entry = _paxos_log.get_entry(entry_index->second).get().read();
         auto value = _kvstore.read(read_entry.key().value(), read_entry.timestamp().value());
         if (value) {
           // The value exists and the read was a success
-          client_response->set_error_code(proto::client::Code::SUCCESS);
+          client_response->set_error_code(proto::message::client::Code::SUCCESS);
           client_response->set_allocated_value(uni::utils::pb::string(value.get()));
         } else {
           // The value doesn't exist and the read was a error
-          client_response->set_error_code(proto::client::Code::ERROR);
+          client_response->set_error_code(proto::message::client::Code::ERROR);
         }
-      } else if (message.request_type() == proto::client::ClientRequest::WRITE) {
-        client_response->set_error_code(proto::client::Code::SUCCESS);
+      } else if (message.request_type() == proto::message::client::ClientRequest::WRITE) {
+        client_response->set_error_code(proto::message::client::Code::SUCCESS);
       } else {
         UNIVERSAL_TERMINATE("Client request type should be READ or WRITE")
       }
@@ -80,33 +80,33 @@ void ClientRequestHandler::handle_request(
       return uni::async::AsyncQueue::TERMINATE;
     } else if (*retry_count == RETRY_LIMIT) {
       // Maximum number of retries have been reached
-      auto client_response = new proto::client::ClientResponse();
-      client_response->set_error_code(proto::client::Code::ERROR);
+      auto client_response = new proto::message::client::ClientResponse();
+      client_response->set_error_code(proto::message::client::Code::ERROR);
       _respond_callback(endpoint_id, client_response);
       return uni::async::AsyncQueue::TERMINATE;
     }
 
-    if (message.request_type() == proto::client::ClientRequest::WRITE) {
+    if (message.request_type() == proto::message::client::ClientRequest::WRITE) {
       // If the write is illegal, then return an error
       auto lat = _kvstore.read_lat(message.key());
       if (message.timestamp().value() <= lat) {
         // The timestamp trying to be inserted to is not strictly greater than lat
-        auto client_response = new proto::client::ClientResponse();
-        client_response->set_error_code(proto::client::Code::ERROR);
+        auto client_response = new proto::message::client::ClientResponse();
+        client_response->set_error_code(proto::message::client::Code::ERROR);
         _respond_callback(endpoint_id, client_response);
         return uni::async::AsyncQueue::TERMINATE;
       }
     }
 
     auto log_entry = proto::paxos::PaxosLogEntry();
-    if (message.request_type() == proto::client::ClientRequest::WRITE) {
+    if (message.request_type() == proto::message::client::ClientRequest::WRITE) {
       auto write = new proto::paxos::tablet::Write();
       write->set_allocated_request_id(uni::utils::pb::string(message.request_id()));
       write->set_allocated_key(uni::utils::pb::string(message.key()));
       write->set_allocated_value(uni::utils::pb::string(message.value()));
       write->set_allocated_timestamp(uni::utils::pb::uint64(message.timestamp()));
       log_entry.set_allocated_write(write);
-    } else if (message.request_type() == proto::client::ClientRequest::READ) {
+    } else if (message.request_type() == proto::message::client::ClientRequest::READ) {
       auto read = new proto::paxos::tablet::Read();
       read->set_allocated_request_id(uni::utils::pb::string(message.request_id()));
       read->set_allocated_key(uni::utils::pb::string(message.key()));

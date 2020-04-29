@@ -94,7 +94,7 @@ void KeySpaceManager::set_first_config(uni::server::SlaveGroupId group_id) {
 
 void KeySpaceManager::handle_find_key(
   uni::net::EndpointId endpoint_id,
-  proto::client::FindKeyRangeRequest const& message
+  proto::message::client::FindKeyRangeRequest const& message
 ) {
   auto retry_count = std::make_shared<int>(0);
   _async_queue.add_task([this, retry_count, message, endpoint_id]() {
@@ -105,7 +105,7 @@ void KeySpaceManager::handle_find_key(
         for (auto const& range : key_space->ranges) {
           if (uni::server::within_range(range, message)) {
             // We have found a group_id where the requested key exists in the KeySpaceRange
-            auto client_response = new proto::client::FindKeyRangeResponse();
+            auto client_response = new proto::message::client::FindKeyRangeResponse();
             client_response->set_slave_group_id(group_id.id);
             _respond(endpoint_id, client_response);
             return uni::async::AsyncQueue::TERMINATE;
@@ -131,8 +131,8 @@ void KeySpaceManager::handle_find_key(
     }
 
     if (*retry_count == RETRY_LIMIT) {
-      auto client_response = new proto::client::FindKeyRangeResponse();
-      client_response->set_error_code(proto::client::Code::ERROR);
+      auto client_response = new proto::message::client::FindKeyRangeResponse();
+      client_response->set_error_code(proto::message::client::Code::ERROR);
       _respond(endpoint_id, client_response);
       return uni::async::AsyncQueue::TERMINATE;
     }
@@ -168,7 +168,7 @@ void KeySpaceManager::handle_find_key(
 
 void KeySpaceManager::handle_key_space_changed(
   uni::net::EndpointId endpoint_id,
-  proto::slave::KeySpaceChanged const& message
+  proto::message::slave::KeySpaceChanged const& message
 ) {
   // We don't need to worry about retrying here, the one branch where
   // the job lives on will eventually evaluate to false, ending the job automatically.
@@ -196,8 +196,8 @@ void KeySpaceManager::handle_key_space_changed(
 
 proto::message::MessageWrapper KeySpaceManager::build_new_key_space_selected_message(NewKeySpace const& key_space) {
   auto message_wrapper = proto::message::MessageWrapper();
-  auto master_message = new proto::master::MasterMessage();
-  auto new_key_space_message = new proto::master::NewKeySpaceSelected();
+  auto master_message = new proto::message::master::MasterMessage();
+  auto new_key_space_message = new proto::message::master::NewKeySpaceSelected();
   for (auto const& range : key_space.new_ranges) {
     uni::server::build_range(new_key_space_message->add_new_ranges(), range);
   }

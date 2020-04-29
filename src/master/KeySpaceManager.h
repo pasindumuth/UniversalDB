@@ -11,9 +11,9 @@
 #include <master/GroupConfigManager.h>
 #include <net/Connections.h>
 #include <paxos/MultiPaxosHandler.h>
-#include <proto/client.pb.h>
+#include <proto/message_client.pb.h>
 #include <proto/message.pb.h>
-#include <proto/slave.pb.h>
+#include <proto/message_slave.pb.h>
 #include <server/KeySpaceRange.h>
 #include <server/SlaveGroupId.h>
 
@@ -41,11 +41,11 @@ class KeySpaceManager {
 
   void handle_find_key(
     uni::net::EndpointId endpoint_id,
-    proto::client::FindKeyRangeRequest const& message);
+    proto::message::client::FindKeyRangeRequest const& message);
 
   void handle_key_space_changed(
     uni::net::EndpointId endpoint_id,
-    proto::slave::KeySpaceChanged const& message);
+    proto::message::slave::KeySpaceChanged const& message);
 
  private:
   uni::async::AsyncQueue& _async_queue;

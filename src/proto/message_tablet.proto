@@ -4,7 +4,7 @@ import "paxos.proto";
 import "sync.proto";
 import "common.proto";
 
-package proto.tablet;
+package proto.message.tablet;
 
 message TabletMessage {
   proto.common.KeySpaceRange range = 1;

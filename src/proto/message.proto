@@ -1,17 +1,17 @@
 syntax = "proto3";
 
-import "client.proto";
-import "master.proto";
-import "slave.proto";
-import "tablet.proto";
+import "message_client.proto";
+import "message_master.proto";
+import "message_slave.proto";
+import "message_tablet.proto";
 
 package proto.message;
 
 message MessageWrapper {
   oneof message_wrapper {
-    proto.client.ClientMessage client_message = 1;
-    proto.master.MasterMessage master_message = 2;
-    proto.slave.SlaveMessage slave_message = 4;
-    proto.tablet.TabletMessage tablet_message = 5;
+    proto.message.client.ClientMessage client_message = 1;
+    proto.message.master.MasterMessage master_message = 2;
+    proto.message.slave.SlaveMessage slave_message = 4;
+    proto.message.tablet.TabletMessage tablet_message = 5;
   }
 }

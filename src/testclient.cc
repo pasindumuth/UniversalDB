@@ -10,7 +10,7 @@
 #include <assert/assert.h>
 #include <common/common.h>
 #include <net/impl/ChannelImpl.h>
-#include <proto/client.pb.h>
+#include <proto/message_client.pb.h>
 #include <proto/message.pb.h>
 #include <utils.h>
 #include <utils/pbutil.h>
@@ -88,8 +88,8 @@ int main(int argc, char* argv[]) {
         LOG(uni::logging::Level::INFO, "Missing argument(s): 'database_id' 'table_id' 'key'")
       }
       auto message_wrapper = proto::message::MessageWrapper();
-      auto client_message = new proto::client::ClientMessage();
-      auto find_key_request = new proto::client::FindKeyRangeRequest();
+      auto client_message = new proto::message::client::ClientMessage();
+      auto find_key_request = new proto::message::client::FindKeyRangeRequest();
       find_key_request->set_database_id(parsed_output[1]);
       find_key_request->set_table_id(parsed_output[2]);
       find_key_request->set_key(parsed_output[3]);
@@ -101,10 +101,10 @@ int main(int argc, char* argv[]) {
         LOG(uni::logging::Level::INFO, "Missing arguments(s): 'database_id' 'table_id' 'key' 'value'")
       }
       auto message_wrapper = proto::message::MessageWrapper();
-      auto client_message = new proto::client::ClientMessage();
-      auto request_message = new proto::client::ClientRequest();
+      auto client_message = new proto::message::client::ClientMessage();
+      auto request_message = new proto::message::client::ClientRequest();
       request_message->set_request_id(std::to_string(request_id));
-      request_message->set_request_type(proto::client::ClientRequest::WRITE);
+      request_message->set_request_type(proto::message::client::ClientRequest::WRITE);
       request_message->set_database_id(parsed_output[1]);
       request_message->set_table_id(parsed_output[2]);
       request_message->set_key(parsed_output[3]);
