@@ -37,6 +37,11 @@ class GroupConfigManager {
   uni::paxos::MultiPaxosHandler& _multipaxos_handler;
   uni::paxos::PaxosLog& _paxos_log;
 
+  struct FirstConfig {
+    std::vector<uni::net::EndpointId> slaves;
+    uint32_t generation;
+  };
+
   struct Config {
     std::vector<uni::net::EndpointId> slaves;
     uint32_t generation;

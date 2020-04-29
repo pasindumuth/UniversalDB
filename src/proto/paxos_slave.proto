@@ -10,3 +10,8 @@ message KeySpaceChanged {
   repeated proto.common.KeySpaceRange new_ranges = 1;
   uint32 generation = 2;
 }
+
+message Bootstrapped {
+  repeated string new_slaves = 1;
+  uint32 generation = 2;
+}

@@ -60,8 +60,9 @@ int main(int argc, char* argv[]) {
     connections.add_channel(std::move(channel));
     LOG(uni::logging::Level::INFO, "Connected to slave node: " + hostnames[i]);
   }
-  auto channel = std::make_unique<uni::net::SelfChannel>();
-  connections.add_channel(std::move(channel));
+  auto self_channel = std::make_unique<uni::net::SelfChannel>();
+  auto ip_string = self_channel->endpoint_id().ip_string;
+  connections.add_channel(std::move(self_channel));
 
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
   auto client_connections = uni::net::Connections(server_async_scheduler);
@@ -80,7 +81,8 @@ int main(int argc, char* argv[]) {
     client_connections,
     master_connections,
     connections,
-    server_async_scheduler);
+    server_async_scheduler,
+    ip_string);
 
   LOG(uni::logging::Level::INFO, "Setup finished")
   auto server_work_guard = boost::asio::make_work_guard(server_io_context);

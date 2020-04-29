@@ -19,7 +19,8 @@ ProductionContext::ProductionContext(
   uni::net::Connections& client_connections,
   uni::net::Connections& master_connections,
   uni::net::Connections& connections,
-  uni::async::AsyncSchedulerImpl& scheduler)
+  uni::async::AsyncSchedulerImpl& scheduler,
+  std::string ip_string)
   : _random(),
     _timer_scheduler(background_io_context),
     _async_queue(_timer_scheduler),
@@ -54,7 +55,8 @@ ProductionContext::ProductionContext(
       master_connections,
       connections,
       _multipaxos_handler,
-      _paxos_log),
+      _paxos_log,
+      uni::net::EndpointId(ip_string, 0)),
     _key_space_manager(
       _async_queue,
       master_connections,

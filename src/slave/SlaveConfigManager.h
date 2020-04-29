@@ -1,6 +1,7 @@
 #ifndef UNI_SLAVE_SLAVECONFIGMANAGER_H
 #define UNI_SLAVE_SLAVECONFIGMANAGER_H
 
+#include <variant>
 #include <vector>
 
 #include <async/AsyncQueue.h>
@@ -19,7 +20,8 @@ class SlaveConfigManager {
     uni::net::Connections& master_connections,
     uni::net::Connections& connections,
     uni::paxos::MultiPaxosHandler& multipaxos_handler,
-    uni::paxos::PaxosLog& paxos_log);
+    uni::paxos::PaxosLog& paxos_log,
+    uni::net::EndpointId self_endpoint_id);
 
   std::vector<uni::net::EndpointId> config_endpoints() const;
 
@@ -29,6 +31,21 @@ class SlaveConfigManager {
   uni::net::Connections& _connections;
   uni::paxos::MultiPaxosHandler& _multipaxos_handler;
   uni::paxos::PaxosLog& _paxos_log;
+
+  struct BootstrapConfig {
+    uni::net::EndpointId slave;
+    uint32_t generation;
+  };
+
+  struct Config {
+    std::vector<uni::net::EndpointId> slaves;
+    uint32_t generation;
+  };
+  
+  std::variant<
+    BootstrapConfig,
+    Config
+  > _config;
 };
 
 } // namespace slave

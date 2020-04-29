@@ -49,7 +49,8 @@ TestingContext::TestingContext(
       _master_connections,
       _connections,
       _multipaxos_handler,
-      _paxos_log),
+      _paxos_log,
+      uni::net::EndpointId(ip_string, 0)),
     _key_space_manager(
       _async_queue,
       _master_connections,
