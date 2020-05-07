@@ -3,35 +3,41 @@
 #include <vector>
 
 #include <assert/assert.h>
-#include <proto/message_tablet.pb.h>
 #include <utils/pbutil.h>
 
 namespace uni {
 namespace paxos {
 
+PaxosProposerState::PaxosProposerState()
+  : latest(0) {}
+
+PaxosAcceptorState::PaxosAcceptorState()
+  : accepted_state({0, 0, proto::paxos::PaxosLogEntry::default_instance()}) {}
+
+PaxosLearnerState::PaxosLearnerState()
+  : learned(false) {}
+
 SinglePaxosHandler::SinglePaxosHandler(
-    uni::constants::Constants const& constants,
-    uni::net::Connections& connections,
-    uni::paxos::PaxosLog& paxos_log,
-    uni::random::Random& random,
-    index_t paxos_log_index,
-    std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
-    std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper)
-      : _constants(constants),
-        _connections(connections),
-        _paxos_log(paxos_log),
-        _random(random),
-        _paxos_log_index(paxos_log_index),
-        _get_endpoints(get_endpoints),
-        _paxos_message_to_wrapper(paxos_message_to_wrapper) {}
+  uni::constants::Constants const& constants,
+  uni::net::Connections& connections,
+  uni::paxos::PaxosLog& paxos_log,
+  uni::random::Random& random,
+  index_t paxos_log_index,
+  std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
+  std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper)
+  : _constants(constants),
+    _connections(connections),
+    _paxos_log(paxos_log),
+    _random(random),
+    _paxos_log_index(paxos_log_index),
+    _get_endpoints(get_endpoints),
+    _paxos_message_to_wrapper(paxos_message_to_wrapper) {}
 
 crnd_t SinglePaxosHandler::next_proposal_number() {
   return _proposer_state.latest + _random.rand_uniform(0, 999);
 }
 
 uint32_t SinglePaxosHandler::majority_threshold() {
-  // TODO decouple this from slaves. We should really be looking at the configuration
-  // to determine this number.
   return std::floor(_constants.num_slave_servers / 2) + 1;
 }
 
@@ -53,8 +59,8 @@ void SinglePaxosHandler::prepare(uni::net::EndpointId const& endpoint_id, proto:
   auto latest_proposal_number = std::get<0>(_acceptor_state.accepted_state);
   auto new_proposal_number = prepare_message.rnd();
   if (new_proposal_number > latest_proposal_number) {
-    // The incoming proposal number is higher than the current proposal number,
-    // which means a promise can be sent back.
+    // The incoming Proposal Number is higher than the current Proposal Number,
+    // which means a Promise can be sent back.
     std::get<0>(_acceptor_state.accepted_state) = new_proposal_number;
     auto paxos_message = new proto::paxos::PaxosMessage; // message_wrapper takes ownership and handles deleting this
     auto promise = new proto::paxos::Promise; // paxos_message takes ownership and handles deleting this
@@ -73,7 +79,7 @@ void SinglePaxosHandler::promise(proto::paxos::Promise const& promise_message) {
   auto rnd = promise_message.rnd();
   auto it = _proposer_state.prepare_state.find(rnd);
   UNIVERSAL_ASSERT_MESSAGE(it != _proposer_state.prepare_state.end(),
-      "The prepare_state of a proposal number must have been initialized if it is to be received as a promise")
+      "The prepare_state of a Proposal Number must have been initialized if it is to be received as a Promise")
   auto& promises = it->second;
   if (promises.size() < majority_threshold()) {
     // Haven't sent out an Accept message, and we need more Promises from other Universal Slaves.
@@ -82,16 +88,16 @@ void SinglePaxosHandler::promise(proto::paxos::Promise const& promise_message) {
       // Just got enough Promises to send out an Accept message to all Universal Slaves, so send it out.
       auto it = _proposer_state.proposal.find(rnd);
       UNIVERSAL_ASSERT_MESSAGE(it != _proposer_state.proposal.end(),
-          "The proposal for a proposal number must have been initialized if it is to be received as a promise")
+          "The Proposal for a Proposal Number must have been initialized if it is to be received as a Promise")
       auto proposal_value = it->second;
       // If a promising Slaves has already accepted a value, we ignore that original value we
       // were trying to propose at this node. Instead, take the value returned from the Slaves
-      // with the highest proposal number, and use that. This is part of the Paxos algorithm.
+      // with the highest Proposal Number, and use that.
       auto max_vrnd = 0;
       for (auto promise : promises) {
         auto vrnd = std::get<0>(promise);
         if (vrnd > 0) {
-          // The Slave that send this promise already accepted a value.
+          // The Slave that send this Promise has already accepted a value.
           if (vrnd > max_vrnd) {
             proposal_value = std::get<1>(promise);
           }
@@ -116,8 +122,8 @@ void SinglePaxosHandler::accept(proto::paxos::Accept const& accept_message) {
   auto new_rnd = accept_message.vrnd();
   if (new_rnd >= cur_rnd) {
     // This check is necessary even for Slaves that were contacted earlier
-    // with a Prepare message from the proposer, in case those Slaves received a
-    // new Prepare or Accept message with an even higher proposal number.
+    // with a Prepare message from the Proposer, in case those Slaves received a
+    // new Prepare or Accept message with an even higher Proposal Number.
     std::get<0>(_acceptor_state.accepted_state) = new_rnd;
     std::get<1>(_acceptor_state.accepted_state) = new_rnd;
     std::get<2>(_acceptor_state.accepted_state) = accept_message.vval();
@@ -139,24 +145,23 @@ void SinglePaxosHandler::learn(proto::paxos::Learn const& learn_message) {
   auto rnd = learn_message.vrnd();
   auto it = _learner_state.learned_value.find(rnd);
   if (it == _learner_state.learned_value.end()) {
-    // A learn message with a proposal number of rnd has been received for the first time.
+    // A Learn message with a Proposal Number of rnd has been received for the first time.
     _learner_state.learned_value.insert({rnd, {learn_message.vval(), 0}});
     it = _learner_state.learned_value.find(rnd);
   }
   auto& learned_count = std::get<1>(it->second);
   if (learned_count < majority_threshold()) {
-    // The value of this proposal has not been learned yet.
+    // The value of this Proposal has not been learned yet.
     learned_count++;
     if (learned_count == majority_threshold()) {
-      // Just got enough learn messages to consider the value of this proposal to be learned.
+      // Just got enough Learn messages to consider the value of this Proposal to be learned.
       _learner_state.learned = true;
-      // Update the Paxos Log with the newly learned value.
+      // Update the PaxosLog with the newly learned value.
       _paxos_log.set_entry(_paxos_log_index, std::get<0>(it->second));
       LOG(uni::logging::Level::TRACE1, _paxos_log.debug_string())
     }
   }
 }
 
-} // paxos
-} // uni
-
+} // namespace paxos
+} // namespace uni

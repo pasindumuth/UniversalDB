@@ -8,10 +8,7 @@
 #include <constants/constants.h>
 #include <net/Connections.h>
 #include <net/EndpointId.h>
-#include <paxos/PaxosAcceptorState.h>
-#include <paxos/PaxosLearnerState.h>
 #include <paxos/PaxosLog.h>
-#include <paxos/PaxosProposerState.h>
 #include <paxos/PaxosTypes.h>
 #include <proto/message.pb.h>
 #include <proto/paxos.pb.h>
@@ -21,27 +18,58 @@
 namespace uni {
 namespace paxos {
 
-/**
- * Implements the Single Paxos algorithm
- * http://localhost:3000/projects/universaldb/consensus. This is primarily
- * designed to be used for a Single Paxos Instance in the MultiPaxos algorithm
- * http://localhost:3000/projects/universaldb/multipaxos. This is why it keeps
- * track of the paxos_log_index, to know where in the PaxosLog to insert
- * the learned value when it gets learned.
- */
+// Stores the Proposer state of a Paxos Instance. This includes all proposed
+// values and corresponding Proposal Numbers, and all promises made for each proposal.
+struct PaxosProposerState {
+  PaxosProposerState();
+
+  crnd_t latest;
+  // Maps all Proposal Numbers to the values of the Proposal.
+  std::unordered_map<crnd_t, cval_t> proposal;
+  // Maps all Proposal Numbers to all of the Promises made from different Acceptors.
+  std::unordered_map<crnd_t, std::vector<std::tuple<vrnd_t, vval_t>>> prepare_state;
+};
+
+// Stores the Acceptor state of a Paxos Instance.
+struct PaxosAcceptorState {
+  PaxosAcceptorState();
+
+  // The first element is the latest Proposal Number that was sent in a Prepare message,
+  // the second element is the Proposal Number of the last accepted value, and the third
+  // element is the value of the last accepted value.
+  std::tuple<rnd_t, vrnd_t, vval_t> accepted_state;
+};
+
+// Stores the Learner state of a Paxos Instance. This includes all values that were
+// received in Learn messages, and the number of Acceptors to have sent that learned
+// value.
+struct PaxosLearnerState {
+  PaxosLearnerState();
+
+  bool learned;
+  // Maps all Proposal Numbers that were received in Learn messages to the value
+  // associated with that Learn message, as well as the count of the number of
+  // Learn messages that were received with that Proposal Number.
+  std::unordered_map<lrnd_t, std::tuple<lval_t, uint32_t>> learned_value;
+};
+
+// Implements the Paxos algorithm. This is primarily designed to be used
+// as a single instance of the Paxos algorithm in the context of Multipaxos.
+// Thus, it keeps track of the paxos_log_index to know where in the PaxosLog
+// to insert the learned value when it gets learned.
 class SinglePaxosHandler {
  public:
   SinglePaxosHandler(
-      uni::constants::Constants const& constants,
-      uni::net::Connections& connections,
-      uni::paxos::PaxosLog& paxos_log,
-      uni::random::Random& random,
-      index_t paxos_log_index,
-      std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
-      std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper);
+    uni::constants::Constants const& constants,
+    uni::net::Connections& connections,
+    uni::paxos::PaxosLog& paxos_log,
+    uni::random::Random& random,
+    index_t paxos_log_index,
+    std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
+    std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper);
 
-  // Returns a value that's strictly greater than the last proposal number in
-  // _proposer_state. Since that last proposal number starts out as 0, this
+  // Returns a value that's strictly greater than the last Proposal Number in
+  // _proposer_state. Since that last Proposal Number starts out as 0, this
   // function always returns a value greater than 0.
   crnd_t next_proposal_number();
 
@@ -50,7 +78,7 @@ class SinglePaxosHandler {
   // majority is simply floor(uni::constants::num_slave_serves) + 1.
   uint32_t majority_threshold();
 
-  // Initiates a proposal for this Paxos Instance.
+  // Initiates a Proposal for this Paxos Instance.
   void propose(proto::paxos::PaxosLogEntry const& entry);
 
   // Handles a Prepare message for this Paxos Instance.
@@ -80,7 +108,7 @@ class SinglePaxosHandler {
   PaxosLearnerState _learner_state;
 };
 
-} // paxos
-} // uni
+} // namespace paxos
+} // namespace uni
 
 #endif //UNI_PAXOS_SINGLEPAXOSHANDLER_H
