@@ -14,10 +14,10 @@ namespace master {
 class MasterIncomingMessageHandler {
  public:
   MasterIncomingMessageHandler(
-      uni::server::LogSyncer& log_syncer,
-      uni::paxos::MultiPaxosHandler& multi_paxos_handler,
-      uni::master::GroupConfigManager& group_config_manager,
-      uni::master::KeySpaceManager& key_space_manager);
+    uni::server::LogSyncer& log_syncer,
+    uni::paxos::MultiPaxosHandler& multi_paxos_handler,
+    uni::master::GroupConfigManager& group_config_manager,
+    uni::master::KeySpaceManager& key_space_manager);
 
   void handle(uni::net::IncomingMessage incoming_message);
 

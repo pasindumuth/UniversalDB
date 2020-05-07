@@ -9,8 +9,8 @@ SlaveConfigManager::SlaveConfigManager(
   uni::net::Connections& connections,
   uni::paxos::MultiPaxosHandler& multipaxos_handler,
   uni::paxos::PaxosLog& paxos_log,
-  uni::net::EndpointId self_endpoint_id):
-    _async_queue(async_queue),
+  uni::net::EndpointId self_endpoint_id)
+  : _async_queue(async_queue),
     _master_connections(master_connections),
     _connections(connections),
     _multipaxos_handler(multipaxos_handler),

@@ -22,8 +22,8 @@ namespace paxos {
 class MultiPaxosHandler {
  public:
   MultiPaxosHandler(
-      uni::paxos::PaxosLog& paxos_log,
-      std::function<uni::paxos::SinglePaxosHandler(index_t)> instance_provider);
+    uni::paxos::PaxosLog& paxos_log,
+    std::function<uni::paxos::SinglePaxosHandler(index_t)> instance_provider);
 
   // Attempts to add the provided entry into the PaxosLog.
   void propose(proto::paxos::PaxosLogEntry const& entry);

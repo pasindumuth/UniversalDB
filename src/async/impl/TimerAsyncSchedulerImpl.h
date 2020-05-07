@@ -16,7 +16,7 @@ namespace async {
  * 
  * This is used for production.
  */
-class TimerAsyncSchedulerImpl : public uni::async::TimerAsyncScheduler {
+class TimerAsyncSchedulerImpl: public uni::async::TimerAsyncScheduler {
  public:
   TimerAsyncSchedulerImpl(boost::asio::io_context& io_context);
   

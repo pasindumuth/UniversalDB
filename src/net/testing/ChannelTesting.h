@@ -43,8 +43,8 @@ class ChannelTesting
   // We pass in the async_scheduler of the receiver Universal Slave. This class directly calls the
   // async_scheduler to deliver the message.
   ChannelTesting(
-      std::string const& other_ip_string,
-      std::vector<uni::net::ChannelTesting*>& nonempty_channels);
+    std::string const& other_ip_string,
+    std::vector<uni::net::ChannelTesting*>& nonempty_channels);
 
   ~ChannelTesting() {};
 

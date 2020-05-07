@@ -14,9 +14,9 @@ namespace slave {
 class IncomingMessageHandler {
  public:
   IncomingMessageHandler(
-      uni::slave::ClientRequestHandler& request_handler,
-      uni::server::LogSyncer& log_syncer,
-      uni::paxos::MultiPaxosHandler& multi_paxos_handler);
+    uni::slave::ClientRequestHandler& request_handler,
+    uni::server::LogSyncer& log_syncer,
+    uni::paxos::MultiPaxosHandler& multi_paxos_handler);
 
   void handle(uni::net::IncomingMessage incoming_message);
 

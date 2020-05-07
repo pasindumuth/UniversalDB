@@ -7,12 +7,12 @@ namespace uni {
 namespace slave {
 
 IncomingMessageHandler::IncomingMessageHandler(
-    uni::slave::ClientRequestHandler& request_handler,
-    uni::server::LogSyncer& log_syncer,
-    uni::paxos::MultiPaxosHandler& multi_paxos_handler)
-      : _client_request_handler(request_handler),
-        _log_syncer(log_syncer),
-        _multi_paxos_handler(multi_paxos_handler) {}
+  uni::slave::ClientRequestHandler& request_handler,
+  uni::server::LogSyncer& log_syncer,
+  uni::paxos::MultiPaxosHandler& multi_paxos_handler)
+  : _client_request_handler(request_handler),
+    _log_syncer(log_syncer),
+    _multi_paxos_handler(multi_paxos_handler) {}
 
 void IncomingMessageHandler::handle(uni::net::IncomingMessage incoming_message) {
   auto endpoint_id = incoming_message.endpoint_id;

@@ -16,8 +16,7 @@
 namespace uni {
 namespace net {
 
-class ChannelImpl
-    : public uni::net::Channel {
+class ChannelImpl: public uni::net::Channel {
  public:
   ChannelImpl(boost::asio::ip::tcp::socket&& socket);
 

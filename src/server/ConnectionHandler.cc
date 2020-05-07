@@ -8,10 +8,10 @@ namespace server {
 using boost::asio::ip::tcp;
 
 ConnectionHandler::ConnectionHandler(
-    uni::net::Connections& connections,
-    tcp::acceptor& acceptor)
-    : _connections(connections),
-      _acceptor(acceptor) {}
+  uni::net::Connections& connections,
+  tcp::acceptor& acceptor)
+  : _connections(connections),
+    _acceptor(acceptor) {}
 
 void ConnectionHandler::async_accept() {
   _acceptor.async_accept([this](const boost::system::error_code &ec, tcp::socket socket) {

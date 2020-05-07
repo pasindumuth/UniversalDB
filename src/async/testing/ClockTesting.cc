@@ -7,7 +7,7 @@ namespace uni {
 namespace async {
   
 ClockTesting::ClockTesting()
-    : _time(0) {}
+  : _time(0) {}
 
 void ClockTesting::increment_time(int64_t increment) {
   for (auto i = 0; i < increment; i++) {

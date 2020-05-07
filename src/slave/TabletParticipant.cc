@@ -73,7 +73,8 @@ TabletParticipant::TabletParticipant(
     _incoming_message_handler(
       _client_request_handler,
       _log_syncer,
-      _multipaxos_handler) {
+      _multipaxos_handler)
+{
   _scheduler->set_callback([this](uni::net::IncomingMessage message){
     _incoming_message_handler.handle(message);
   });

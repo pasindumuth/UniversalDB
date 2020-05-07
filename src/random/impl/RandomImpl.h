@@ -8,7 +8,7 @@
 namespace uni {
 namespace random {
 
-class RandomImpl : public uni::random::Random {
+class RandomImpl: public uni::random::Random {
  public:
   RandomImpl();
 

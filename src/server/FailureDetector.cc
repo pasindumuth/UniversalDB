@@ -6,14 +6,15 @@ namespace uni {
 namespace server {
 
 FailureDetector::FailureDetector(
-    uni::server::HeartbeatTracker& heartbeat_tracker,
-    uni::net::Connections& connections,
-    uni::async::TimerAsyncScheduler& timer_scheduler,
-    std::function<std::vector<uni::net::EndpointId>()> get_endpoints)
-      : _heartbeat_tracker(heartbeat_tracker),
-        _connections(connections),
-        _timer_scheduler(timer_scheduler),
-        _get_endpoints(get_endpoints) {
+  uni::server::HeartbeatTracker& heartbeat_tracker,
+  uni::net::Connections& connections,
+  uni::async::TimerAsyncScheduler& timer_scheduler,
+  std::function<std::vector<uni::net::EndpointId>()> get_endpoints)
+  : _heartbeat_tracker(heartbeat_tracker),
+    _connections(connections),
+    _timer_scheduler(timer_scheduler),
+    _get_endpoints(get_endpoints)
+{
   // Sub-messages are freed when the _message is freed.  
   auto slave_message = new proto::message::slave::SlaveMessage;
   auto heartbeat_message = new proto::message::slave::Heartbeat;

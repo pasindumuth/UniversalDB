@@ -19,8 +19,7 @@ namespace async {
 // This task is a function that takes a string, set in this class by calling set_callback. After
 // the callback is set, calling queue_message(message) will schedule a run of that function with the
 // argument to the callback being `message`.
-class AsyncSchedulerImpl
-    : public uni::async::AsyncScheduler {
+class AsyncSchedulerImpl: public uni::async::AsyncScheduler {
  public:
   AsyncSchedulerImpl(boost::asio::io_context& io_context);
 

@@ -7,8 +7,8 @@ GroupConfigManager::GroupConfigManager(
   uni::async::AsyncQueue& async_queue,
   uni::net::Connections& slave_connections,
   uni::paxos::MultiPaxosHandler& multipaxos_handler,
-  uni::paxos::PaxosLog& paxos_log):
-    _async_queue(async_queue),
+  uni::paxos::PaxosLog& paxos_log)
+  : _async_queue(async_queue),
     _slave_connections(slave_connections),
     _multipaxos_handler(multipaxos_handler),
     _paxos_log(paxos_log) {}

@@ -11,13 +11,13 @@ namespace uni {
 namespace net {
 
 ChannelTesting::ChannelTesting(
-    std::string const& other_ip_string,
-    std::vector<ChannelTesting*>& nonempty_channels)
-      : _other_ip_string(other_ip_string),
-        _nonempty_channels(nonempty_channels),
-        _other_channel(nullptr),
-        _connection_state(true),
-        _listening(false) {}
+  std::string const& other_ip_string,
+  std::vector<ChannelTesting*>& nonempty_channels)
+  : _other_ip_string(other_ip_string),
+    _nonempty_channels(nonempty_channels),
+    _other_channel(nullptr),
+    _connection_state(true),
+    _listening(false) {}
 
 void ChannelTesting::queue_send(std::string message) {
   if (_message_queue.size() < MAX_MESSAGES_QUEUE_SIZE) {

@@ -15,16 +15,17 @@ int const ClientRequestHandler::RETRY_LIMIT = 3;
 int const ClientRequestHandler::WAIT_FOR_PAXOS = 100;
 
 ClientRequestHandler::ClientRequestHandler(
-    uni::paxos::MultiPaxosHandler& multi_paxos_handler,
-    uni::paxos::PaxosLog& paxos_log,
-    uni::async::AsyncQueue& async_queue,
-    uni::slave::KVStore& kvstore,
-    uni::slave::ClientRespond respond_callback)
-      : _multi_paxos_handler(multi_paxos_handler),
-        _paxos_log(paxos_log),
-        _async_queue(async_queue),
-        _kvstore(kvstore),
-        _respond_callback(respond_callback) {
+  uni::paxos::MultiPaxosHandler& multi_paxos_handler,
+  uni::paxos::PaxosLog& paxos_log,
+  uni::async::AsyncQueue& async_queue,
+  uni::slave::KVStore& kvstore,
+  uni::slave::ClientRespond respond_callback)
+  : _multi_paxos_handler(multi_paxos_handler),
+    _paxos_log(paxos_log),
+    _async_queue(async_queue),
+    _kvstore(kvstore),
+    _respond_callback(respond_callback)
+{
   _paxos_log.add_callback(
     proto::paxos::PaxosLogEntry::EntryContentCase::kRead,
     [this](uni::paxos::index_t index, proto::paxos::PaxosLogEntry entry) {

@@ -12,8 +12,7 @@ namespace async {
 
 // This test implementation works where schedule_async runs the callback with the
 // incoming message immediately.
-class AsyncSchedulerTesting
-    : public uni::async::AsyncScheduler {
+class AsyncSchedulerTesting: public uni::async::AsyncScheduler {
  public:
   AsyncSchedulerTesting();
 

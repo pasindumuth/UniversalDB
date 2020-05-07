@@ -14,8 +14,8 @@ struct IncomingMessage {
   std::string message;
 
   IncomingMessage(uni::net::EndpointId endpoint_id, std::string message)
-      : endpoint_id(endpoint_id),
-        message(message) {}
+    : endpoint_id(endpoint_id),
+      message(message) {}
 };
 
 } // net

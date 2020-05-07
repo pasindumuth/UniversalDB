@@ -15,8 +15,8 @@ namespace server {
 class ConnectionHandler {
  public:
   ConnectionHandler(
-      uni::net::Connections& connections,
-      boost::asio::ip::tcp::acceptor& acceptor);
+    uni::net::Connections& connections,
+    boost::asio::ip::tcp::acceptor& acceptor);
 
   void async_accept();
 

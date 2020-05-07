@@ -6,8 +6,8 @@ namespace uni {
 namespace net {
 
 Connections::Connections(
-    uni::async::AsyncScheduler& scheduler)
-    : _scheduler(scheduler) {}
+  uni::async::AsyncScheduler& scheduler)
+  : _scheduler(scheduler) {}
 
 void Connections::add_channel(std::unique_ptr<uni::net::Channel>&& channel) {
   auto endpoint_id = channel->endpoint_id();

@@ -11,18 +11,19 @@ namespace uni {
 namespace server {
 
 LogSyncer::LogSyncer(
-    uni::constants::Constants const& constants,
-    uni::net::Connections& connections,
-    uni::async::TimerAsyncScheduler& timer_scheduler,
-    uni::paxos::PaxosLog& paxos_log,
-    std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
-    std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper)
-      : _constants(constants),
-        _connections(connections),
-        _timer_scheduler(timer_scheduler),
-        _paxos_log(paxos_log),
-        _get_endpoints(get_endpoints),
-        _sync_message_to_wrapper(sync_message_to_wrapper) {
+  uni::constants::Constants const& constants,
+  uni::net::Connections& connections,
+  uni::async::TimerAsyncScheduler& timer_scheduler,
+  uni::paxos::PaxosLog& paxos_log,
+  std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
+  std::function<proto::message::MessageWrapper(proto::sync::SyncMessage*)> sync_message_to_wrapper)
+  : _constants(constants),
+    _connections(connections),
+    _timer_scheduler(timer_scheduler),
+    _paxos_log(paxos_log),
+    _get_endpoints(get_endpoints),
+    _sync_message_to_wrapper(sync_message_to_wrapper)
+{
   schedule_syncing();
 }
 

@@ -26,8 +26,7 @@ class AsyncQueue {
   /**
    * @brief Constructs a AsyncQueue, using a TimerAsyncScheduler to schedule the tasks.
    */
-  AsyncQueue(
-    uni::async::TimerAsyncScheduler& timer_scheduler);
+  AsyncQueue(uni::async::TimerAsyncScheduler& timer_scheduler);
 
   /**
    * @brief Add a task into the AsyncQueue

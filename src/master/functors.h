@@ -12,8 +12,8 @@ namespace uni {
 namespace master {
 
 struct SendFindKeyRangeResponse {
-  SendFindKeyRangeResponse(uni::net::Connections& client_connections):
-    _client_connections(client_connections) {}
+  SendFindKeyRangeResponse(uni::net::Connections& client_connections)
+  : _client_connections(client_connections) {}
 
   void operator()(
     uni::net::EndpointId endpoint_id,

@@ -4,8 +4,8 @@ namespace uni {
 namespace assert {
 
 UniversalException::UniversalException(
-    const std::string& message)
-    : _message(message) {}
+  const std::string& message)
+  : _message(message) {}
 
 const char* UniversalException::what() const noexcept {
   return _message.c_str();

@@ -9,7 +9,7 @@ namespace uni {
 namespace async {
 
 TimerAsyncSchedulerImpl::TimerAsyncSchedulerImpl(boost::asio::io_context& io_context)
-    : _io_context(io_context) {}
+  : _io_context(io_context) {}
 
 void TimerAsyncSchedulerImpl::schedule_once(std::function<void(void)> callback, int64_t wait) {
   auto t = std::make_shared<boost::asio::steady_timer>(_io_context, boost::asio::chrono::milliseconds(wait));

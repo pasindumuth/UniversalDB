@@ -24,11 +24,11 @@ class ClientRequestHandler {
   static int const WAIT_FOR_PAXOS;
 
   ClientRequestHandler(
-      uni::paxos::MultiPaxosHandler& multi_paxos_handler,
-      uni::paxos::PaxosLog& paxos_log,
-      uni::async::AsyncQueue& async_queue,
-      uni::slave::KVStore& kvstore,
-      uni::slave::ClientRespond respond_callback);
+    uni::paxos::MultiPaxosHandler& multi_paxos_handler,
+    uni::paxos::PaxosLog& paxos_log,
+    uni::async::AsyncQueue& async_queue,
+    uni::slave::KVStore& kvstore,
+    uni::slave::ClientRespond respond_callback);
 
   void handle_request(
     uni::net::EndpointId endpoint_id,

@@ -12,7 +12,7 @@ namespace net {
 using boost::asio::ip::tcp;
 
 ChannelImpl::ChannelImpl(tcp::socket&& socket)
-    : _socket(std::move(socket)) {}
+  : _socket(std::move(socket)) {}
 
 void ChannelImpl::queue_send(std::string message) {
   std::unique_lock<std::mutex> lock(_queue_lock);

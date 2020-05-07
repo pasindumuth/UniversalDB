@@ -4,10 +4,10 @@ namespace uni {
 namespace paxos {
 
 MultiPaxosHandler::MultiPaxosHandler(
-    uni::paxos::PaxosLog& paxos_log,
-    std::function<uni::paxos::SinglePaxosHandler(index_t)> instance_provider)
-    : _paxos_log(paxos_log),
-      _instance_provider(instance_provider) {}
+  uni::paxos::PaxosLog& paxos_log,
+  std::function<uni::paxos::SinglePaxosHandler(index_t)> instance_provider)
+  : _paxos_log(paxos_log),
+    _instance_provider(instance_provider) {}
 
 void MultiPaxosHandler::propose(proto::paxos::PaxosLogEntry const& entry) {
   index_t index = _paxos_log.next_available_index(); // Look for an index that we can propose this new log entry to.

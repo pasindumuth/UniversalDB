@@ -17,8 +17,8 @@ SlaveKeySpaceManager::SlaveKeySpaceManager(
   uni::net::Connections& master_connections,
   uni::paxos::MultiPaxosHandler& multipaxos_handler,
   uni::paxos::PaxosLog& paxos_log,
-  uni::slave::TabletParticipantManager& participant_manager):
-    _async_queue(async_queue),
+  uni::slave::TabletParticipantManager& participant_manager)
+  : _async_queue(async_queue),
     _master_connections(master_connections),
     _multipaxos_handler(multipaxos_handler),
     _paxos_log(paxos_log),

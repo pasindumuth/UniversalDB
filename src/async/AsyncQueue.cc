@@ -7,7 +7,7 @@ int const AsyncQueue::TERMINATE = -1;
 
 AsyncQueue::AsyncQueue(
     uni::async::TimerAsyncScheduler& timer_scheduler)
-      : _timer_scheduler(timer_scheduler) {}
+    : _timer_scheduler(timer_scheduler) {}
 
 void AsyncQueue::add_task(std::function<int(void)> callback) {
   _callbacks.push(callback);

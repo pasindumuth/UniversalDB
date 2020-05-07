@@ -4,8 +4,8 @@ namespace uni {
 namespace async {
 
 AsyncSchedulerImpl::AsyncSchedulerImpl(boost::asio::io_context& io_context)
-    : _io_context(io_context),
-      _callback([](uni::net::IncomingMessage){}) {}
+  : _io_context(io_context),
+    _callback([](uni::net::IncomingMessage){}) {}
 
 void AsyncSchedulerImpl::set_callback(std::function<void(uni::net::IncomingMessage)> callback) {
   _callback = callback;

@@ -24,8 +24,8 @@ KeySpaceManager::KeySpaceManager(
   uni::net::Connections& slave_connections,
   uni::paxos::MultiPaxosHandler& multipaxos_handler,
   uni::paxos::PaxosLog& paxos_log,
-  uni::master::SendFindKeyRangeResponse respond):
-    _async_queue(async_queue),
+  uni::master::SendFindKeyRangeResponse respond)
+  : _async_queue(async_queue),
     _config_manager(config_manager),
     _slave_connections(slave_connections),
     _multipaxos_handler(multipaxos_handler),
