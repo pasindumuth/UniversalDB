@@ -19,7 +19,7 @@ TabletParticipant::TabletParticipant(
   std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
   std::unique_ptr<uni::random::Random> random,
   uni::constants::Constants const& constants,
-  uni::net::Connections& connections,
+  uni::net::Connections& slave_connections,
   uni::net::Connections& client_connections,
   uni::async::TimerAsyncScheduler& timer_scheduler,
   uni::server::FailureDetector& failure_detector,
@@ -31,10 +31,10 @@ TabletParticipant::TabletParticipant(
     _paxos_log(),
     _multipaxos_handler(
       _paxos_log,
-      [this, &constants, &connections, &config_manager](uni::paxos::index_t index) {
+      [this, &constants, &slave_connections, &config_manager](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
-          connections,
+          slave_connections,
           _paxos_log,
           *_random,
           index,
@@ -58,7 +58,7 @@ TabletParticipant::TabletParticipant(
       uni::slave::ClientRespond(client_connections)),
     _log_syncer(
       constants,
-      connections,
+      slave_connections,
       timer_scheduler,
       _paxos_log,
       uni::slave::GetEndpoints(config_manager),

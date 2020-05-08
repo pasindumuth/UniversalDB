@@ -40,47 +40,44 @@ int main(int argc, char* argv[]) {
   auto server_io_context = boost::asio::io_context();
   auto server_async_scheduler = uni::async::AsyncSchedulerImpl(server_io_context);
 
-  // Schedule main acceptor
-  auto connections = uni::net::Connections(server_async_scheduler);
-  auto main_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.slave_port));
-  auto server_connection_handler = uni::server::ConnectionHandler(connections, main_acceptor);
-  auto resolver = tcp::resolver(background_io_context);
+  // Setup slave acceptor.
+  auto slave_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.slave_port));
+  auto slave_connections = uni::net::Connections(server_async_scheduler);
+  auto slave_connection_handler = uni::server::ConnectionHandler(slave_connections, slave_acceptor);
+  slave_connection_handler.async_accept();
 
-  // Timer
-  auto timer_scheduler = uni::async::TimerAsyncSchedulerImpl(background_io_context);
-
-  // Wait for a list of all slave nodes from the master
-  server_connection_handler.async_accept();
-
-  for (auto i = 1; i < hostnames.size(); i++) {
-    auto endpoints = resolver.resolve(hostnames[i], std::to_string(constants.slave_port));
-    auto socket = tcp::socket(background_io_context);
-    boost::asio::connect(socket, endpoints);
-    auto channel = std::make_unique<uni::net::ChannelImpl>(std::move(socket));
-    connections.add_channel(std::move(channel));
-    LOG(uni::logging::Level::INFO, "Connected to slave node: " + hostnames[i]);
-  }
-  auto self_channel = std::make_unique<uni::net::SelfChannel>();
-  auto ip_string = self_channel->endpoint_id().ip_string;
-  connections.add_channel(std::move(self_channel));
-
+  // Setup client acceptor.
   auto client_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.client_port));
   auto client_connections = uni::net::Connections(server_async_scheduler);
   auto client_connection_handler = uni::server::ConnectionHandler(client_connections, client_acceptor);
   client_connection_handler.async_accept();
 
-  // Add the datamaster connection handler. The datamasters will initiate the connections.
+  // Setup master acceptor.
   auto master_acceptor = tcp::acceptor(background_io_context, tcp::endpoint(tcp::v4(), constants.master_port));
   auto master_connections = uni::net::Connections(server_async_scheduler);
   auto master_connection_handler = uni::server::ConnectionHandler(master_connections, master_acceptor);
   master_connection_handler.async_accept();
+
+  // TODO: Wait for a list of all slave nodes from the master.
+  auto resolver = tcp::resolver(background_io_context);
+  for (auto i = 1; i < hostnames.size(); i++) {
+    auto endpoints = resolver.resolve(hostnames[i], std::to_string(constants.slave_port));
+    auto socket = tcp::socket(background_io_context);
+    boost::asio::connect(socket, endpoints);
+    auto channel = std::make_unique<uni::net::ChannelImpl>(std::move(socket));
+    slave_connections.add_channel(std::move(channel));
+    LOG(uni::logging::Level::INFO, "Connected to slave node: " + hostnames[i]);
+  }
+  auto self_channel = std::make_unique<uni::net::SelfChannel>();
+  auto ip_string = self_channel->endpoint_id().ip_string;
+  slave_connections.add_channel(std::move(self_channel));
 
   auto production_context = uni::slave::ProductionContext(
     background_io_context,
     constants,
     client_connections,
     master_connections,
-    connections,
+    slave_connections,
     server_async_scheduler,
     ip_string);
 

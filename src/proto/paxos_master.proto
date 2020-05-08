@@ -16,13 +16,3 @@ message KeySpaceCommit {
   string slave_group_id = 1;
   uint32 generation = 2;
 }
-
-message FirstConfigSelected {
-  repeated string new_slaves = 1;
-  uint32 generation = 2;
-}
-
-message FirstConfigCommitted {
-  repeated string new_slaves = 1;
-  uint32 generation = 2;
-}

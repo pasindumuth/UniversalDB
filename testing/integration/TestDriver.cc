@@ -58,7 +58,7 @@ void initialize_slaves(uni::constants::Constants const& constants, SlaveObjects&
         so.slave_nonempty_channels
       );
       channels.push_back(channel.get());
-      so.slaves[i]->_connections.add_channel(std::move(channel));
+      so.slaves[i]->_slave_connections.add_channel(std::move(channel));
     }
   }
 

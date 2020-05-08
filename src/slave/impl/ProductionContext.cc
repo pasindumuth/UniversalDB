@@ -18,8 +18,8 @@ ProductionContext::ProductionContext(
   uni::constants::Constants const& constants,
   uni::net::Connections& client_connections,
   uni::net::Connections& master_connections,
-  uni::net::Connections& connections,
-  uni::async::AsyncSchedulerImpl& scheduler,
+  uni::net::Connections& slave_connections,
+  uni::async::AsyncScheduler& scheduler,
   std::string ip_string)
   : _random(),
     _timer_scheduler(background_io_context),
@@ -27,16 +27,19 @@ ProductionContext::ProductionContext(
     _heartbeat_tracker(),
     _failure_detector(
       _heartbeat_tracker,
-      connections,
+      slave_connections,
       _timer_scheduler,
       uni::slave::GetEndpoints(_config_manager)),
     _paxos_log(),
     _multipaxos_handler(
       _paxos_log,
-      [this, &constants, &connections](uni::paxos::index_t index) {
+      [this, &constants, &slave_connections](uni::paxos::index_t index) {
+        // TODO: Use PaxosConfigManager from the outside and pass the config
+        // in as a parameter here. Call ::get_config(index), and pass that
+        // in place of uni::slave::GetEndpoints(_config_manager).
         return uni::paxos::SinglePaxosHandler(
           constants,
-          connections,
+          slave_connections,
           _paxos_log,
           _random,
           index,
@@ -45,7 +48,7 @@ ProductionContext::ProductionContext(
       }),
     _log_syncer(
       constants,
-      connections,
+      slave_connections,
       _timer_scheduler,
       _paxos_log,
       uni::slave::GetEndpoints(_config_manager),
@@ -53,7 +56,7 @@ ProductionContext::ProductionContext(
     _config_manager(
       _async_queue,
       master_connections,
-      connections,
+      slave_connections,
       _multipaxos_handler,
       _paxos_log,
       uni::net::EndpointId(ip_string, 0)),
@@ -64,7 +67,7 @@ ProductionContext::ProductionContext(
       _paxos_log,
       _tablet_manager),
     _tablet_manager(
-      [this, &constants, &client_connections, &connections](uni::slave::TabletId tablet_id) {
+      [this, &constants, &client_connections, &slave_connections](uni::slave::TabletId tablet_id) {
         auto min_index = std::distance(
           _participants_per_thread.begin(),
             std::min_element(
@@ -79,7 +82,7 @@ ProductionContext::ProductionContext(
             },
             std::make_unique<uni::random::RandomImpl>(),
             constants,
-            connections,
+            slave_connections,
             client_connections,
             _timer_scheduler,
             _failure_detector,

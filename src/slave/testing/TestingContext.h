@@ -43,13 +43,13 @@ struct TestingContext {
   uni::async::AsyncSchedulerTesting _scheduler;
   uni::net::Connections _client_connections;
   uni::net::Connections _master_connections;
-  uni::net::Connections _connections;
+  uni::net::Connections _slave_connections;
   uni::async::ClockTesting _clock;
   uni::async::TimerAsyncSchedulerTesting _timer_scheduler;
+  uni::async::AsyncQueue _async_queue;
   uni::server::HeartbeatTracker _heartbeat_tracker;
   uni::server::FailureDetector _failure_detector;
   uni::paxos::PaxosLog _paxos_log;
-  uni::async::AsyncQueue _async_queue;
   uni::paxos::MultiPaxosHandler _multipaxos_handler;
   uni::server::LogSyncer _log_syncer;
   uni::slave::SlaveConfigManager _config_manager;

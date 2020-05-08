@@ -21,7 +21,7 @@ namespace slave {
  * Each key, a string value, maps to a list of (value, timestamp) pairs. These pairs are
  * called versions. Version lists are modified as append only, with each subsequent version
  * has a greater timestamp. This MVKVS enables snapshot reads; if a key exists, a read of the
- * kay at a certain time will always return the same value.
+ * key at a certain time will always return the same value.
  * 
  * To read from a MVKVS, a client passes in a key and timestamp. The version with timestamp
  * before or at the provided timestamp is returned. If there is no such key, or no such version,

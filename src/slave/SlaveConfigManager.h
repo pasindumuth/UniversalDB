@@ -18,7 +18,7 @@ class SlaveConfigManager {
   SlaveConfigManager(
     uni::async::AsyncQueue& async_queue,
     uni::net::Connections& master_connections,
-    uni::net::Connections& connections,
+    uni::net::Connections& slave_connections,
     uni::paxos::MultiPaxosHandler& multipaxos_handler,
     uni::paxos::PaxosLog& paxos_log,
     uni::net::EndpointId self_endpoint_id);
@@ -28,14 +28,9 @@ class SlaveConfigManager {
  private:
   uni::async::AsyncQueue& _async_queue;
   uni::net::Connections& _master_connections;
-  uni::net::Connections& _connections;
+  uni::net::Connections& _slave_connections;
   uni::paxos::MultiPaxosHandler& _multipaxos_handler;
   uni::paxos::PaxosLog& _paxos_log;
-
-  struct BootstrapConfig {
-    uni::net::EndpointId slave;
-    uint32_t generation;
-  };
 
   struct Config {
     std::vector<uni::net::EndpointId> slaves;
@@ -43,7 +38,6 @@ class SlaveConfigManager {
   };
   
   std::variant<
-    BootstrapConfig,
     Config
   > _config;
 };

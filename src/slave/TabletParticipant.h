@@ -31,7 +31,7 @@ struct TabletParticipant {
     std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
     std::unique_ptr<uni::random::Random> random,
     uni::constants::Constants const& constants,
-    uni::net::Connections& connections,
+    uni::net::Connections& slave_connections,
     uni::net::Connections& client_connections,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::server::FailureDetector& failure_detector,

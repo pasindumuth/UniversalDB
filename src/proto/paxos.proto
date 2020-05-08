@@ -11,11 +11,8 @@ message PaxosLogEntry {
   oneof entry_content {
     proto.paxos.master.NewKeySpaceSelected key_space_selected = 1;
     proto.paxos.master.KeySpaceCommit key_space_commit = 2;
-    proto.paxos.master.FirstConfigSelected first_config_selected = 3;
-    proto.paxos.master.FirstConfigCommitted first_config_committed = 4;
 
     proto.paxos.slave.KeySpaceChanged key_space_changed = 5;
-    proto.paxos.slave.Bootstrapped bootstrapped = 6;
 
     proto.paxos.tablet.Read read = 7;
     proto.paxos.tablet.Write write = 8;
