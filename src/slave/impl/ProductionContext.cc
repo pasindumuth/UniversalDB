@@ -23,51 +23,20 @@ ProductionContext::ProductionContext(
   std::string ip_string)
   : _random(),
     _timer_scheduler(background_io_context),
-    _async_queue(_timer_scheduler),
-    _heartbeat_tracker(),
-    _failure_detector(
-      _heartbeat_tracker,
-      slave_connections,
-      _timer_scheduler,
-      uni::slave::GetEndpoints(_config_manager)),
-    _paxos_log(),
-    _multipaxos_handler(
-      _paxos_log,
-      [this, &constants, &slave_connections](uni::paxos::index_t index) {
-        // TODO: Use PaxosConfigManager from the outside and pass the config
-        // in as a parameter here. Call ::get_config(index), and pass that
-        // in place of uni::slave::GetEndpoints(_config_manager).
-        return uni::paxos::SinglePaxosHandler(
-          constants,
-          slave_connections,
-          _paxos_log,
-          _random,
-          index,
-          uni::slave::GetEndpoints(_config_manager),
-          uni::slave::SendPaxos());
-      }),
-    _log_syncer(
+    _transaction_manager(
       constants,
+      client_connections,
+      master_connections,
       slave_connections,
+      scheduler,
       _timer_scheduler,
-      _paxos_log,
-      uni::slave::GetEndpoints(_config_manager),
-      uni::slave::SendSync()),
-    _config_manager(
-      _async_queue,
-      master_connections,
-      slave_connections,
-      _multipaxos_handler,
-      _paxos_log,
-      uni::net::EndpointId(ip_string, 0)),
-    _key_space_manager(
-      _async_queue,
-      master_connections,
-      _multipaxos_handler,
-      _paxos_log,
-      _tablet_manager),
-    _tablet_manager(
-      [this, &constants, &client_connections, &slave_connections](uni::slave::TabletId tablet_id) {
+      _random,
+      ip_string,
+      [this, &constants, &slave_connections, &client_connections](
+        uni::slave::TabletId const& tablet_id,
+        uni::server::FailureDetector& failure_detector,
+        uni::slave::SlaveConfigManager& config_manager
+      ) {
         auto min_index = std::distance(
           _participants_per_thread.begin(),
             std::min_element(
@@ -85,24 +54,16 @@ ProductionContext::ProductionContext(
             slave_connections,
             client_connections,
             _timer_scheduler,
-            _failure_detector,
-            _config_manager,
+            failure_detector,
+            config_manager,
             tablet_id
           ), [this, &min_index](uni::slave::TabletParticipant* tp) {
             _participants_per_thread[min_index]--;
             delete tp;
           }
         );
-      },
-      client_connections,
-      uni::slave::ClientRespond(client_connections)
-    ),
-    _slave_handler(
-      _tablet_manager,
-      _heartbeat_tracker,
-      _log_syncer,
-      _key_space_manager,
-      _multipaxos_handler)
+      }
+    )
 {
   // We subtract 2 from the number of supported threads to account for the
   // LTM thread and background thread are started up manually.
@@ -111,9 +72,6 @@ ProductionContext::ProductionContext(
     _io_contexts.push_back(std::make_unique<ThreadAndContext>());
     _participants_per_thread.push_back(0);
   }
-  scheduler.set_callback([this](uni::net::IncomingMessage message){
-    _slave_handler.handle(message);
-  });
 }
 
 } // namespace slave

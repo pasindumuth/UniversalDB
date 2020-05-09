@@ -102,7 +102,7 @@ TestFunction Tests::test3() {
     // All failure detectors should report that all of the p.slaves are still alive.
     for (auto const& slave : p.slaves) {
       UNIVERSAL_ASSERT_MESSAGE(
-        slave->_heartbeat_tracker.alive_endpoints().size() == p.slaves.size(),
+        slave->_transaction_manager._heartbeat_tracker.alive_endpoints().size() == p.slaves.size(),
         "The Paxos Logs should agree with one another.")
     }
     // Now kill one of the slaves
@@ -120,7 +120,7 @@ TestFunction Tests::test3() {
     }
     for (auto i = 1; i < p.slaves.size(); i++) {
       UNIVERSAL_ASSERT_MESSAGE(
-        p.slaves[i]->_heartbeat_tracker.alive_endpoints().size() == p.slaves.size() - 1,
+        p.slaves[i]->_transaction_manager._heartbeat_tracker.alive_endpoints().size() == p.slaves.size() - 1,
         "All failure detectors should report that one slave is dead.")
     }
   };
@@ -218,7 +218,7 @@ TestFunction Tests::test4() {
 
     UNIVERSAL_ASSERT_MESSAGE(initial_equal_logs < final_equal_logs,
           "Paxos Logs should all be equal.")
-    for (auto const& [tablet_id, tp] : p.slaves[0]->_tablet_manager.get_tps()) {
+    for (auto const& [tablet_id, tp] : p.slaves[0]->_transaction_manager._tablet_manager.get_tps()) {
       LOG(uni::logging::Level::DEBUG, tp->_kvstore.debug_string());
     }
   };
@@ -246,7 +246,7 @@ proto::message::MessageWrapper Tests::build_client_request(std::string message) 
 bool Tests::some_async_queue_nonempty(
   std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves) {
     for (auto const& slave: slaves) {
-      if (!slave->_async_queue.empty()) {
+      if (!slave->_transaction_manager._async_queue.empty()) {
         return true;
       }
     }
@@ -339,8 +339,8 @@ std::vector<std::vector<boost::optional<uni::paxos::PaxosLog*>>> Tests::get_alig
   auto slave_paxos_logs = std::vector<boost::optional<uni::paxos::PaxosLog*>>();
   auto tablet_ids = std::vector<uni::slave::TabletId>();
   for (auto const& slave : slaves) {
-    slave_paxos_logs.push_back(&slave->_paxos_log);
-    for (auto const& [tablet_id, tp] : slave->_tablet_manager.get_tps()) {
+    slave_paxos_logs.push_back(&slave->_transaction_manager._paxos_log);
+    for (auto const& [tablet_id, tp] : slave->_transaction_manager._tablet_manager.get_tps()) {
       tablet_ids.push_back(tablet_id);
     }
   }
@@ -348,7 +348,7 @@ std::vector<std::vector<boost::optional<uni::paxos::PaxosLog*>>> Tests::get_alig
   for (auto const& tablet_id : tablet_ids) {
     auto paxos_logs = std::vector<boost::optional<uni::paxos::PaxosLog*>>();
     for (auto const& slave : slaves) {
-      auto const& tp_map = slave->_tablet_manager.get_tps();
+      auto const& tp_map = slave->_transaction_manager._tablet_manager.get_tps();
       auto const& it = tp_map.find(tablet_id);
       if (it != tp_map.end()) {
         paxos_logs.push_back(&it->second->_paxos_log);
@@ -408,8 +408,8 @@ bool Tests::verify_paxos_logs(std::vector<uni::paxos::PaxosLog*> paxos_logs) {
 
 void Tests::print_paxos_logs(std::vector<std::unique_ptr<uni::slave::TestingContext>>& slaves) {
   for (auto const& slave: slaves) {
-    LOG(uni::logging::Level::DEBUG, slave->_paxos_log.debug_string())
-    for (auto const& [tablet_id, tp] : slave->_tablet_manager.get_tps()) {
+    LOG(uni::logging::Level::DEBUG, slave->_transaction_manager._paxos_log.debug_string())
+    for (auto const& [tablet_id, tp] : slave->_transaction_manager._tablet_manager.get_tps()) {
       LOG(uni::logging::Level::DEBUG, tp->_paxos_log.debug_string())
     }
   }

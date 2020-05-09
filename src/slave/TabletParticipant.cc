@@ -24,7 +24,7 @@ TabletParticipant::TabletParticipant(
   uni::async::TimerAsyncScheduler& timer_scheduler,
   uni::server::FailureDetector& failure_detector,
   uni::slave::SlaveConfigManager& config_manager,
-  uni::slave::TabletId& tid)
+  uni::slave::TabletId const& tid)
   : _scheduler(scheduler_provider()),
     _random(std::move(random)),
     _tablet_id(tid),

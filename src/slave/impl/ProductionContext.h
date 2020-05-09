@@ -8,22 +8,13 @@
 
 #include <boost/asio.hpp>
 
-#include <async/AsyncQueue.h>
 #include <async/AsyncScheduler.h>
 #include <async/impl/TimerAsyncSchedulerImpl.h>
 #include <constants/constants.h>
 #include <common/common.h>
 #include <net/Connections.h>
-#include <net/EndpointId.h>
-#include <paxos/PaxosLog.h>
 #include <random/impl/RandomImpl.h>
-#include <server/FailureDetector.h>
-#include <server/HeartbeatTracker.h>
-#include <server/LogSyncer.h>
-#include <slave/SlaveConfigManager.h>
-#include <slave/SlaveIncomingMessageHandler.h>
-#include <slave/TabletParticipantManager.h>
-#include <slave/SlaveKeySpaceManager.h>
+#include <slave/LocalTransactionManager.h>
 
 namespace uni {
 namespace slave {
@@ -45,21 +36,10 @@ struct ProductionContext {
     uni::async::AsyncScheduler& scheduler,
     std::string ip_string);
 
-  // Helper classes
-  uni::random::RandomImpl _random;
-
   // Singletons
+  uni::random::RandomImpl _random;
   uni::async::TimerAsyncSchedulerImpl _timer_scheduler;
-  uni::async::AsyncQueue _async_queue;
-  uni::server::HeartbeatTracker _heartbeat_tracker;
-  uni::server::FailureDetector _failure_detector;
-  uni::paxos::PaxosLog _paxos_log;
-  uni::paxos::MultiPaxosHandler _multipaxos_handler;
-  uni::server::LogSyncer _log_syncer;
-  uni::slave::SlaveConfigManager _config_manager;
-  uni::slave::SlaveKeySpaceManager _key_space_manager;
-  uni::slave::TabletParticipantManager _tablet_manager;
-  uni::slave::SlaveIncomingMessageHandler _slave_handler;
+  uni::slave::LocalTransactionManager _transaction_manager;
 
  private:
   std::vector<unsigned> _participants_per_thread;

@@ -36,7 +36,7 @@ struct TabletParticipant {
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::server::FailureDetector& failure_detector,
     uni::slave::SlaveConfigManager& config_manager,
-    uni::slave::TabletId& tid);
+    uni::slave::TabletId const& tid);
 
   // Helper classes
   std::unique_ptr<uni::random::Random> _random;
