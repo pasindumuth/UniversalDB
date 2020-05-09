@@ -25,8 +25,8 @@ class ConnectionHandler {
   boost::asio::ip::tcp::acceptor& _acceptor;
 };
 
-} // server
-} // uni
+} // namespace server
+} // namespace uni
 
 
 #endif // UNI_SERVER_CONNECTIONHANDLER_H

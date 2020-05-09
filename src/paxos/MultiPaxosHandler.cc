@@ -40,5 +40,5 @@ uni::paxos::SinglePaxosHandler& MultiPaxosHandler::get_instance(index_t index) {
   return _paxos_instances.find(index)->second;
 }
 
-} // paxos
-} // uni
+} // namespace paxos
+} // namespace uni

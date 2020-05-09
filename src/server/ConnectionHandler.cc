@@ -26,5 +26,5 @@ void ConnectionHandler::async_accept() {
   });
 }
 
-} // server
-} // uni
+} // namespace server
+} // namespace uni

@@ -118,9 +118,9 @@ class Tests {
     uni::net::Connections& server_client_connections);
 };
 
-} // integration
-} // testing
-} // uni
+} // namespace integration
+} // namespace testing
+} // namespace uni
 
 
 #endif // UNI_TESTING_TESTS_H

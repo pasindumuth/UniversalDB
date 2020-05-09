@@ -187,6 +187,6 @@ void TestDriver::run_test(TestFunction test) {
   }
 }
 
-} // integration
-} // testing
-} // uni
+} // namespace integration
+} // namespace testing
+} // namespace uni

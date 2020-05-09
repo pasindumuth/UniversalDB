@@ -464,6 +464,6 @@ std::unique_ptr<uni::net::ChannelTesting> Tests::create_client_connection(
   return client_channel;
 }
 
-} // integration
-} // testing
-} // uni
+} // namespace integration
+} // namespace testing
+} // namespace uni

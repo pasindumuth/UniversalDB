@@ -16,16 +16,17 @@ namespace uni {
 namespace slave {
 
 TabletParticipant::TabletParticipant(
-  std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
+  std::unique_ptr<uni::async::AsyncScheduler> scheduler,
+  std::unique_ptr<uni::async::TimerAsyncScheduler> timer_scheduler,
   std::unique_ptr<uni::random::Random> random,
   uni::constants::Constants const& constants,
   uni::net::Connections& slave_connections,
   uni::net::Connections& client_connections,
-  uni::async::TimerAsyncScheduler& timer_scheduler,
   uni::server::FailureDetector& failure_detector,
   uni::slave::SlaveConfigManager& config_manager,
   uni::slave::TabletId const& tid)
-  : _scheduler(scheduler_provider()),
+  : _scheduler(std::move(scheduler)),
+    _timer_scheduler(std::move(timer_scheduler)),
     _random(std::move(random)),
     _tablet_id(tid),
     _paxos_log(),
@@ -48,7 +49,7 @@ TabletParticipant::TabletParticipant(
             return message_wrapper;
           });
       }),
-    _async_queue(timer_scheduler),
+    _async_queue(*_timer_scheduler),
     _kvstore(),
     _client_request_handler(
       _multipaxos_handler,
@@ -59,7 +60,7 @@ TabletParticipant::TabletParticipant(
     _log_syncer(
       constants,
       slave_connections,
-      timer_scheduler,
+      *_timer_scheduler,
       _paxos_log,
       uni::slave::GetEndpoints(config_manager),
       [this](proto::sync::SyncMessage* sync_message){

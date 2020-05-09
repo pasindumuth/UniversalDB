@@ -24,7 +24,7 @@ class AsyncSchedulerTesting: public uni::async::AsyncScheduler {
   std::function<void(uni::net::IncomingMessage)> _callback;
 };
 
-} // async
-} // uni
+} // namespace async
+} // namespace uni
 
 #endif // UNI_ASYNC_ASYNCSCHEDULERTESTING_H

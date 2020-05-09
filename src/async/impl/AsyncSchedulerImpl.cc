@@ -30,5 +30,5 @@ void AsyncSchedulerImpl::queue_message(uni::net::IncomingMessage message) {
   }
 }
 
-} // async
-} // uni
+} // namespace async
+} // namespace uni

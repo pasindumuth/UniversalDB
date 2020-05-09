@@ -49,9 +49,9 @@ class TestDriver {
   void run_test(TestFunction test);
 };
 
-} // integration
-} // testing
-} // uni
+} // namespace integration
+} // namespace testing
+} // namespace uni
 
 
 #endif // UNI_TESTING_TESTDRIVER_H

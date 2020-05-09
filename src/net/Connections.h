@@ -43,7 +43,7 @@ class Connections {
   uni::async::AsyncScheduler& _scheduler;
 };
 
-} // net
-} // uni
+} // namespace net
+} // namespace uni
 
 #endif // UNI_NET_CONNECTIONS_H

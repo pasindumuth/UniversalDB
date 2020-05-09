@@ -18,8 +18,8 @@ struct IncomingMessage {
       message(message) {}
 };
 
-} // net
-} // uni
+} // namespace net
+} // namespace uni
 
 
 #endif // UNI_NET_INCOMINGMESSAGE_H

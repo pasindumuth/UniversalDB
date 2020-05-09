@@ -43,6 +43,11 @@ class TimerAsyncScheduler {
    * waiting @p period . This is useful for retrying requests, for instance.
    */
   virtual void schedule_repeated_finite(std::function<void(void)> callback, int64_t period, int32_t tries) = 0;
+
+  /**
+   * @brief Destroy the Timer Async Scheduler object
+   */
+  virtual ~TimerAsyncScheduler() = default;
 };
 
 } // namespace async

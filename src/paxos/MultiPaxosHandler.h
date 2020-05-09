@@ -41,8 +41,8 @@ class MultiPaxosHandler {
   uni::paxos::SinglePaxosHandler& get_instance(index_t index);
 };
 
-} // paxos
-} // uni
+} // namespace paxos
+} // namespace uni
 
 
 #endif // UNI_PAXOS_MULTIPAXOSHANDLER_H

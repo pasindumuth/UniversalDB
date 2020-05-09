@@ -33,14 +33,12 @@ TestingContext::TestingContext(
       ) {
         return uni::custom_unique_ptr<uni::slave::TabletParticipant>(
           new uni::slave::TabletParticipant(
-            [](){
-              return std::make_unique<uni::async::AsyncSchedulerTesting>();
-            },
+            std::make_unique<uni::async::AsyncSchedulerTesting>(),
+            std::make_unique<uni::async::TimerAsyncSchedulerTesting>(_clock),
             std::make_unique<uni::random::RandomTesting>(_random.rng()()),
             constants,
             _slave_connections,
             _client_connections,
-            _timer_scheduler,
             failure_detector,
             config_manager,
             tablet_id

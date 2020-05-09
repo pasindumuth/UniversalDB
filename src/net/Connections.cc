@@ -72,5 +72,5 @@ void Connections::send(uni::net::EndpointId const& endpoint_id, std::string mess
   }
 }
 
-} // net
-} // uni
+} // namespace net
+} // namespace uni

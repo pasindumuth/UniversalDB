@@ -38,7 +38,7 @@ class AsyncSchedulerImpl: public uni::async::AsyncScheduler {
   std::mutex _queue_lock;
 };
 
-} // async
-} // uni
+} // namespace async
+} // namespace uni
 
 #endif // UNI_ASYNC_ASYNCSCHEDULERIMPL_H

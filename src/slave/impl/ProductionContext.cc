@@ -46,14 +46,12 @@ ProductionContext::ProductionContext(
         auto& thread_and_context = _io_contexts[min_index];
         return uni::custom_unique_ptr<uni::slave::TabletParticipant>(
           new uni::slave::TabletParticipant(
-            [&thread_and_context](){
-              return std::make_unique<uni::async::AsyncSchedulerImpl>(thread_and_context->_io_context);
-            },
+            std::make_unique<uni::async::AsyncSchedulerImpl>(thread_and_context->_io_context),
+            std::make_unique<uni::async::TimerAsyncSchedulerImpl>(thread_and_context->_io_context),
             std::make_unique<uni::random::RandomImpl>(),
             constants,
             slave_connections,
             client_connections,
-            _timer_scheduler,
             failure_detector,
             config_manager,
             tablet_id

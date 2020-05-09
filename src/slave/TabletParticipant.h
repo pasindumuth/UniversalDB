@@ -28,12 +28,12 @@ namespace slave {
 
 struct TabletParticipant {
   TabletParticipant(
-    std::function<std::unique_ptr<uni::async::AsyncScheduler>()> scheduler_provider,
+    std::unique_ptr<uni::async::AsyncScheduler> scheduler,
+    std::unique_ptr<uni::async::TimerAsyncScheduler> timer_scheduler,
     std::unique_ptr<uni::random::Random> random,
     uni::constants::Constants const& constants,
     uni::net::Connections& slave_connections,
     uni::net::Connections& client_connections,
-    uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::server::FailureDetector& failure_detector,
     uni::slave::SlaveConfigManager& config_manager,
     uni::slave::TabletId const& tid);
@@ -43,6 +43,7 @@ struct TabletParticipant {
 
   // Singletons
   std::unique_ptr<uni::async::AsyncScheduler> _scheduler;
+  std::unique_ptr<uni::async::TimerAsyncScheduler> _timer_scheduler;
   uni::slave::TabletId _tablet_id;
   uni::paxos::PaxosLog _paxos_log;
   uni::paxos::MultiPaxosHandler _multipaxos_handler;

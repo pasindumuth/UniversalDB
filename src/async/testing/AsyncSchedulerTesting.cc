@@ -16,5 +16,5 @@ void AsyncSchedulerTesting::queue_message(uni::net::IncomingMessage message) {
   _callback(message);
 }
 
-} // async
-} // uni
+} // namespace async
+} // namespace uni
