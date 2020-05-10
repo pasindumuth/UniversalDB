@@ -5,8 +5,6 @@
 #include <memory>
 #include <thread>
 
-#include <boost/asio.hpp>
-
 #include <async/impl/AsyncSchedulerImpl.h>
 #include <async/AsyncScheduler.h>
 #include <common/common.h>
