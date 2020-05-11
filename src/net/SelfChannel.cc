@@ -3,11 +3,12 @@
 namespace uni {
 namespace net {
 
-SelfChannel::SelfChannel()
-  : listening(false) {}
+SelfChannel::SelfChannel(std::string ip_string)
+  : listening(false),
+    _ip_string(ip_string) {}
 
 uni::net::EndpointId SelfChannel::endpoint_id() {
-  return {"127.0.0.1", 0};
+  return {_ip_string, 0};
 }
 
 void SelfChannel::queue_send(std::string message) {

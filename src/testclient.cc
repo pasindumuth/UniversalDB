@@ -30,15 +30,15 @@ std::vector<std::string> parse_input(std::string&& message) {
   return parsed_output;
 }
 
-// Takes in the slave_hostname and the master_hostname
+// Takes in the slave_ip and the master_ip
 int main(int argc, char* argv[]) {
-  auto hostnames = parse_hostnames(argc, argv);
-  auto slave_hostname = hostnames[0];
-  auto master_hostname = hostnames[1];
+  auto args = parse_args(argc, argv);
+  auto slave_ip = args[0];
+  auto master_ip = args[1];
 
   auto const constants = initialize_constants();
   uni::logging::get_log_level() = uni::logging::Level::INFO;
-  LOG(uni::logging::Level::INFO, "Starting client. Connecting to slave: '" + slave_hostname + "', and master: '" + master_hostname + "'.")
+  LOG(uni::logging::Level::INFO, "Starting client. Connecting to slave: '" + slave_ip + "', and master: '" + master_ip + "'.")
 
   auto io_context = boost::asio::io_context();
   auto work = boost::asio::make_work_guard(io_context);
@@ -48,9 +48,11 @@ int main(int argc, char* argv[]) {
 
   auto resolver = tcp::resolver(io_context);
 
-  auto slave_endpoints = tcp::resolver::results_type(resolver.resolve(slave_hostname, std::to_string(constants.client_port)));
+  auto slave_endpoint = boost::asio::ip::tcp::endpoint(
+    boost::asio::ip::address(boost::asio::ip::make_address_v4(slave_ip)),
+    constants.client_port);
   auto socket = tcp::socket(io_context);
-  boost::asio::connect(socket, slave_endpoints);
+  socket.connect(slave_endpoint);
   auto slave_channel = uni::net::ChannelImpl(std::move(socket));
   slave_channel.add_receive_callback([](std::string serialized_message) {
     auto message_wrapper = proto::message::MessageWrapper();
@@ -61,9 +63,11 @@ int main(int argc, char* argv[]) {
 
   slave_channel.start_listening();
 
-  auto master_endpoints = tcp::resolver::results_type(resolver.resolve(master_hostname, std::to_string(constants.client_port)));
+  auto master_endpoint = boost::asio::ip::tcp::endpoint(
+    boost::asio::ip::address(boost::asio::ip::make_address_v4(master_ip)),
+    constants.client_port);
   auto socket2 = tcp::socket(io_context);
-  boost::asio::connect(socket2, master_endpoints);
+  socket2.connect(master_endpoint);
   auto master_channel = uni::net::ChannelImpl(std::move(socket2));
   master_channel.add_receive_callback([](std::string serialized_message) {
     auto message_wrapper = proto::message::MessageWrapper();

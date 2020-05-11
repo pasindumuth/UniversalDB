@@ -13,19 +13,13 @@
 
 using boost::asio::ip::tcp;
 
-/**
- * Arguments:
- * hostname - hostname this server is running on
- * port - port this server is running on
- */
 int main(int argc, char* argv[]) {
-  auto hostnames = parse_hostnames(argc, argv);
-  auto main_serving_hostname = hostnames[0];
+  auto ips = parse_args(argc, argv);
 
   // Initialize constants
   auto const constants = initialize_constants();
   uni::logging::get_log_level() = uni::logging::Level::TRACE1;
-  LOG(uni::logging::Level::INFO, "Starting main server on: " + main_serving_hostname + ":" + std::to_string(constants.slave_port))
+  LOG(uni::logging::Level::INFO, "Starting main server on: " + ips[0] + ":" + std::to_string(constants.slave_port))
 
   // Initialize io_context for background thread (for managing the network
   // and dispatching requests to the server thread).
@@ -58,17 +52,17 @@ int main(int argc, char* argv[]) {
   auto master_connection_handler = uni::server::ConnectionHandler(master_connections, master_acceptor);
   master_connection_handler.async_accept();
 
-  // TODO: Wait for a list of all slave nodes from the master.
-  auto resolver = tcp::resolver(background_io_context);
-  for (auto i = 1; i < hostnames.size(); i++) {
-    auto endpoints = resolver.resolve(hostnames[i], std::to_string(constants.slave_port));
+  for (auto i = 1; i < ips.size(); i++) {
+    auto endpoint = boost::asio::ip::tcp::endpoint(
+      boost::asio::ip::address(boost::asio::ip::make_address_v4(ips[i])),
+      constants.slave_port);
     auto socket = tcp::socket(background_io_context);
-    boost::asio::connect(socket, endpoints);
+    socket.connect(endpoint);
     auto channel = std::make_unique<uni::net::ChannelImpl>(std::move(socket));
     slave_connections.add_channel(std::move(channel));
-    LOG(uni::logging::Level::INFO, "Connected to slave node: " + hostnames[i]);
+    LOG(uni::logging::Level::INFO, "Connected to slave node: " + ips[i]);
   }
-  auto self_channel = std::make_unique<uni::net::SelfChannel>();
+  auto self_channel = std::make_unique<uni::net::SelfChannel>(ips[0]);
   auto ip_string = self_channel->endpoint_id().ip_string;
   slave_connections.add_channel(std::move(self_channel));
 

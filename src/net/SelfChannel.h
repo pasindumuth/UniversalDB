@@ -15,7 +15,7 @@ namespace net {
 class SelfChannel
   : public uni::net::Channel {
  public:
-  SelfChannel();
+  SelfChannel(std::string ip_string);
 
   ~SelfChannel() {};
 
@@ -28,6 +28,7 @@ class SelfChannel
  private:
   // Indicates if start_listening was called.
   bool listening;
+  std::string _ip_string;
 };
 
 } // namespace net
