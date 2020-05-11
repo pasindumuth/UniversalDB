@@ -76,13 +76,27 @@ int main(int argc, char* argv[]) {
     LOG(uni::logging::Level::INFO, "Connected to slave node: " + slave_ip);
   }
 
+  // Compute config_endpoints
+  auto config_endpoints = std::vector<uni::net::EndpointId>{};
+  for (auto i = 0; i < constants.num_master_servers; i++) {
+    config_endpoints.push_back({"172.19.0." + std::to_string(20 + i), 0});
+  }
+
+  // Compute slave_endpoints
+  auto slave_endpoints = std::vector<uni::net::EndpointId>{};
+  for (auto i = 0; i < constants.num_slave_servers; i++) {
+    slave_endpoints.push_back({"172.19.0." + std::to_string(10 + i), 0});
+  }
+
   auto production_context = uni::master::ProductionContext(
     background_io_context,
     constants,
     client_connections,
     slave_connections,
     connections,
-    server_async_scheduler);
+    server_async_scheduler,
+    config_endpoints,
+    slave_endpoints);
 
   client_connection_handler.async_accept();
 

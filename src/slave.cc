@@ -66,6 +66,12 @@ int main(int argc, char* argv[]) {
   auto ip_string = self_channel->endpoint_id().ip_string;
   slave_connections.add_channel(std::move(self_channel));
 
+  // Compute config_endpoints
+  auto config_endpoints = std::vector<uni::net::EndpointId>{};
+  for (auto i = 0; i < constants.num_slave_servers; i++) {
+    config_endpoints.push_back({"172.19.0." + std::to_string(10 + i), 0});
+  }
+
   auto production_context = uni::slave::ProductionContext(
     background_io_context,
     constants,
@@ -73,6 +79,7 @@ int main(int argc, char* argv[]) {
     master_connections,
     slave_connections,
     server_async_scheduler,
+    config_endpoints,
     ip_string);
 
   LOG(uni::logging::Level::INFO, "Setup finished")

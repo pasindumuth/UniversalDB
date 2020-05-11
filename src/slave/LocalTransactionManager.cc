@@ -14,18 +14,18 @@ LocalTransactionManager::LocalTransactionManager(
   uni::async::AsyncScheduler& scheduler,
   uni::async::TimerAsyncScheduler& timer_scheduler,
   uni::random::Random& random,
+  std::vector<uni::net::EndpointId> const& config_endpoints,
   std::string& ip_string,
   TPProvider tp_provider)
   : _async_queue(timer_scheduler),
     _heartbeat_tracker(),
-    _failure_detector(
-      _heartbeat_tracker,
-      slave_connections,
-      timer_scheduler,
-      uni::slave::GetEndpoints(_config_manager)),
     _paxos_log(),
+    _paxos_config_manager(
+      0,
+      config_endpoints,
+      _paxos_log),
     _multipaxos_handler(
-      _paxos_log,    
+      _paxos_log,
       [this, &constants, &slave_connections, &random](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
@@ -33,15 +33,20 @@ LocalTransactionManager::LocalTransactionManager(
           _paxos_log,
           random,
           index,
-          uni::slave::GetEndpoints(_config_manager),
+          _paxos_config_manager.config(index),
           uni::slave::SendPaxos());
       }),
+    _failure_detector(
+      _heartbeat_tracker,
+      slave_connections,
+      timer_scheduler,
+      [this](){ return _paxos_config_manager.latest_config(); }),
     _log_syncer(
       constants,
       slave_connections,
       timer_scheduler,
       _paxos_log,
-      uni::slave::GetEndpoints(_config_manager),
+      [this](){ return _paxos_config_manager.latest_config(); },
       uni::slave::SendSync()),
     _config_manager(
       _async_queue,

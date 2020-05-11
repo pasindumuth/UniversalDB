@@ -55,18 +55,6 @@ struct SendSync {
   }
 };
 
-struct GetEndpoints {
-  GetEndpoints(uni::net::Connections& connections):
-    _connections(connections) {}
-
-  std::vector<uni::net::EndpointId> operator()(){
-    return _connections.get_all_endpoints();
-  }
-
- private:
-  uni::net::Connections& _connections;
-};
-
 } // namespace master
 } // namespace uni
 

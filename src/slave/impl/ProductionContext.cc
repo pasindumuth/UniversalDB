@@ -20,6 +20,7 @@ ProductionContext::ProductionContext(
   uni::net::Connections& master_connections,
   uni::net::Connections& slave_connections,
   uni::async::AsyncScheduler& scheduler,
+  std::vector<uni::net::EndpointId> const& config_endpoints,
   std::string ip_string)
   : _random(),
     _timer_scheduler(background_io_context),
@@ -31,6 +32,7 @@ ProductionContext::ProductionContext(
       scheduler,
       _timer_scheduler,
       _random,
+      config_endpoints,
       ip_string,
       [this, &constants, &slave_connections, &client_connections](
         uni::slave::TabletId const& tablet_id,

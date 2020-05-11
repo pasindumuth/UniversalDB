@@ -10,8 +10,9 @@
 #include <common/common.h>
 #include <constants/constants.h>
 #include <net/Connections.h>
-#include <paxos/MultiPaxosHandler.h>
+#include <paxos/PaxosConfigManager.h>
 #include <paxos/PaxosLog.h>
+#include <paxos/MultiPaxosHandler.h>
 #include <random/Random.h>
 #include <slave/ClientRequestHandler.h>
 #include <slave/IncomingMessageHandler.h>
@@ -44,6 +45,7 @@ struct TabletParticipant {
   std::unique_ptr<uni::async::TimerAsyncScheduler> _timer_scheduler;
   uni::slave::TabletId _tablet_id;
   uni::paxos::PaxosLog _paxos_log;
+  uni::paxos::PaxosConfigManager _paxos_config_manager;
   uni::paxos::MultiPaxosHandler _multipaxos_handler;
   uni::async::AsyncQueue _async_queue;
   uni::slave::KVStore _kvstore;

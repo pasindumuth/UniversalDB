@@ -14,6 +14,7 @@ uni::constants::Constants initialize_constants() {
 }
 
 struct SlaveObjects {
+  std::vector<uni::net::EndpointId> config_endpoints;
   std::vector<std::unique_ptr<uni::slave::TestingContext>> slaves;
   // This is a double array so that slave_channels[i][j] is the channel in
   // slaves[i] that connects to slaves[j].
@@ -37,12 +38,18 @@ struct MasterSlaveConnections {
 };
 
 void initialize_slaves(uni::constants::Constants const& constants, SlaveObjects& so) {
+  // Compute config_endpoints
+  for (auto i = 0; i < constants.num_slave_servers; i++) {
+    so.config_endpoints.push_back({"universal" + std::to_string(i), 0});
+  }
+
   // Initialize the Slave objects
   for (auto i = 0; i < constants.num_slave_servers; i++) {
     so.slaves.push_back(
       std::make_unique<uni::slave::TestingContext>(
         constants,
-        "universal" + std::to_string(i),
+        so.config_endpoints,
+        so.config_endpoints[i].ip_string,
         i
       )
     );

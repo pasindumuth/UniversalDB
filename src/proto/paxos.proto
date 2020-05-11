@@ -1,10 +1,17 @@
 syntax = "proto3";
 
+import "common.proto";
 import "paxos_master.proto";
 import "paxos_slave.proto";
 import "paxos_tablet.proto";
 
 package proto.paxos;
+
+message ReconfigStarted {
+  repeated proto.common.Endpoint slaves = 1;
+}
+
+message ReconfigFinished {}
 
 // The values that appear in the Paxos log.
 message PaxosLogEntry {
@@ -12,10 +19,13 @@ message PaxosLogEntry {
     proto.paxos.master.NewKeySpaceSelected key_space_selected = 1;
     proto.paxos.master.KeySpaceCommit key_space_commit = 2;
 
-    proto.paxos.slave.KeySpaceChanged key_space_changed = 5;
+    proto.paxos.slave.KeySpaceChanged key_space_changed = 3;
 
-    proto.paxos.tablet.Read read = 7;
-    proto.paxos.tablet.Write write = 8;
+    proto.paxos.tablet.Read read = 4;
+    proto.paxos.tablet.Write write = 5;
+
+    proto.paxos.ReconfigStarted reconfig_started = 6;
+    proto.paxos.ReconfigFinished reconfig_finished = 7;
   }
 }
 

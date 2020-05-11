@@ -30,6 +30,10 @@ TabletParticipant::TabletParticipant(
     _random(std::move(random)),
     _tablet_id(tid),
     _paxos_log(),
+    _paxos_config_manager(
+      0,
+      slave_connections.get_all_endpoints(),
+      _paxos_log),
     _multipaxos_handler(
       _paxos_log,
       [this, &constants, &slave_connections, &config_manager](uni::paxos::index_t index) {
@@ -39,7 +43,7 @@ TabletParticipant::TabletParticipant(
           _paxos_log,
           *_random,
           index,
-          uni::slave::GetEndpoints(config_manager),
+          _paxos_config_manager.config(index),
           [this](proto::paxos::PaxosMessage* paxos_message){
             auto message_wrapper = proto::message::MessageWrapper();
             auto tablet_message = new proto::message::tablet::TabletMessage;
@@ -62,7 +66,7 @@ TabletParticipant::TabletParticipant(
       slave_connections,
       *_timer_scheduler,
       _paxos_log,
-      uni::slave::GetEndpoints(config_manager),
+      [this](){ return _paxos_config_manager.latest_config(); },
       [this](proto::sync::SyncMessage* sync_message){
         auto message_wrapper = proto::message::MessageWrapper();
         auto tablet_message = new proto::message::tablet::TabletMessage;

@@ -24,7 +24,9 @@ struct ProductionContext {
     uni::net::Connections& client_connections,
     uni::net::Connections& slave_connections,
     uni::net::Connections& connections,
-    uni::async::AsyncScheduler& scheduler);
+    uni::async::AsyncScheduler& scheduler,
+    std::vector<uni::net::EndpointId>& config_endpoints,
+    std::vector<uni::net::EndpointId>& slave_endpoints);
 
   // Helper classes
   uni::random::RandomImpl _random;

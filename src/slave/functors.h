@@ -34,18 +34,6 @@ struct SendSync {
   }
 };
 
-struct GetEndpoints {
-  GetEndpoints(uni::slave::SlaveConfigManager& config_manager):
-    _config_manager(config_manager) {}
-
-  std::vector<uni::net::EndpointId> operator()(){
-    return _config_manager.config_endpoints();
-  }
-
- private:
-  uni::slave::SlaveConfigManager& _config_manager;
-};
-
 // This function consumes the ClientResponse; it deletes it from memory
 struct ClientRespond {
   ClientRespond(uni::net::Connections& client_connections):

@@ -10,7 +10,9 @@
 #include <constants/constants.h>
 #include <common/common.h>
 #include <net/Connections.h>
+#include <paxos/MultiPaxosHandler.h>
 #include <paxos/PaxosLog.h>
+#include <paxos/PaxosConfigManager.h>
 #include <random/Random.h>
 #include <server/FailureDetector.h>
 #include <server/HeartbeatTracker.h>
@@ -38,15 +40,17 @@ struct LocalTransactionManager {
     uni::async::AsyncScheduler& scheduler,
     uni::async::TimerAsyncScheduler& timer_scheduler,
     uni::random::Random& random,
+    std::vector<uni::net::EndpointId> const& config_endpoints,
     std::string& ip_string,
     TPProvider tp_provider);
 
   // Singletons
   uni::async::AsyncQueue _async_queue;
   uni::server::HeartbeatTracker _heartbeat_tracker;
-  uni::server::FailureDetector _failure_detector;
   uni::paxos::PaxosLog _paxos_log;
+  uni::paxos::PaxosConfigManager _paxos_config_manager;
   uni::paxos::MultiPaxosHandler _multipaxos_handler;
+  uni::server::FailureDetector _failure_detector;
   uni::server::LogSyncer _log_syncer;
   uni::slave::SlaveConfigManager _config_manager;
   uni::slave::SlaveKeySpaceManager _key_space_manager;

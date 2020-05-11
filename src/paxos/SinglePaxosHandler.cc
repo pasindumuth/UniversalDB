@@ -23,14 +23,14 @@ SinglePaxosHandler::SinglePaxosHandler(
   uni::paxos::PaxosLog& paxos_log,
   uni::random::Random& random,
   index_t paxos_log_index,
-  std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
+  std::vector<uni::net::EndpointId> config_endpoints,
   std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper)
   : _constants(constants),
     _connections(connections),
     _paxos_log(paxos_log),
     _random(random),
     _paxos_log_index(paxos_log_index),
-    _get_endpoints(get_endpoints),
+    _config_endpoints(config_endpoints),
     _paxos_message_to_wrapper(paxos_message_to_wrapper) {}
 
 crnd_t SinglePaxosHandler::next_proposal_number() {
@@ -52,7 +52,7 @@ void SinglePaxosHandler::propose(const proto::paxos::PaxosLogEntry& entry) {
   paxos_message->set_allocated_prepare(prepare_message);
   paxos_message->set_paxos_index(_paxos_log_index);
   auto message_wrapper = _paxos_message_to_wrapper(paxos_message);
-  _connections.broadcast(_get_endpoints(), message_wrapper.SerializeAsString());
+  _connections.broadcast(_config_endpoints, message_wrapper.SerializeAsString());
 }
 
 void SinglePaxosHandler::prepare(uni::net::EndpointId const& endpoint_id, proto::paxos::Prepare const& prepare_message) {
@@ -112,7 +112,7 @@ void SinglePaxosHandler::promise(proto::paxos::Promise const& promise_message) {
       paxos_message->set_allocated_accept(accept_message);
       paxos_message->set_paxos_index(_paxos_log_index);
       auto message_wrapper = _paxos_message_to_wrapper(paxos_message);
-      _connections.broadcast(_get_endpoints(), message_wrapper.SerializeAsString());
+      _connections.broadcast(_config_endpoints, message_wrapper.SerializeAsString());
     }
   }
 }
@@ -136,7 +136,7 @@ void SinglePaxosHandler::accept(proto::paxos::Accept const& accept_message) {
     paxos_message->set_allocated_learn(learn_message);
     paxos_message->set_paxos_index(_paxos_log_index);
     auto message_wrapper = _paxos_message_to_wrapper(paxos_message);
-    _connections.broadcast(_get_endpoints(), message_wrapper.SerializeAsString());
+    _connections.broadcast(_config_endpoints, message_wrapper.SerializeAsString());
   }
 }
 

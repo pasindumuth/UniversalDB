@@ -34,6 +34,7 @@ struct ProductionContext {
     uni::net::Connections& master_connections,
     uni::net::Connections& slave_connections,
     uni::async::AsyncScheduler& scheduler,
+    std::vector<uni::net::EndpointId> const& config_endpoints,
     std::string ip_string);
 
   // Singletons

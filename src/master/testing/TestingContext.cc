@@ -28,7 +28,7 @@ TestingContext::TestingContext(
       _scheduler,
       _random,
       slave_endpoints,
-      [&config_endpoints](){ return config_endpoints; }) {}
+      config_endpoints) {}
 
 } // namespace master
 } // namespace uni

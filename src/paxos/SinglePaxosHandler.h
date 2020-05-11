@@ -65,7 +65,7 @@ class SinglePaxosHandler {
     uni::paxos::PaxosLog& paxos_log,
     uni::random::Random& random,
     index_t paxos_log_index,
-    std::function<std::vector<uni::net::EndpointId>()> get_endpoints,
+    std::vector<uni::net::EndpointId> config_endpoints,
     std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> paxos_message_to_wrapper);
 
   // Returns a value that's strictly greater than the last Proposal Number in
@@ -100,7 +100,7 @@ class SinglePaxosHandler {
   uni::random::Random& _random;
   // The index of the Paxos Log that this Paxos Instance is trying to populate.
   index_t const _paxos_log_index;
-  std::function<std::vector<uni::net::EndpointId>()> _get_endpoints;
+  std::vector<uni::net::EndpointId> _config_endpoints;
   std::function<proto::message::MessageWrapper(proto::paxos::PaxosMessage*)> _paxos_message_to_wrapper;
 
   PaxosProposerState _proposer_state;

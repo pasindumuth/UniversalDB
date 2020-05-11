@@ -7,6 +7,7 @@ namespace slave {
 
 TestingContext::TestingContext(
   uni::constants::Constants const& constants,
+  std::vector<uni::net::EndpointId> const& config_endpoints,
   std::string ip_string,
   unsigned random_seed)
   : _ip_string(ip_string),
@@ -25,6 +26,7 @@ TestingContext::TestingContext(
       _scheduler,
       _timer_scheduler,
       _random,
+      config_endpoints,
       ip_string,
       [this, &constants](
         uni::slave::TabletId const& tablet_id,

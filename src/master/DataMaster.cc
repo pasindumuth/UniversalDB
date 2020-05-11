@@ -16,22 +16,26 @@ DataMaster::DataMaster(
   uni::async::AsyncScheduler& scheduler,
   uni::random::Random& random,
   std::vector<uni::net::EndpointId> slave_endpoints,
-  std::function<std::vector<uni::net::EndpointId>()> get_master_endpoints)
+  std::vector<uni::net::EndpointId> master_endpoints)
   : _async_queue_provider([&timer_scheduler](){
       return uni::async::AsyncQueue(timer_scheduler);
     }),
     _async_queue(timer_scheduler),
     _paxos_log(),
+    _paxos_config_manager(
+      0,
+      master_endpoints,
+      _paxos_log),
     _multipaxos_handler(
       _paxos_log,
-      [this, &constants, &connections, &random, get_master_endpoints](uni::paxos::index_t index) {
+      [this, &constants, &connections, &random](uni::paxos::index_t index) {
         return uni::paxos::SinglePaxosHandler(
           constants,
           connections,
           _paxos_log,
           random,
           index,
-          get_master_endpoints,
+          _paxos_config_manager.config(index),
           uni::master::SendPaxos());
       }),
     _log_syncer(
@@ -39,7 +43,7 @@ DataMaster::DataMaster(
       connections,
       timer_scheduler,
       _paxos_log,
-      get_master_endpoints,
+      [this](){ return _paxos_config_manager.latest_config(); },
       uni::master::SendSync()),
     _group_config_manager(
       _async_queue,

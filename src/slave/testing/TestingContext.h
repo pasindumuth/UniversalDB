@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <async/testing/AsyncSchedulerTesting.h>
 #include <async/testing/ClockTesting.h>
@@ -21,6 +22,7 @@ namespace slave {
 struct TestingContext {
   TestingContext(
     uni::constants::Constants const& constants,
+    std::vector<uni::net::EndpointId> const& config_endpoints,
     std::string ip_string,
     unsigned random_seed);
 
