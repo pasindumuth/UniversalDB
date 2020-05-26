@@ -10,7 +10,7 @@ MultiPaxosHandler::MultiPaxosHandler(
     _instance_provider(instance_provider) {}
 
 void MultiPaxosHandler::propose(proto::paxos::PaxosLogEntry const& entry) {
-  index_t index = _paxos_log.next_available_index(); // Look for an index that we can propose this new log entry to.
+  auto index = _paxos_log.next_available_index(); // Look for an index that we can propose this new log entry to.
   auto& paxos_instance = get_instance(index);
   paxos_instance.propose(entry);
 }
