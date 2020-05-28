@@ -8,3 +8,6 @@ cmake-build-debug
 
 # Doxygen
 html
+
+# Other
+notes.md
